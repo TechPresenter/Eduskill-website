@@ -1,0 +1,33 @@
+# Secrets & environment — never committed, never in a release ZIP.
+/config/config.php
+
+# Runtime state.
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/cache/*
+!/storage/cache/.gitkeep
+
+# User uploads (created at runtime).
+/uploads/
+
+# Build & release output.
+/dist/*
+!/dist/.gitkeep
+
+# Dev-only Tailwind build.
+/src-build/node_modules/
+
+# OS / editor cruft.
+Thumbs.db
+.DS_Store
+*.log
+
+# Temp/dev preview files
+/_pm-preview.php
+
+# Runtime user uploads (keep dir, ignore contents)
+/assets/uploads/*
+!/assets/uploads/.gitkeep
+
+# Local build tooling deps
+/src-build/node_modules/

@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+/* =============================================================================
+   Eduskill Admin — PREMIUM THEME LAYER
+   Loaded AFTER assets/css/admin.css. Enhances the admin class vocabulary
+   (.admin-sidebar, .admin-topbar, .sidebar-link, .stat-card, .table, forms)
+   using the existing surface/brand tokens, so it respects light & dark themes.
+   ============================================================================= */
+
+:root {
+  --pm-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --pm-grad-cta: linear-gradient(120deg, rgb(var(--brand-600)), rgb(var(--accent-600)));
+  --pm-grad-brand: linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-700)));
+  --pm-shadow-md: 0 4px 12px rgb(15 23 42 / 0.06), 0 12px 32px rgb(15 23 42 / 0.08);
+  --pm-shadow-lg: 0 12px 24px rgb(15 23 42 / 0.08), 0 24px 60px rgb(15 23 42 / 0.14);
+}
+
+body, .admin-shell { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; letter-spacing: -0.011em; }
+.page-title, .card-title, .stat-value, .font-display { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; letter-spacing: -0.02em; }
+
+.admin-shell {
+  background:
+    radial-gradient(48rem 24rem at 100% 0%, rgb(var(--brand-500) / 0.05), transparent 60%),
+    rgb(var(--surface-sunken));
+}
+
+/* ---------------------------------------------------------------- sidebar */
+.admin-sidebar {
+  background: rgb(var(--surface) / 0.96) !important;
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgb(var(--edge)) !important;
+  box-shadow: 1px 0 0 rgb(var(--edge) / 0.4);
+}
+.sidebar-brand { border-bottom: 1px solid rgb(var(--edge)); }
+.sidebar-brand .bg-brand-600, .sidebar-brand span[class*="bg-brand"] {
+  background: var(--pm-grad-brand) !important;
+  box-shadow: 0 8px 20px -8px rgb(var(--brand-600) / 0.6);
+}
+.sidebar-section-label { font-weight: 700; opacity: 0.8; }
+
+.sidebar-link { position: relative; border-radius: 0.7rem; font-weight: 600; transition: all 0.2s var(--pm-ease); }
+.sidebar-link:hover { background: rgb(var(--brand-500) / 0.08); transform: translateX(2px); }
+.sidebar-link .sidebar-icon, .sidebar-link svg { transition: transform 0.2s var(--pm-ease); }
+.sidebar-link:hover .sidebar-icon, .sidebar-link:hover svg { transform: scale(1.1); }
+
+.sidebar-link-active {
+  background: var(--pm-grad-cta) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px -10px rgb(var(--brand-600) / 0.7);
+}
+.sidebar-link-active svg, .sidebar-link-active .sidebar-icon { color: #fff !important; }
+.sidebar-link-active::before {
+  content: ''; position: absolute; left: -0.75rem; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 60%; border-radius: 0 4px 4px 0; background: rgb(var(--brand-600));
+}
+.dark .sidebar-link-active { color: #fff !important; }
+
+/* ---------------------------------------------------------------- topbar */
+.admin-topbar {
+  background: rgb(var(--surface) / 0.8) !important;
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid rgb(var(--edge) / 0.7) !important;
+}
+
+/* ---------------------------------------------------------------- stat cards */
+.stat-card {
+  border-radius: 1rem;
+  transition: transform 0.3s var(--pm-ease), box-shadow 0.3s var(--pm-ease), border-color 0.3s var(--pm-ease);
+  overflow: hidden; position: relative;
+}
+.stat-card::before {
+  content: ''; position: absolute; inset: 0 auto auto 0; width: 100%; height: 3px;
+  background: var(--pm-grad-cta); opacity: 0; transition: opacity 0.3s var(--pm-ease);
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: var(--pm-shadow-lg); border-color: rgb(var(--brand-500) / 0.3); }
+.stat-card:hover::before { opacity: 1; }
+.stat-icon { background: var(--pm-grad-cta) !important; box-shadow: 0 10px 22px -10px rgb(var(--brand-600) / 0.6); }
+.stat-value { font-weight: 800; }
+
+/* ---------------------------------------------------------------- cards / panels */
+.card, .panel { border-radius: 1rem; transition: box-shadow 0.3s var(--pm-ease); }
+.card:hover { box-shadow: var(--pm-shadow-md); }
+
+/* ---------------------------------------------------------------- buttons */
+.btn-primary, a[class*="bg-brand-600"]:not(.pm-plain), button[class*="bg-brand-600"]:not(.pm-plain) {
+  position: relative; overflow: hidden;
+  background-image: var(--pm-grad-cta) !important;
+  box-shadow: 0 12px 26px -12px rgb(var(--brand-600) / 0.6);
+  transition: transform 0.2s var(--pm-ease), box-shadow 0.2s var(--pm-ease), filter 0.2s var(--pm-ease);
+}
+.btn-primary:hover, a[class*="bg-brand-600"]:not(.pm-plain):hover, button[class*="bg-brand-600"]:not(.pm-plain):hover {
+  transform: translateY(-2px); filter: brightness(1.04);
+  box-shadow: 0 16px 34px -12px rgb(var(--brand-600) / 0.7);
+}
+.pm-ripple { position: absolute; border-radius: 999px; transform: scale(0); background: rgb(255 255 255 / 0.45); pointer-events: none; animation: pm-ripple 0.6s var(--pm-ease); }
+@keyframes pm-ripple { to { transform: scale(2.6); opacity: 0; } }
+.pm-loading { color: transparent !important; pointer-events: none; position: relative; }
+.pm-loading::after { content: ''; position: absolute; top: 50%; left: 50%; width: 1.1em; height: 1.1em; margin: -0.55em 0 0 -0.55em; border: 2px solid rgb(255 255 255 / 0.4); border-top-color: #fff; border-radius: 999px; animation: pm-spin 0.7s linear infinite; }
+@keyframes pm-spin { to { transform: rotate(360deg); } }
+
+/* ---------------------------------------------------------------- tables */
+.table-wrap { border-radius: 1rem; }
+.table thead th { background: rgb(var(--surface-sunken)); position: sticky; top: 0; z-index: 1; }
+.table tbody tr { transition: background 0.15s var(--pm-ease); }
+.table tbody tr:hover { background: rgb(var(--brand-500) / 0.05); }
+
+/* ---------------------------------------------------------------- forms */
+.input, .select, .textarea, input, textarea, select {
+  border-radius: 0.7rem;
+  transition: border-color 0.2s var(--pm-ease), box-shadow 0.2s var(--pm-ease);
+}
+.input:focus, .select:focus, .textarea:focus,
+input:focus, textarea:focus, select:focus {
+  border-color: rgb(var(--brand-500)) !important;
+  box-shadow: 0 0 0 4px rgb(var(--brand-500) / 0.16) !important;
+}
+.form-actions { backdrop-filter: blur(8px); border-radius: 0 0 1rem 1rem; }
+
+/* ---------------------------------------------------------------- overlays / skeleton */
+.modal-panel { border-radius: 1.25rem; box-shadow: var(--pm-shadow-lg); animation: pm-pop 0.25s var(--pm-ease); }
+@keyframes pm-pop { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+.pm-skeleton {
+  background: linear-gradient(90deg, rgb(var(--edge) / 0.5) 25%, rgb(var(--edge) / 0.25) 37%, rgb(var(--edge) / 0.5) 63%);
+  background-size: 400% 100%; border-radius: 0.5rem; animation: pm-shimmer 1.4s ease infinite;
+}
+@keyframes pm-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+/* ---------------------------------------------------------------- collapsed rail (opt-in) */
+.admin-shell.pm-collapsed .admin-sidebar { width: 4.75rem; }
+.admin-shell.pm-collapsed .admin-sidebar .sidebar-label,
+.admin-shell.pm-collapsed .admin-sidebar .sidebar-section-label,
+.admin-shell.pm-collapsed .admin-sidebar .sidebar-count { opacity: 0; pointer-events: none; }
+.admin-shell.pm-collapsed .admin-main { padding-left: 4.75rem; }
+.admin-sidebar, .admin-main { transition: width 0.25s var(--pm-ease), padding 0.25s var(--pm-ease); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
