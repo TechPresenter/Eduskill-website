@@ -39,6 +39,11 @@
 dump.sql
 backup*.sql
 
+# Combined production dump: carries real site content and the admin bcrypt hash.
+# Built locally with the generator, transferred to the host by phpMyAdmin/SFTP —
+# never through a public repo.
+/database/eduskill.sql
+
 # ── Local preview / scratch artefacts ────────────────────────────────────────
 _dochub_preview.html
 _*-preview.php
