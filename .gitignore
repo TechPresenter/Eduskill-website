@@ -78,3 +78,6 @@ desktop.ini
 # ── Dependency dirs (project is Composer-free / Node-free by design) ─────────
 node_modules/
 vendor/composer/
+
+# Temporary deployment diagnostic (upload to host, delete after use)
+/_diag.php
