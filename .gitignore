@@ -44,6 +44,11 @@ backup*.sql
 # never through a public repo.
 /database/eduskill.sql
 
+# ── Deployment artefacts ─────────────────────────────────────────────────────
+# Build-output archives uploaded straight to the host; not source.
+/eduskill-hostinger-deploy.zip
+*.zip
+
 # ── Local preview / scratch artefacts ────────────────────────────────────────
 _dochub_preview.html
 _*-preview.php
