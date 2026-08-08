@@ -61,6 +61,11 @@ DirectoryIndex index.php
     RewriteRule ^(includes|database|logs|docs)/ - [F,L]
     RewriteRule ^config\.php$ - [F,L]
 
+    # Block the Git metadata folder (present in the webroot when the site is
+    # deployed via Hostinger's GIT feature). The dotfile <FilesMatch "^\."> below
+    # does NOT cover .git/config etc., because that file's basename is "config".
+    RewriteRule (^|/)\.(git|github)(/|$) - [F,L]
+
     # Dynamic XML sitemap (only when no static sitemap.xml has been generated)
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^sitemap\.xml$ sitemap.php [L]
