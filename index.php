@@ -1,224 +1,514 @@
 <?php
 /**
- * Home page — institute-style layout (navy + orange), inspired by ayanshinstitute.com but adapted to
- * Eduskill's NGO content. The LAYOUT is fixed; all CONTENT is dynamic: hero + stats from settings,
- * programmes / campaigns / testimonials / blog from their tables. Every block links to its page.
+ * =============================================================================
+ *  Homepage — all sections are DB-driven with sensible fallbacks so the page
+ *  looks complete before any content is seeded.
+ * =============================================================================
  */
-require __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/hero.php';
 
-$heroEyebrow = (string) setting('hero_eyebrow', APP_NAME);
-$heroTitle = (string) setting('hero_title', 'Education & skills that change lives');
-$heroSub = (string) setting('hero_subtitle', 'Quality learning, vocational training, and scholarships for those who need them most.');
-$stats = [
-    ['n' => (int) setting('stat_students', 12500), 'suffix' => '+', 'label' => 'Students supported'],
-    ['n' => (int) setting('stat_schools', 85), 'suffix' => '', 'label' => 'Partner schools'],
-    ['n' => (int) setting('stat_volunteers', 340), 'suffix' => '+', 'label' => 'Active volunteers'],
-    ['n' => (int) setting('stat_districts', 27), 'suffix' => '', 'label' => 'Districts reached'],
-];
-$programs = db_all("SELECT * FROM programs WHERE deleted_at IS NULL AND is_active = 1 ORDER BY position ASC, id DESC LIMIT 6");
-$campaigns = db_all("SELECT * FROM campaigns WHERE deleted_at IS NULL AND status = 'active' ORDER BY is_featured DESC, id DESC LIMIT 3");
-$testimonials = db_all("SELECT * FROM testimonials WHERE deleted_at IS NULL AND is_active = 1 ORDER BY position ASC, id DESC LIMIT 3");
-$posts = db_all("SELECT p.*, c.name AS category_name FROM posts p LEFT JOIN post_categories c ON c.id = p.category_id WHERE p.deleted_at IS NULL AND p.status = 'published' ORDER BY COALESCE(p.published_at, p.created_at) DESC LIMIT 3");
+/* ---- Data ------------------------------------------------------------- */
+$slides   = array_map('hero_slide', get_all('hero_slides', ['status' => 1], 'sort_order ASC'));
+$counters = get_all('achievements', ['status' => 1], 'sort_order ASC', 4);
+$programs = db_all("SELECT * FROM programs WHERE status='active' ORDER BY is_featured DESC, sort_order ASC LIMIT 6");
+$events   = db_all("SELECT * FROM events WHERE status='published' AND start_datetime >= NOW() ORDER BY start_datetime ASC LIMIT 3");
+$blogs    = db_all("SELECT b.*, c.name AS category FROM blogs b LEFT JOIN blog_categories c ON c.id=b.category_id
+                    WHERE b.status='published' ORDER BY b.published_at DESC, b.id DESC LIMIT 3");
+$testis   = get_all('testimonials', ['status' => 1], 'sort_order ASC', 8);
+$albums   = db_all("SELECT a.*, (SELECT file_path FROM gallery_media m WHERE m.album_id=a.id ORDER BY m.sort_order LIMIT 1) AS thumb
+                    FROM gallery_albums a WHERE a.status=1 ORDER BY a.sort_order ASC LIMIT 6");
+$partners = get_all('partners', ['status' => 1], 'sort_order ASC');
+$sponsors = get_all('sponsors', ['status' => 1], 'sort_order ASC');
+$video    = db_row("SELECT * FROM videos WHERE status=1 ORDER BY sort_order ASC LIMIT 1");
 
-require __DIR__ . '/includes/header.php';
+/* Fallback counters if none seeded */
+if (!$counters) {
+    $counters = [
+        ['icon' => 'users',          'value' => 25000, 'suffix' => '+', 'title' => 'Lives Impacted'],
+        ['icon' => 'graduation-cap', 'value' => 120,   'suffix' => '+', 'title' => 'Projects Completed'],
+        ['icon' => 'handshake',      'value' => 800,   'suffix' => '+', 'title' => 'Volunteers'],
+        ['icon' => 'home',           'value' => 60,    'suffix' => '+', 'title' => 'Villages Reached'],
+    ];
+}
+/* Fallback programs */
+if (!$programs) {
+    $programs = [
+        ['title' => 'Education for All',   'slug' => '', 'icon' => 'book', 'short_description' => 'Free schooling, scholarships and learning kits for underprivileged children across Bihar.', 'color' => '#063566'],
+        ['title' => 'Healthcare & Camps',  'slug' => '', 'icon' => 'stethoscope', 'short_description' => 'Free medical camps, health awareness and access to essential care in rural areas.', 'color' => '#084881'],
+        ['title' => 'Women Empowerment',   'slug' => '', 'icon' => 'user', 'short_description' => 'Skill training, self-help groups and livelihood support for women.', 'color' => '#E67B1D'],
+        ['title' => 'Skill Development',   'slug' => '', 'icon' => 'wrench', 'short_description' => 'Vocational training that prepares youth for sustainable employment.', 'color' => '#58A42F'],
+        ['title' => 'Clean Water & Sanitation', 'slug' => '', 'icon' => 'droplet', 'short_description' => 'Safe drinking water, hygiene drives and sanitation infrastructure.', 'color' => '#084881'],
+        ['title' => 'Relief & Rehabilitation', 'slug' => '', 'icon' => 'life-buoy', 'short_description' => 'Rapid disaster relief, food distribution and long-term rehabilitation.', 'color' => '#dc2626'],
+    ];
+}
+if (!$testis) {
+    $testis = [
+        ['name' => 'Anita Kumari', 'designation' => 'Beneficiary, Patna', 'message' => 'The skill program changed my life — I now run my own tailoring business and support my family.', 'rating' => 5, 'photo' => null],
+        ['name' => 'Rakesh Singh', 'designation' => 'Volunteer', 'message' => 'Volunteering with EduSkill India has been the most rewarding experience. The team truly cares about impact.', 'rating' => 5, 'photo' => null],
+        ['name' => 'Dr. Meena Rao', 'designation' => 'Partner, Health Camp', 'message' => 'Their organisation and dedication during our medical camps was exceptional. Real change on the ground.', 'rating' => 5, 'photo' => null],
+    ];
+}
+
+seo_set([
+    'title'       => null, // homepage uses the site name as-is
+    'description' => get_setting('site_description', 'EDUSKILL INDIA FOUNDATION empowers communities across Bihar through education, healthcare, skill development and relief. Join us to spread hope and create change.'),
+    'page_key'    => 'home',
+    'type'        => 'website',
+]);
+
+include __DIR__ . '/includes/header.php';
 ?>
 
-<!-- ============================ HERO ============================ -->
-<section class="relative isolate overflow-hidden bg-brand-900">
-  <div class="absolute inset-0 -z-10 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950"></div>
-  <div class="absolute inset-0 -z-10 opacity-20" style="background-image:radial-gradient(circle at 20% 20%, rgb(var(--accent-500)) 0, transparent 40%),radial-gradient(circle at 80% 60%, rgb(var(--brand-400)) 0, transparent 45%)"></div>
-  <div class="container-site relative grid items-center gap-12 py-16 lg:grid-cols-2 lg:py-24">
-    <div data-aos="fade-up">
-      <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white ring-1 ring-inset ring-white/20"><span class="h-1.5 w-1.5 rounded-full bg-accent-400"></span> <?= e($heroEyebrow) ?></span>
-      <h1 class="mt-5 font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl"><?= e($heroTitle) ?></h1>
-      <p class="mt-5 max-w-xl text-lg leading-relaxed text-white/80"><?= e($heroSub) ?></p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <a href="<?= e(url('donate.php')) ?>" class="rounded-xl bg-accent-500 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-accent-500/30 transition hover:bg-accent-600">Donate now</a>
-        <a href="<?= e(url('programs.php')) ?>" class="rounded-xl border border-white/25 bg-white/5 px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Explore programmes</a>
-      </div>
-      <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/70">
-        <span class="inline-flex items-center gap-2"><i class="fa-solid fa-circle-check text-accent-400"></i> 12A &amp; 80G tax-exempt</span>
-        <span class="inline-flex items-center gap-2"><i class="fa-solid fa-circle-check text-accent-400"></i> 100% transparent</span>
-        <span class="inline-flex items-center gap-2"><i class="fa-solid fa-circle-check text-accent-400"></i> On-ground impact</span>
-      </div>
-    </div>
-    <!-- Floating impact card -->
-    <div class="relative" data-aos="fade-left">
-      <div class="rounded-panel bg-white/10 p-2 ring-1 ring-inset ring-white/15 backdrop-blur">
-        <div class="rounded-[1rem] bg-surface p-6 shadow-modal">
-          <p class="text-sm font-semibold uppercase tracking-wide text-content-muted">Our reach so far</p>
-          <div class="mt-4 grid grid-cols-2 gap-4">
-            <?php foreach ($stats as $s): ?>
-              <div class="rounded-xl bg-surface-sunken p-4">
-                <div class="font-display text-2xl font-extrabold text-brand-700"><span data-count="<?= (int) $s['n'] ?>">0</span><?= e($s['suffix']) ?></div>
-                <div class="mt-0.5 text-xs font-medium text-content-muted"><?= e($s['label']) ?></div>
-              </div>
-            <?php endforeach; ?>
-          </div>
-          <a href="<?= e(url('about.php')) ?>" class="mt-5 flex items-center justify-center gap-2 rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800">About our work <i class="fa-solid fa-arrow-right text-xs"></i></a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================ STATS STRIP ============================ -->
-<section class="border-b border-edge bg-surface">
-  <div class="container-site grid grid-cols-2 gap-6 py-10 lg:grid-cols-4">
-    <?php foreach ($stats as $s): ?>
-      <div class="text-center" data-aos="zoom-in">
-        <div class="font-display text-3xl font-extrabold tracking-tight text-brand-700 sm:text-4xl"><span data-count="<?= (int) $s['n'] ?>">0</span><?= e($s['suffix']) ?></div>
-        <div class="mt-1 text-sm font-medium text-content-muted"><?= e($s['label']) ?></div>
-      </div>
-    <?php endforeach; ?>
-  </div>
-</section>
-
-<!-- ============================ IMPACT / TRANSPARENCY ============================ -->
-<section class="section bg-surface">
-  <div class="container-site grid items-center gap-12 lg:grid-cols-2">
-    <div class="relative" data-aos="fade-right">
-      <div class="aspect-[4/3] overflow-hidden rounded-panel bg-gradient-to-br from-brand-700 to-brand-900">
-        <div class="flex h-full w-full flex-col items-center justify-center text-center text-white">
-          <i class="fa-solid fa-graduation-cap text-6xl text-accent-400"></i>
-          <p class="mt-4 max-w-xs px-6 text-lg font-semibold">Every rupee reaches the classroom</p>
-        </div>
-      </div>
-      <div class="absolute -bottom-6 -right-4 hidden rounded-2xl bg-accent-500 px-6 py-4 text-white shadow-pop sm:block">
-        <div class="font-display text-2xl font-extrabold">80G</div><div class="text-xs font-medium">tax-exempt giving</div>
-      </div>
-    </div>
-    <div data-aos="fade-left">
-      <span class="eyebrow">Why support us</span>
-      <h2 class="section-heading">Real programmes, measurable impact</h2>
-      <p class="section-subheading">We work alongside government schools and local communities, and we report on every programme. Your support is accountable and visible.</p>
-      <ul class="mt-6 space-y-3">
-        <?php foreach (['Direct-to-classroom education support', 'Job-ready vocational & digital skills', 'Merit & need-based scholarships', 'Published annual reports & donor updates', 'Registered under 12A & 80G of the Income Tax Act'] as $point): ?>
-          <li class="flex items-start gap-3"><span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent-100 text-accent-600"><i class="fa-solid fa-check text-xs"></i></span><span class="text-sm text-content"><?= e($point) ?></span></li>
-        <?php endforeach; ?>
-      </ul>
-      <a href="<?= e(url('about.php')) ?>" class="mt-7 inline-flex items-center gap-2 rounded-lg bg-brand-700 px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-800">Learn more about us <i class="fa-solid fa-arrow-right text-xs"></i></a>
-    </div>
-  </div>
-</section>
-
-<!-- ============================ PROGRAMMES ============================ -->
-<section class="section bg-surface-sunken">
-  <div class="container-site">
-    <div class="mx-auto mb-12 max-w-2xl text-center" data-aos="fade-up">
-      <span class="eyebrow">What we do</span>
-      <h2 class="section-heading">Our programmes</h2>
-      <p class="section-subheading mx-auto">Designed with local partners and measured by real outcomes.</p>
-    </div>
-    <?php if ($programs === []): ?>
-      <p class="text-center text-content-muted">Programmes will be listed here soon.</p>
-    <?php else: ?>
-      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <?php foreach ($programs as $i => $p): ?>
-          <div class="group flex flex-col overflow-hidden rounded-card border border-edge bg-surface shadow-card transition hover:-translate-y-1 hover:shadow-pop" data-aos="fade-up" data-aos-delay="<?= ($i % 3) * 100 ?>">
-            <div class="flex items-center gap-3 border-b border-edge bg-gradient-to-br from-brand-50 to-surface p-5">
-              <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-700 text-white"><?= icon((string) ($p['icon'] ?: 'programs'), 'h-6 w-6') ?></span>
-              <div><span class="text-2xs font-semibold uppercase tracking-wide text-accent-600"><?= e($p['kind']) ?></span><h3 class="font-display text-base font-bold leading-snug text-content"><?= e($p['title']) ?></h3></div>
+<!-- ============================== HERO ============================== -->
+<?php
+if (!$slides) {
+    $slides = [hero_slide([
+        'badge_text' => 'Registered NGO · 80G Certified', 'badge_icon' => 'shield-check',
+        'title' => 'Empowering Communities, Creating {Lasting Change}',
+        'description' => 'EDUSKILL INDIA FOUNDATION works across Bihar to bring education, healthcare, and opportunity to those who need it most. Together, we can build a brighter future.',
+        'button_text' => 'Donate Now', 'button_url' => 'donate', 'btn_icon' => 'heart',
+        'button2_text' => 'Become a Volunteer', 'button2_url' => 'volunteer', 'btn2_icon' => 'hand-heart',
+        'trust_text' => 'Trusted across 40+ communities', 'rating' => 4.9, 'rating_count' => 1200,
+        'accent' => '#a855f7', 'bg_type' => 'mesh', 'bg_from' => '#084881', 'bg_to' => '#084881', 'divider' => 'wave',
+    ])];
+}
+$first = $slides[0];
+?>
+<section class="hx hx-h-<?= e($first['height']) ?> hx-align-<?= e($first['text_align']) ?><?= !empty($first['animate']) ? ' hx-animate' : '' ?>"
+         data-hx data-interval="<?= (int) get_setting('hero_autoplay_seconds', 6) * 1000 ?>" style="--acc:<?= e(hero_accent($first)) ?>">
+    <div class="hx-bgs" data-hx-parallax>
+        <?php foreach ($slides as $i => $s): ?>
+            <div class="hx-bg<?= $i === 0 ? ' on' : '' ?>" style="<?= hero_bg_style($s) ?>">
+                <?php if (($s['bg_type'] ?? '') === 'video' && !empty($s['bg_video'])): ?>
+                    <video class="hx-video" autoplay muted loop playsinline src="<?= e(preg_match('#^https?://#', $s['bg_video']) ? $s['bg_video'] : upload_url($s['bg_video'])) ?>"></video>
+                <?php endif; ?>
+                <?php if ((int) ($s['overlay'] ?? 0) > 0): ?><span class="hx-overlay" style="opacity:<?= max(0, min(100, (int) $s['overlay'])) / 100 ?>"></span><?php endif; ?>
             </div>
-            <div class="flex flex-1 flex-col p-5">
-              <p class="line-clamp-3 text-sm leading-relaxed text-content-muted"><?= e((string) $p['summary']) ?></p>
-              <a href="<?= e(url('programs.php')) ?>" class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 group-hover:text-accent-600">Learn more <i class="fa-solid fa-arrow-right text-xs transition group-hover:translate-x-0.5"></i></a>
-            </div>
-          </div>
         <?php endforeach; ?>
-      </div>
-      <div class="mt-10 text-center"><a href="<?= e(url('programs.php')) ?>" class="inline-block rounded-lg border border-edge bg-surface px-6 py-3 text-sm font-semibold text-content transition hover:bg-surface">View all programmes</a></div>
+    </div>
+    <span class="hx-blob b1" aria-hidden="true"></span><span class="hx-blob b2" aria-hidden="true"></span><span class="hx-blob b3" aria-hidden="true"></span>
+
+    <div class="container hx-container">
+        <?php foreach ($slides as $i => $s):
+            $isSplit = ($s['layout'] ?? 'center') === 'split' && !empty($s['hero_image']); ?>
+            <div class="hx-copy<?= $i === 0 ? ' on' : '' ?><?= $isSplit ? ' is-split' : '' ?>" data-hx-copy>
+                <div class="hx-text">
+                    <?php if (!empty($s['badge_text'])): ?>
+                        <span class="hx-badge"><?= !empty($s['badge_icon']) ? lucide($s['badge_icon']) : '' ?><?= e($s['badge_text']) ?></span>
+                    <?php endif; ?>
+                    <?php $tag = $i === 0 ? 'h1' : 'p'; ?>
+                    <<?= $tag ?> class="hx-title"<?= $i === 0 ? '' : ' role="heading" aria-level="2"' ?>><?= hero_title_html($s) . hero_typing_html($s) ?></<?= $tag ?>>
+                    <?php $para = $s['description'] ?: ($s['subtitle'] ?? ''); ?>
+                    <?php if ($para !== ''): ?><p class="hx-sub"><?= e($para) ?></p><?php endif; ?>
+                    <?php $rating = hero_rating_html($s); ?>
+                    <?php if ($rating !== '' || !empty($s['trust_text'])): ?>
+                        <div class="hx-trust">
+                            <?= $rating ?>
+                            <?php if (!empty($s['trust_text'])): ?><span class="hx-trust-txt"><?= lucide('badge-check') ?><?= e($s['trust_text']) ?></span><?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                    <div class="hx-actions">
+                        <?= hero_cta($s['button_text'] ?? '', $s['button_url'] ?? '', $s['btn_style'] ?? 'gradient', $s['btn_icon'] ?? '', true, hero_accent($s)) ?>
+                        <?= hero_cta($s['button2_text'] ?? '', $s['button2_url'] ?? '', $s['btn2_style'] ?? 'glass', $s['btn2_icon'] ?? '', false, hero_accent($s)) ?>
+                    </div>
+                </div>
+                <?php if ($isSplit): ?>
+                    <div class="hx-media"><span class="hx-media-glow"></span><img class="hx-img" src="<?= e(upload_url($s['hero_image'])) ?>" alt="" loading="<?= $i === 0 ? 'eager' : 'lazy' ?>"></div>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <?= hero_divider_svg($first['divider'] ?? 'none') ?>
+    <?php if (count($slides) > 1): ?>
+        <div class="hx-dots" role="tablist" aria-label="Hero slides">
+            <?php foreach ($slides as $i => $s): ?><button class="hx-dot<?= $i === 0 ? ' on' : '' ?>" data-hx-dot="<?= $i ?>" aria-label="Slide <?= $i + 1 ?>"></button><?php endforeach; ?>
+        </div>
     <?php endif; ?>
-  </div>
 </section>
+<?php include __DIR__ . '/includes/hero-assets.php'; ?>
 
-<!-- ============================ CAMPAIGNS ============================ -->
-<?php if ($campaigns !== []): ?>
-<section class="section bg-surface">
-  <div class="container-site">
-    <div class="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end" data-aos="fade-up">
-      <div><span class="eyebrow">Support a cause</span><h2 class="section-heading">Active campaigns</h2></div>
-      <a href="<?= e(url('campaigns.php')) ?>" class="text-sm font-semibold text-brand-700 hover:text-accent-600">View all campaigns →</a>
-    </div>
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <?php foreach ($campaigns as $i => $c): ?><div data-aos="fade-up" data-aos-delay="<?= ($i % 3) * 100 ?>"><?= campaign_card($c) ?></div><?php endforeach; ?>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
-
-<!-- ============================ WHY CHOOSE / FEATURES ============================ -->
-<section class="section bg-brand-900 text-white">
-  <div class="container-site">
-    <div class="mx-auto mb-12 max-w-2xl text-center" data-aos="fade-up">
-      <span class="mb-3 inline-block text-2xs font-bold uppercase tracking-[0.14em] text-accent-400">The Eduskill difference</span>
-      <h2 class="font-display text-3xl font-bold tracking-tight sm:text-4xl">Why families &amp; donors trust us</h2>
-    </div>
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      <?php foreach ([['fa-hand-holding-heart', 'Direct impact', 'Funds reach classrooms and learners, not overheads.'], ['fa-chart-line', 'Measured outcomes', 'We track attendance, skills, and placements.'], ['fa-people-group', 'Local partners', 'Built with schools and community organisations.'], ['fa-file-shield', 'Full transparency', 'Annual reports and 80G receipts for every gift.']] as $f): ?>
-        <div class="rounded-card bg-white/5 p-6 ring-1 ring-inset ring-white/10 transition hover:bg-white/10" data-aos="fade-up">
-          <span class="grid h-12 w-12 place-items-center rounded-xl bg-accent-500 text-white"><i class="fa-solid <?= e($f[0]) ?> text-lg"></i></span>
-          <h3 class="mt-4 font-display text-lg font-bold"><?= e($f[1]) ?></h3>
-          <p class="mt-2 text-sm leading-relaxed text-white/70"><?= e($f[2]) ?></p>
+<!-- ============================== STAT BAR + RUNNING MARQUEE ============================== -->
+<section class="stat-bar-section" style="margin-top:clamp(-72px,-6vw,-44px);">
+    <div class="container">
+        <div class="stat-bar reveal">
+            <div class="sb-stats">
+                <?php foreach (array_slice($counters, 0, 3) as $c): ?>
+                    <div class="sb-stat">
+                        <strong><span data-counter="<?= (int) $c['value'] ?>">0</span><span class="u"><?= e($c['suffix'] ?? '') ?></span></strong>
+                        <small><?= e($c['title']) ?></small>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="sb-divider"></div>
+            <div class="sb-marquee marquee">
+                <div class="marquee-track">
+                    <?php
+                    $highlights = ['Registered Non-Profit (Sec. 8)', '80G Tax Exemption', 'Transparent Impact', 'Community-Led Programs', 'Volunteer-Powered', 'Serving Bihar with Care'];
+                    for ($rep = 0; $rep < 2; $rep++):
+                        foreach ($highlights as $h): ?>
+                            <span class="sb-pill"><?= e($h) ?></span>
+                    <?php endforeach; endfor; ?>
+                </div>
+            </div>
         </div>
-      <?php endforeach; ?>
     </div>
-  </div>
 </section>
 
-<!-- ============================ TESTIMONIALS ============================ -->
-<?php if ($testimonials !== []): ?>
-<section class="section bg-surface-sunken">
-  <div class="container-site">
-    <div class="mx-auto mb-12 max-w-2xl text-center" data-aos="fade-up"><span class="eyebrow">Voices from our community</span><h2 class="section-heading">Stories of change</h2></div>
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <?php foreach ($testimonials as $t): ?>
-        <figure class="flex flex-col rounded-card border border-edge bg-surface p-6 shadow-card" data-aos="fade-up">
-          <div class="mb-3 flex gap-0.5 text-accent-500"><?php for ($i = 0; $i < max(1, (int) $t['rating']); $i++): ?><i class="fa-solid fa-star text-sm"></i><?php endfor; ?></div>
-          <blockquote class="flex-1 text-sm leading-relaxed text-content">“<?= e($t['quote']) ?>”</blockquote>
-          <figcaption class="mt-4 flex items-center gap-3">
-            <span class="grid h-10 w-10 place-items-center rounded-full bg-brand-100 text-sm font-bold text-brand-700"><?= e(mb_strtoupper(mb_substr((string) $t['author_name'], 0, 1))) ?></span>
-            <div><div class="text-sm font-semibold text-content"><?= e($t['author_name']) ?></div><?php if ($t['author_role']): ?><div class="text-xs text-content-muted"><?= e($t['author_role']) ?></div><?php endif; ?></div>
-          </figcaption>
-        </figure>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
-
-<!-- ============================ BLOG ============================ -->
-<?php if ($posts !== []): ?>
-<section class="section bg-surface">
-  <div class="container-site">
-    <div class="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end" data-aos="fade-up">
-      <div><span class="eyebrow">Latest updates</span><h2 class="section-heading">From our blog</h2></div>
-      <a href="<?= e(url('blog.php')) ?>" class="text-sm font-semibold text-brand-700 hover:text-accent-600">Read all articles →</a>
-    </div>
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <?php foreach ($posts as $i => $post): ?>
-        <a href="<?= e(url('blog-details.php?slug=' . urlencode((string) $post['slug']))) ?>" class="content-card group" data-aos="fade-up" data-aos-delay="<?= ($i % 3) * 100 ?>">
-          <div class="content-card-media"><?php if ($post['featured_image']): ?><img src="<?= e(asset($post['featured_image'])) ?>" alt="" loading="lazy"><?php else: ?><div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-700 to-brand-900 text-white"><?= icon('blog', 'h-10 w-10 opacity-70') ?></div><?php endif; ?></div>
-          <div class="content-card-body"><?php if ($post['category_name']): ?><span class="text-2xs font-semibold uppercase tracking-wide text-accent-600"><?= e($post['category_name']) ?></span><?php endif; ?><h3 class="content-card-title"><?= e($post['title']) ?></h3><span class="mt-auto pt-3 text-xs text-content-subtle"><?= e(date('d M Y', strtotime((string) ($post['published_at'] ?: $post['created_at'])))) ?></span></div>
-        </a>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
-
-<!-- ============================ FINAL CTA ============================ -->
+<!-- ============================== WHO WE ARE / MISSION / VISION ============================== -->
 <section class="section">
-  <div class="container-site">
-    <div class="relative overflow-hidden rounded-panel bg-gradient-to-br from-accent-500 to-accent-600 px-6 py-14 text-center sm:px-12" data-aos="zoom-in">
-      <h2 class="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Ready to change a life?</h2>
-      <p class="mx-auto mt-3 max-w-xl text-base text-white/90">Your gift keeps a child in school and helps a young person find work. Every donation is tax-exempt under Section 80G.</p>
-      <div class="mt-8 flex flex-wrap justify-center gap-3">
-        <a href="<?= e(url('donate.php')) ?>" class="rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-accent-600 shadow-lg transition hover:bg-white/90">Donate now</a>
-        <a href="<?= e(url('contact.php')) ?>" class="rounded-xl border border-white/40 px-8 py-3.5 text-sm font-bold text-white transition hover:bg-white/10">Get in touch</a>
-      </div>
+    <div class="container grid grid-2 items-center">
+        <div class="reveal">
+            <span class="eyebrow">Who We Are</span>
+            <h2 class="section-title"><?= e(get_setting('home_about_title', 'A movement for dignity, hope and opportunity')) ?></h2>
+            <p class="text-muted"><?= e(get_setting('home_about_text', 'EDUSKILL INDIA FOUNDATION is a registered non-profit (CIN ' . SITE_CIN . ') based in Patna, Bihar. Since our inception we have worked hand-in-hand with communities to deliver education, healthcare, skill development, and emergency relief — always with compassion and accountability.')) ?></p>
+            <ul class="list-check mt-3">
+                <li>Transparent, community-led programs with measurable impact</li>
+                <li>Registered non-profit governed by dedicated directors</li>
+                <li>Every rupee tracked — from donation to delivery</li>
+            </ul>
+            <a class="btn btn-primary mt-4" href="<?= e(url('about')) ?>">Learn More About Us</a>
+        </div>
+        <div class="grid gap-3 reveal delay-1">
+            <div class="card-3d">
+                <div class="icon-badge"><?= lucide('target') ?></div>
+                <h3 class="card-title">Our Mission</h3>
+                <p class="card-text"><?= e(get_setting('mission_short', 'To empower underserved communities by providing access to quality education, healthcare, and sustainable livelihoods.')) ?></p>
+            </div>
+            <div class="card-3d">
+                <div class="icon-badge accent"><?= lucide('sparkles') ?></div>
+                <h3 class="card-title">Our Vision</h3>
+                <p class="card-text"><?= e(get_setting('vision_short', 'An equitable society where every individual has the opportunity to live with dignity and reach their full potential.')) ?></p>
+            </div>
+        </div>
     </div>
-  </div>
 </section>
 
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php if ($video): $ytid = youtube_id($video['youtube_id'] ?: $video['video_url']); ?>
+<!-- ============================== VIDEO BANNER ============================== -->
+<section class="section section-dark" style="background:linear-gradient(rgba(11,17,32,.85),rgba(11,17,32,.9)), var(--grad-brand);">
+    <div class="container text-center reveal">
+        <span class="eyebrow" style="color:#7BB8EC;">Watch Our Story</span>
+        <h2 class="text-white"><?= e($video['title']) ?></h2>
+        <?php if ($ytid): ?>
+        <div class="map-embed mt-4" style="max-width:900px;margin-inline:auto;aspect-ratio:16/9;">
+            <iframe src="https://www.youtube.com/embed/<?= e($ytid) ?>" title="<?= e($video['title']) ?>" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <?php endif; ?>
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- ============================== PROGRAMS ============================== -->
+<style>
+/* ===== Our Programs — scoped redesign (.pgm-*) ===== */
+.pgm-section { position: relative; overflow: hidden; }
+.pgm-section .container { position: relative; z-index: 1; }
+
+/* Decorative background orbs + grid texture */
+.pgm-orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; opacity: .55; }
+.pgm-orb-1 { width: 380px; height: 380px; top: -140px; right: -90px;
+    background: radial-gradient(circle at 30% 30%, rgba(8,72,129,.5), transparent 70%); }
+.pgm-orb-2 { width: 440px; height: 440px; bottom: -180px; left: -130px;
+    background: radial-gradient(circle at 40% 40%, rgba(6,53,102,.4), transparent 70%); }
+.pgm-mesh { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+    background-image: radial-gradient(circle at 1px 1px, rgba(6,53,102,.12) 1px, transparent 0);
+    background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%); }
+:root[data-theme="dark"] .pgm-orb, :root[data-theme="dark"] .pgm-mesh { opacity: .28; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .pgm-orb,
+    :root:not([data-theme="light"]) .pgm-mesh { opacity: .28; }
+}
+
+/* Eyebrow accent chip */
+.pgm-eyebrow { display: inline-flex; align-items: center; gap: .5rem; }
+.pgm-eyebrow svg { width: 16px; height: 16px; color: #084881; }
+
+/* Grid */
+.pgm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.6rem; }
+
+/* Card */
+.pgm-card {
+    position: relative; display: flex; flex-direction: column;
+    padding: 2rem 1.75rem; color: inherit; isolation: isolate; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: 0 8px 26px rgba(6,53,102,.06);
+    transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s, border-color .45s;
+}
+.pgm-card::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; z-index: 2;
+    background: linear-gradient(90deg, var(--pgm-c, #063566), #084881);
+    transform: scaleX(0); transform-origin: left; transition: transform .5s ease;
+}
+.pgm-card:hover, .pgm-card:focus-visible {
+    transform: translateY(-10px); border-color: transparent;
+    box-shadow: 0 28px 54px rgba(6,53,102,.18);
+}
+.pgm-card:hover::before, .pgm-card:focus-visible::before { transform: scaleX(1); }
+.pgm-card:focus-visible { outline: 2px solid #084881; outline-offset: 3px; }
+:root[data-theme="dark"] .pgm-card { box-shadow: 0 10px 28px rgba(0,0,0,.4); }
+
+/* Hover glow behind the card content */
+.pgm-glow {
+    position: absolute; z-index: -1; top: -35%; right: -25%; width: 260px; height: 260px; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--pgm-c, #063566) 32%, transparent), transparent 70%);
+    opacity: 0; transform: scale(.55); transition: opacity .55s ease, transform .55s ease;
+}
+.pgm-card:hover .pgm-glow, .pgm-card:focus-visible .pgm-glow { opacity: 1; transform: scale(1); }
+
+/* Gradient icon tile */
+.pgm-icon {
+    width: 70px; height: 70px; border-radius: 20px; margin-bottom: 1.3rem;
+    display: grid; place-items: center; color: #fff;
+    background: linear-gradient(135deg, var(--pgm-c, #063566), #084881);
+    box-shadow: 0 12px 24px color-mix(in srgb, var(--pgm-c, #063566) 42%, transparent);
+    transition: transform .45s cubic-bezier(.2,.8,.2,1);
+}
+.pgm-icon svg { width: 32px; height: 32px; stroke-width: 2; }
+.pgm-card:hover .pgm-icon, .pgm-card:focus-visible .pgm-icon {
+    transform: translateY(-4px) rotate(-6deg) scale(1.07);
+}
+
+.pgm-title {
+    font-family: 'Outfit', var(--font-sans); font-size: 1.24rem; font-weight: 700;
+    line-height: 1.25; margin: 0 0 .55rem; color: var(--text);
+}
+.pgm-text { color: var(--muted); font-size: .95rem; line-height: 1.62; margin: 0 0 1.4rem; flex: 1 1 auto; }
+
+.pgm-link {
+    display: inline-flex; align-items: center; gap: .4rem; margin-top: auto;
+    font-weight: 700; font-size: .92rem; letter-spacing: .01em; color: #063566;
+    transition: gap .3s ease, color .3s ease;
+}
+.pgm-link svg { width: 18px; height: 18px; transition: transform .3s ease; }
+.pgm-card:hover .pgm-link, .pgm-card:focus-visible .pgm-link { gap: .7rem; color: #084881; }
+.pgm-card:hover .pgm-link svg, .pgm-card:focus-visible .pgm-link svg { transform: translateX(4px); }
+:root[data-theme="dark"] .pgm-link { color: #7BC94F; }
+:root[data-theme="dark"] .pgm-card:hover .pgm-link,
+:root[data-theme="dark"] .pgm-card:focus-visible .pgm-link { color: #5eead4; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .pgm-link { color: #7BC94F; }
+    :root:not([data-theme="light"]) .pgm-card:hover .pgm-link,
+    :root:not([data-theme="light"]) .pgm-card:focus-visible .pgm-link { color: #5eead4; }
+}
+
+@media (max-width: 640px) {
+    .pgm-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+    .pgm-card { padding: 1.7rem 1.4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .pgm-card, .pgm-card::before, .pgm-icon, .pgm-glow, .pgm-link, .pgm-link svg { transition: none; }
+}
+</style>
+<section class="section section-soft pgm-section">
+    <span class="pgm-orb pgm-orb-1" aria-hidden="true"></span>
+    <span class="pgm-orb pgm-orb-2" aria-hidden="true"></span>
+    <span class="pgm-mesh" aria-hidden="true"></span>
+    <div class="container">
+        <div class="section-head reveal">
+            <span class="eyebrow pgm-eyebrow"><?= lucide('sparkles') ?> What We Do</span>
+            <h2 class="section-title">Our Programs</h2>
+            <p class="section-subtitle">Focused initiatives designed to create real, measurable change in the communities we serve.</p>
+        </div>
+        <div class="pgm-grid">
+            <?php foreach ($programs as $i => $p): ?>
+                <a class="pgm-card reveal <?= 'delay-' . (($i % 3) + 1) ?>" href="<?= e($p['slug'] ? url('programs?slug=' . $p['slug']) : url('programs')) ?>" style="--pgm-c:<?= e($p['color'] ?: '#063566') ?>;">
+                    <span class="pgm-glow" aria-hidden="true"></span>
+                    <div class="pgm-icon"><?= lucide($p['icon'] ?: 'star') ?></div>
+                    <h3 class="pgm-title"><?= e($p['title']) ?></h3>
+                    <p class="pgm-text"><?= e(excerpt($p['short_description'] ?? '', 22)) ?></p>
+                    <span class="pgm-link">Explore <?= lucide('arrow-right') ?></span>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+
+<?php if ($events): ?>
+<!-- ============================== UPCOMING EVENTS ============================== -->
+<section class="section">
+    <div class="container">
+        <div class="section-head left flex justify-between items-center flex-wrap gap-2">
+            <div>
+                <span class="eyebrow">Join Us</span>
+                <h2 class="section-title mb-0">Upcoming Events</h2>
+            </div>
+            <a class="btn btn-outline btn-sm" href="<?= e(url('events')) ?>">View All Events</a>
+        </div>
+        <div class="grid grid-3">
+            <?php foreach ($events as $ev): ?>
+                <article class="card reveal">
+                    <div class="card-media">
+                        <img src="<?= e(image_url($ev['image'])) ?>" alt="<?= e($ev['title']) ?>" loading="lazy" width="600" height="375">
+                        <span class="badge badge-brand" style="position:absolute;top:12px;left:12px;background:#fff;"><?= e(format_date($ev['start_datetime'], 'd M Y')) ?></span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title"><?= e($ev['title']) ?></h3>
+                        <p class="card-text"><?= lucide('map-pin') ?> <?= e($ev['location'] ?: 'Patna, Bihar') ?></p>
+                        <a class="btn btn-primary btn-sm" href="<?= e(url('events?slug=' . $ev['slug'])) ?>">Details & Register</a>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- ============================== DONATE / VOLUNTEER CTA ============================== -->
+<section class="section">
+    <div class="container grid grid-2 gap-4">
+        <div class="card-3d reveal" style="background:var(--grad-brand);color:#fff;">
+            <h2 class="text-white">Your Support Changes Lives</h2>
+            <p style="color:rgba(255,255,255,.9);">Every contribution helps us reach more children, families and communities with the resources they need to thrive.</p>
+            <a class="btn btn-white btn-lg mt-2" href="<?= e(url('donate')) ?>"><?= lucide('heart') ?> Donate Now</a>
+        </div>
+        <div class="card-3d reveal delay-1" style="background:var(--grad-accent);color:#fff;">
+            <h2 class="text-white">Become a Volunteer</h2>
+            <p style="color:rgba(255,255,255,.92);">Give your time and skills to a cause that matters. Join our community of changemakers across Bihar.</p>
+            <a class="btn btn-white btn-lg mt-2" href="<?= e(url('volunteer')) ?>"><?= lucide('handshake') ?> Join Us</a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================== TESTIMONIALS ============================== -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Voices of Change</span>
+            <h2 class="section-title">What People Say</h2>
+        </div>
+        <div data-carousel>
+            <div class="testi-track" data-carousel-track>
+                <?php foreach ($testis as $t): ?>
+                    <div class="testi-card">
+                        <div class="card" style="height:100%;">
+                            <div class="card-body">
+                                <?= star_rating((int) ($t['rating'] ?? 5)) ?>
+                                <p class="mt-2" style="font-size:1.05rem;color:var(--text-soft);">“<?= e($t['message']) ?>”</p>
+                                <div class="flex items-center gap-2 mt-3">
+                                    <img src="<?= e(image_url($t['photo'] ?? null, 'avatar')) ?>" alt="<?= e($t['name']) ?>" width="52" height="52" loading="lazy" decoding="async" style="width:52px;height:52px;border-radius:50%;object-fit:cover;">
+                                    <div>
+                                        <strong><?= e($t['name']) ?></strong><br>
+                                        <small class="text-muted"><?= e($t['designation'] ?? '') ?></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="flex justify-center gap-2 mt-4">
+                <button class="btn btn-secondary btn-sm" data-carousel-prev aria-label="Previous"><?= lucide('arrow-left') ?></button>
+                <button class="btn btn-secondary btn-sm" data-carousel-next aria-label="Next"><?= lucide('arrow-right') ?></button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<?php if ($blogs): ?>
+<!-- ============================== LATEST BLOGS ============================== -->
+<section class="section">
+    <div class="container">
+        <div class="section-head left flex justify-between items-center flex-wrap gap-2">
+            <div>
+                <span class="eyebrow">From Our Blog</span>
+                <h2 class="section-title mb-0">Latest Stories & News</h2>
+            </div>
+            <a class="btn btn-outline btn-sm" href="<?= e(url('blogs')) ?>">Read All</a>
+        </div>
+        <div class="grid grid-3">
+            <?php foreach ($blogs as $b): ?>
+                <article class="card reveal">
+                    <a href="<?= e(url('blog-details?slug=' . $b['slug'])) ?>" class="card-media">
+                        <img src="<?= e(image_url($b['featured_image'], 'blog')) ?>" alt="<?= e($b['title']) ?>" loading="lazy" width="600" height="375">
+                    </a>
+                    <div class="card-body">
+                        <?php if (!empty($b['category'])): ?><span class="badge badge-brand mb-1"><?= e($b['category']) ?></span><?php endif; ?>
+                        <h3 class="card-title"><a href="<?= e(url('blog-details?slug=' . $b['slug'])) ?>" style="color:inherit;"><?= e($b['title']) ?></a></h3>
+                        <p class="card-text"><?= e(excerpt($b['excerpt'] ?: $b['content'], 18)) ?></p>
+                        <small class="text-muted"><?= e(format_date($b['published_at'] ?: $b['created_at'])) ?></small>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php if ($albums): ?>
+<!-- ============================== GALLERY PREVIEW ============================== -->
+<section class="section section-soft">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Moments</span>
+            <h2 class="section-title">Gallery</h2>
+        </div>
+        <div class="gallery-grid">
+            <?php foreach ($albums as $a): if (empty($a['thumb'])) continue; ?>
+                <a class="gallery-item" href="<?= e(url('gallery?album=' . $a['slug'])) ?>" data-lightbox="<?= e(upload_url($a['thumb'])) ?>">
+                    <img src="<?= e(upload_url($a['thumb'])) ?>" alt="<?= e($a['title']) ?>" loading="lazy">
+                </a>
+            <?php endforeach; ?>
+        </div>
+        <div class="text-center mt-4"><a class="btn btn-outline" href="<?= e(url('gallery')) ?>">View Full Gallery</a></div>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php if ($partners || $sponsors): ?>
+<!-- ============================== PARTNERS & SPONSORS ============================== -->
+<section class="section section-partners" aria-labelledby="partnersHeading">
+    <span class="pn-blob pn-b1" aria-hidden="true"></span>
+    <span class="pn-blob pn-b2" aria-hidden="true"></span>
+    <div class="container text-center">
+        <span class="eyebrow" style="justify-content:center;">Together We Achieve More</span>
+        <h2 class="section-title" id="partnersHeading">Our Partners &amp; Sponsors</h2>
+        <p class="section-subtitle">Organisations who stand with us — funding, mentoring and delivering change alongside our teams.</p>
+    </div>
+
+    <?php
+    $orgs = array_merge($partners, $sponsors);
+    // Monogram fallback so the section looks designed even before logos are uploaded.
+    $initials = static function (string $n): string {
+        $w = preg_split('/\s+/', trim($n)) ?: [];
+        $s = '';
+        foreach ($w as $part) { if ($part !== '' && ctype_alpha($part[0])) { $s .= strtoupper($part[0]); } if (strlen($s) === 2) break; }
+        return $s !== '' ? $s : strtoupper(substr($n, 0, 1));
+    };
+    /* The marquee needs the list twice so the loop is seamless. */
+    $render = function (array $list, bool $clone = false) use ($initials) {
+        foreach ($list as $i => $org):
+            $hasLogo = !empty($org['logo']);
+            $site    = trim((string) ($org['website'] ?? ''));
+            $tag     = $site !== '' ? 'a' : 'div';
+            $attrs   = $site !== ''
+                ? ' href="' . e(preg_match('#^https?://#i', $site) ? $site : 'https://' . $site) . '" target="_blank" rel="noopener noreferrer"'
+                : '';
+            ?>
+            <<?= $tag ?> class="pn-card"<?= $attrs ?> style="--pn-i:<?= $i % 6 ?>"<?= $clone ? ' aria-hidden="true" tabindex="-1"' : '' ?>>
+                <span class="pn-inner">
+                    <?php if ($hasLogo): ?>
+                        <img class="pn-logo" src="<?= e(upload_url($org['logo'])) ?>" alt="<?= e($org['name']) ?>"
+                             width="120" height="56" loading="lazy" decoding="async">
+                    <?php else: ?>
+                        <span class="pn-mono" aria-hidden="true"><?= e($initials((string) $org['name'])) ?></span>
+                        <span class="pn-name"><?= e($org['name']) ?></span>
+                    <?php endif; ?>
+                </span>
+                <span class="pn-tip" role="tooltip"><?= e($org['name']) ?><?= $site !== '' ? ' ↗' : '' ?></span>
+            </<?= $tag ?>>
+        <?php endforeach;
+    };
+    ?>
+    <div class="pn-marquee" data-pn-marquee>
+        <div class="pn-track">
+            <?php $render($orgs); $render($orgs, true); ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php include __DIR__ . '/includes/footer.php'; ?>

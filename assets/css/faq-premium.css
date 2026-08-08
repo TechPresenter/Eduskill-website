@@ -1,0 +1,354 @@
+/* =============================================================================
+ *  Premium FAQ section
+ * -----------------------------------------------------------------------------
+ *  Every look is a data-attribute variant on the .pfaq root, so the admin
+ *  settings pick a combination and nothing here needs editing:
+ *
+ *    data-theme      blue-purple | orange-pink | green-cyan | indigo-violet
+ *                    red-orange | teal-emerald | rainbow | ngo | corporate | minimal
+ *    data-anim       slide | fade-slide | scale | bounce | elastic | flip | rotate
+ *                    zoom | fold | curtain | morph | liquid | spring | ripple
+ *    data-hover      gradient-border | neon | gradient-bg | float | lift | glass
+ *                    shine | magnetic | border-draw | pulse | shadow | color | tilt | ring
+ *    data-icon       plus-minus | arrow | chevron | pulse | bounce | wiggle
+ *                    morph | circular | glow | gradient
+ *    data-border     gradient | rainbow | neon | dashed | pulse | shimmer | glow | liquid
+ *    data-bg         none | mesh | aurora | blobs | particles | waves | rays | sparkles
+ *
+ *  Tunables (--pf-*) are written inline by the PHP renderer from settings.
+ *  Motion is transform/opacity only, and all of it is disabled under
+ *  prefers-reduced-motion.
+ * ========================================================================== */
+
+.pfaq {
+    --pf-r: 20px;
+    --pf-dur: 380ms;
+    --pf-gap: 12px;
+    --pf-fs: 16px;
+    --pf-shadow: 3;
+    --pf-glow: 2;
+    --pf-ease: cubic-bezier(.4, 0, .2, 1);
+
+    --pf-ink: #0f172a;
+    --pf-muted: #64748b;
+    --pf-card: rgba(255, 255, 255, .78);
+    --pf-line: rgba(15, 23, 42, .09);
+    --pf-bg: #f7f9fc;
+
+    position: relative; isolation: isolate; overflow: hidden;
+    padding: clamp(2.5rem, 6vw, 4.5rem) 0;
+    background: var(--pf-bg); color: var(--pf-ink);
+}
+:root[data-theme="dark"] .pfaq {
+    --pf-ink: #e2e8f0; --pf-muted: #94a3b8;
+    --pf-card: rgba(17, 26, 46, .74); --pf-line: rgba(255,255,255,.12); --pf-bg: #070c18;
+}
+
+/* ============================================================ COLOUR THEMES */
+.pfaq[data-theme-pf="blue-purple"]  { --pf-1: #2563eb; --pf-2: #7c3aed; --pf-3: #a855f7; }
+.pfaq[data-theme-pf="orange-pink"]  { --pf-1: #f97316; --pf-2: #ec4899; --pf-3: #f43f5e; }
+.pfaq[data-theme-pf="green-cyan"]   { --pf-1: #10b981; --pf-2: #06b6d4; --pf-3: #22d3ee; }
+.pfaq[data-theme-pf="indigo-violet"]{ --pf-1: #4f46e5; --pf-2: #8b5cf6; --pf-3: #c084fc; }
+.pfaq[data-theme-pf="red-orange"]   { --pf-1: #dc2626; --pf-2: #f97316; --pf-3: #fb923c; }
+.pfaq[data-theme-pf="teal-emerald"] { --pf-1: #0d9488; --pf-2: #10b981; --pf-3: #34d399; }
+.pfaq[data-theme-pf="rainbow"]      { --pf-1: #ef4444; --pf-2: #eab308; --pf-3: #22c55e; --pf-4: #3b82f6; --pf-5: #a855f7; }
+.pfaq[data-theme-pf="ngo"]          { --pf-1: #58A42F; --pf-2: #063566; --pf-3: #E67B1D; }
+.pfaq[data-theme-pf="corporate"]    { --pf-1: #0f172a; --pf-2: #334155; --pf-3: #64748b; }
+.pfaq[data-theme-pf="minimal"]      { --pf-1: #94a3b8; --pf-2: #cbd5e1; --pf-3: #e2e8f0; }
+
+.pfaq { --pf-grad: linear-gradient(135deg, var(--pf-1), var(--pf-2) 60%, var(--pf-3)); }
+.pfaq[data-theme-pf="rainbow"] {
+    --pf-grad: linear-gradient(120deg, var(--pf-1), var(--pf-2), var(--pf-3), var(--pf-4), var(--pf-5));
+}
+
+/* ======================================================== ANIMATED BACKDROP */
+.pfaq-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.pfaq[data-bg="none"] .pfaq-bg { display: none; }
+
+.pfaq-mesh, .pfaq-aurora, .pfaq-blob, .pfaq-wave, .pfaq-ray, .pfaq-dot { position: absolute; }
+
+.pfaq[data-bg="mesh"] .pfaq-mesh {
+    inset: 0; opacity: .55;
+    background-image:
+        radial-gradient(at 15% 20%, color-mix(in srgb, var(--pf-1) 22%, transparent) 0, transparent 52%),
+        radial-gradient(at 85% 15%, color-mix(in srgb, var(--pf-2) 20%, transparent) 0, transparent 48%),
+        radial-gradient(at 60% 90%, color-mix(in srgb, var(--pf-3) 20%, transparent) 0, transparent 50%);
+}
+.pfaq[data-bg="aurora"] .pfaq-aurora {
+    inset: -30%; opacity: .34; filter: blur(70px);
+    background: conic-gradient(from 0deg, var(--pf-1), var(--pf-2), var(--pf-3), var(--pf-1));
+    animation: pfSpin 26s linear infinite;
+}
+@keyframes pfSpin { to { transform: rotate(360deg); } }
+
+.pfaq[data-bg="blobs"] .pfaq-blob { border-radius: 50%; filter: blur(64px); opacity: .38; will-change: transform; }
+.pfaq[data-bg="blobs"] .pfaq-blob:nth-child(1) { width: 420px; height: 420px; top: -130px; left: -90px;
+    background: radial-gradient(circle, var(--pf-1), transparent 68%); animation: pfFloat 18s ease-in-out infinite; }
+.pfaq[data-bg="blobs"] .pfaq-blob:nth-child(2) { width: 360px; height: 360px; bottom: -140px; right: -80px;
+    background: radial-gradient(circle, var(--pf-2), transparent 68%); animation: pfFloat 23s ease-in-out infinite reverse; }
+.pfaq[data-bg="blobs"] .pfaq-blob:nth-child(3) { width: 300px; height: 300px; top: 40%; left: 50%;
+    background: radial-gradient(circle, var(--pf-3), transparent 70%); animation: pfFloat 28s ease-in-out infinite; }
+@keyframes pfFloat {
+    0%,100% { transform: translate3d(0,0,0) scale(1); }
+    33%     { transform: translate3d(30px,-34px,0) scale(1.06); }
+    66%     { transform: translate3d(-26px,22px,0) scale(.95); }
+}
+
+.pfaq[data-bg="particles"] .pfaq-dot, .pfaq[data-bg="sparkles"] .pfaq-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--pf-2); opacity: .4;
+    animation: pfRise linear infinite;
+}
+@keyframes pfRise {
+    from { transform: translateY(0) scale(.6); opacity: 0; }
+    20%  { opacity: .55; }
+    to   { transform: translateY(-160px) scale(1.1); opacity: 0; }
+}
+.pfaq[data-bg="sparkles"] .pfaq-dot { background: var(--pf-3); box-shadow: 0 0 8px var(--pf-3); }
+
+.pfaq[data-bg="waves"] .pfaq-wave {
+    left: -50%; width: 200%; height: 200px; bottom: -60px; opacity: .22;
+    background: radial-gradient(ellipse at 50% 0, var(--pf-1), transparent 70%);
+    animation: pfWave 14s ease-in-out infinite;
+}
+@keyframes pfWave { 0%,100% { transform: translateX(0) scaleY(1); } 50% { transform: translateX(-6%) scaleY(1.2); } }
+
+.pfaq[data-bg="rays"] .pfaq-ray {
+    top: -40%; left: 50%; width: 60%; height: 180%; opacity: .16; transform-origin: top center;
+    background: conic-gradient(from 180deg at 50% 0, transparent 0deg, var(--pf-2) 12deg, transparent 24deg);
+    animation: pfRay 18s linear infinite;
+}
+@keyframes pfRay { to { transform: rotate(360deg); } }
+
+/* ================================================================= HEADINGS */
+.pfaq-head { text-align: center; margin-bottom: clamp(1.6rem, 3vw, 2.4rem); }
+.pfaq-eyebrow {
+    display: inline-flex; align-items: center; gap: .45rem; padding: .38rem .9rem; border-radius: 999px;
+    font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #fff;
+    background: var(--pf-grad); background-size: 200% 200%; animation: pfShift 6s ease infinite;
+}
+@keyframes pfShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.pfaq-title {
+    font-size: clamp(1.7rem, 3.6vw, 2.6rem); font-weight: 800; letter-spacing: -.025em;
+    margin: .8rem 0 .5rem; line-height: 1.15;
+}
+.pfaq-title .hl {
+    background: var(--pf-grad); -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+}
+.pfaq-sub { color: var(--pf-muted); max-width: 62ch; margin: 0 auto; line-height: 1.7; }
+
+/* Search */
+.pfaq-search { max-width: 520px; margin: 1.4rem auto 0; position: relative; }
+.pfaq-search input {
+    width: 100%; padding: .82rem 1rem .82rem 2.6rem; font: inherit; font-size: .95rem;
+    border-radius: 999px; border: 1.5px solid var(--pf-line); background: var(--pf-card);
+    color: var(--pf-ink); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    transition: border-color .22s ease, box-shadow .22s ease;
+}
+.pfaq-search input:focus {
+    outline: none; border-color: var(--pf-1);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--pf-1) 15%, transparent);
+}
+.pfaq-search svg { position: absolute; left: .95rem; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--pf-muted); }
+
+/* ==================================================================== LIST */
+.pfaq-list { display: grid; gap: var(--pf-gap); max-width: 860px; margin: 0 auto; }
+
+.pfaq-item {
+    position: relative; border-radius: var(--pf-r); overflow: hidden;
+    background: var(--pf-card); border: 1px solid var(--pf-line);
+    -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%);
+    box-shadow: 0 calc(var(--pf-shadow) * 4px) calc(var(--pf-shadow) * 11px) calc(var(--pf-shadow) * -6px) rgba(8,11,26,.28);
+    transition: transform var(--pf-dur) var(--pf-ease), box-shadow var(--pf-dur) var(--pf-ease),
+                border-color var(--pf-dur) var(--pf-ease);
+    will-change: transform;
+}
+/* Staggered entrance */
+.pfaq-item { opacity: 0; transform: translateY(14px); }
+.pfaq-item.is-in { opacity: 1; transform: none; transition: opacity .5s ease, transform .5s ease; }
+
+/* Left accent bar, animates in when open */
+.pfaq-item::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--pf-grad); transform: scaleY(0); transform-origin: top;
+    transition: transform var(--pf-dur) var(--pf-ease);
+}
+.pfaq-item[open]::after { transform: scaleY(1); }
+.pfaq-item[open] {
+    border-color: color-mix(in srgb, var(--pf-1) 42%, transparent);
+    box-shadow: 0 calc(var(--pf-shadow) * 6px) calc(var(--pf-shadow) * 16px) calc(var(--pf-shadow) * -7px) color-mix(in srgb, var(--pf-1) 42%, transparent),
+                0 0 calc(var(--pf-glow) * 8px) color-mix(in srgb, var(--pf-2) calc(var(--pf-glow) * 7%), transparent);
+}
+
+/* Question row */
+.pfaq-q {
+    display: flex; align-items: center; gap: .9rem; cursor: pointer; list-style: none;
+    padding: 1.05rem 1.2rem; font-size: var(--pf-fs); font-weight: 650; line-height: 1.45;
+    position: relative; z-index: 1;
+}
+.pfaq-q::-webkit-details-marker { display: none; }
+.pfaq-q:focus-visible { outline: 2px solid var(--pf-1); outline-offset: -3px; border-radius: var(--pf-r); }
+.pfaq-q-txt { flex: 1 1 auto; min-width: 0; }
+
+/* Icon */
+.pfaq-ico {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--pf-1) 13%, transparent); color: var(--pf-1);
+    transition: transform var(--pf-dur) var(--pf-ease), background var(--pf-dur) var(--pf-ease), color var(--pf-dur) var(--pf-ease);
+}
+.pfaq-ico svg { width: 15px; height: 15px; }
+.pfaq-item[open] .pfaq-ico { background: var(--pf-grad); color: #fff; }
+
+/* Answer */
+.pfaq-a {
+    padding: 0 1.2rem 1.15rem 1.2rem; color: var(--pf-muted); line-height: 1.75; font-size: .93rem;
+}
+.pfaq-a > *:first-child { margin-top: 0; }
+.pfaq-a > *:last-child  { margin-bottom: 0; }
+
+/* ==================================================== ACCORDION ANIMATIONS */
+/* The wrapper is what animates; <details> itself cannot transition height. */
+.pfaq-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--pf-dur) var(--pf-ease); }
+.pfaq-item[open] .pfaq-wrap { grid-template-rows: 1fr; }
+.pfaq-wrap > div { overflow: hidden; }
+
+.pfaq[data-anim="fade-slide"] .pfaq-a { opacity: 0; transform: translateY(-8px); transition: opacity var(--pf-dur) var(--pf-ease), transform var(--pf-dur) var(--pf-ease); }
+.pfaq[data-anim="fade-slide"] .pfaq-item[open] .pfaq-a { opacity: 1; transform: none; }
+
+.pfaq[data-anim="scale"] .pfaq-a  { transform: scale(.94); opacity: 0; transition: transform var(--pf-dur) var(--pf-ease), opacity var(--pf-dur) var(--pf-ease); transform-origin: top; }
+.pfaq[data-anim="scale"] .pfaq-item[open] .pfaq-a { transform: none; opacity: 1; }
+
+.pfaq[data-anim="bounce"]  .pfaq-wrap { transition-timing-function: cubic-bezier(.34, 1.56, .64, 1); }
+.pfaq[data-anim="elastic"] .pfaq-wrap { transition-timing-function: cubic-bezier(.68, -.55, .27, 1.55); }
+.pfaq[data-anim="spring"]  .pfaq-wrap { transition-timing-function: cubic-bezier(.22, 1.6, .36, 1); }
+
+.pfaq[data-anim="flip"] .pfaq-a { transform: perspective(700px) rotateX(-12deg); opacity: 0; transform-origin: top;
+    transition: transform var(--pf-dur) var(--pf-ease), opacity var(--pf-dur) var(--pf-ease); }
+.pfaq[data-anim="flip"] .pfaq-item[open] .pfaq-a { transform: none; opacity: 1; }
+
+.pfaq[data-anim="rotate"] .pfaq-a { transform: rotate(-1.4deg) translateY(-6px); opacity: 0; transform-origin: left top;
+    transition: transform var(--pf-dur) var(--pf-ease), opacity var(--pf-dur) var(--pf-ease); }
+.pfaq[data-anim="rotate"] .pfaq-item[open] .pfaq-a { transform: none; opacity: 1; }
+
+.pfaq[data-anim="zoom"] .pfaq-a { transform: scale(.86); opacity: 0; transition: transform var(--pf-dur) var(--pf-ease), opacity var(--pf-dur) var(--pf-ease); }
+.pfaq[data-anim="zoom"] .pfaq-item[open] .pfaq-a { transform: none; opacity: 1; }
+
+.pfaq[data-anim="fold"] .pfaq-a { transform: perspective(800px) rotateX(-88deg); transform-origin: top; opacity: .2;
+    transition: transform var(--pf-dur) var(--pf-ease), opacity var(--pf-dur) var(--pf-ease); }
+.pfaq[data-anim="fold"] .pfaq-item[open] .pfaq-a { transform: none; opacity: 1; }
+
+.pfaq[data-anim="curtain"] .pfaq-a { clip-path: inset(0 0 100% 0); transition: clip-path var(--pf-dur) var(--pf-ease); }
+.pfaq[data-anim="curtain"] .pfaq-item[open] .pfaq-a { clip-path: inset(0 0 0 0); }
+
+.pfaq[data-anim="morph"] .pfaq-item { transition: border-radius var(--pf-dur) var(--pf-ease), transform var(--pf-dur) var(--pf-ease), box-shadow var(--pf-dur) var(--pf-ease); }
+.pfaq[data-anim="morph"] .pfaq-item[open] { border-radius: calc(var(--pf-r) + 12px); }
+
+.pfaq[data-anim="liquid"] .pfaq-a { filter: blur(5px); opacity: 0; transition: filter var(--pf-dur) var(--pf-ease), opacity var(--pf-dur) var(--pf-ease); }
+.pfaq[data-anim="liquid"] .pfaq-item[open] .pfaq-a { filter: none; opacity: 1; }
+
+.pfaq[data-anim="ripple"] .pfaq-item[open] .pfaq-q::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
+    background: radial-gradient(circle at var(--pf-x, 50%) var(--pf-y, 50%), color-mix(in srgb, var(--pf-1) 22%, transparent), transparent 62%);
+    animation: pfRipple .65s ease-out;
+}
+@keyframes pfRipple { from { opacity: .8; transform: scale(.3); } to { opacity: 0; transform: scale(1); } }
+
+/* ============================================================ HOVER EFFECTS */
+.pfaq[data-hover="lift"]   .pfaq-item:hover { transform: translateY(-4px); }
+.pfaq[data-hover="float"]  .pfaq-item:hover { transform: translateY(-7px) scale(1.008); }
+.pfaq[data-hover="shadow"] .pfaq-item:hover { box-shadow: 0 26px 50px -20px color-mix(in srgb, var(--pf-1) 55%, transparent); }
+.pfaq[data-hover="color"]  .pfaq-item:hover { border-color: var(--pf-1); }
+.pfaq[data-hover="color"]  .pfaq-item:hover .pfaq-q { color: var(--pf-1); }
+.pfaq[data-hover="neon"]   .pfaq-item:hover {
+    border-color: var(--pf-2);
+    box-shadow: 0 0 6px var(--pf-2), 0 0 18px color-mix(in srgb, var(--pf-2) 55%, transparent),
+                inset 0 0 10px color-mix(in srgb, var(--pf-2) 16%, transparent);
+}
+.pfaq[data-hover="ring"] .pfaq-item:hover { box-shadow: 0 0 0 4px color-mix(in srgb, var(--pf-1) 24%, transparent); }
+.pfaq[data-hover="pulse"] .pfaq-item:hover { animation: pfPulse 1.3s ease infinite; }
+@keyframes pfPulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--pf-1) 12%, transparent); } }
+.pfaq[data-hover="gradient-bg"] .pfaq-item:hover { background: color-mix(in srgb, var(--pf-1) 9%, var(--pf-card)); }
+.pfaq[data-hover="gradient-border"] .pfaq-item:hover { border-color: transparent; background-clip: padding-box; }
+.pfaq[data-hover="gradient-border"] .pfaq-item::before {
+    content: ''; position: absolute; inset: -1px; border-radius: inherit; z-index: -1; opacity: 0;
+    background: var(--pf-grad); transition: opacity var(--pf-dur) var(--pf-ease);
+}
+.pfaq[data-hover="gradient-border"] .pfaq-item:hover::before { opacity: 1; }
+.pfaq[data-hover="glass"] .pfaq-item:hover { background: rgba(255,255,255,.9); -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); }
+.pfaq[data-hover="shine"] .pfaq-item { overflow: hidden; }
+.pfaq[data-hover="shine"] .pfaq-item::before {
+    content: ''; position: absolute; top: 0; left: -70%; width: 55%; height: 100%; z-index: 0;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.42), transparent);
+    transition: left .65s ease; pointer-events: none;
+}
+.pfaq[data-hover="shine"] .pfaq-item:hover::before { left: 125%; }
+.pfaq[data-hover="border-draw"] .pfaq-item::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    border: 2px solid var(--pf-1); clip-path: inset(0 100% 100% 0);
+    transition: clip-path .5s var(--pf-ease);
+}
+.pfaq[data-hover="border-draw"] .pfaq-item:hover::before { clip-path: inset(0 0 0 0); }
+.pfaq[data-hover="magnetic"] .pfaq-item { transition: transform .18s ease-out, box-shadow var(--pf-dur) var(--pf-ease); }
+.pfaq[data-hover="tilt"]     .pfaq-item { transform-style: preserve-3d; }
+
+/* ============================================================ ICON VARIANTS */
+.pfaq[data-icon="plus-minus"] .pfaq-item[open] .pfaq-ico { transform: rotate(135deg); }
+.pfaq[data-icon="arrow"]      .pfaq-item[open] .pfaq-ico,
+.pfaq[data-icon="chevron"]    .pfaq-item[open] .pfaq-ico { transform: rotate(180deg); }
+.pfaq[data-icon="circular"]   .pfaq-item[open] .pfaq-ico { transform: rotate(360deg); }
+.pfaq[data-icon="pulse"]  .pfaq-item[open] .pfaq-ico { animation: pfIcoPulse 1.1s ease infinite; }
+@keyframes pfIcoPulse { 50% { transform: scale(1.16); } }
+.pfaq[data-icon="bounce"] .pfaq-item[open] .pfaq-ico { animation: pfIcoBounce .55s ease; }
+@keyframes pfIcoBounce { 40% { transform: translateY(-5px); } 70% { transform: translateY(2px); } }
+.pfaq[data-icon="wiggle"] .pfaq-q:hover .pfaq-ico { animation: pfWiggle .45s ease; }
+@keyframes pfWiggle { 25% { transform: rotate(-13deg); } 75% { transform: rotate(13deg); } }
+.pfaq[data-icon="morph"]  .pfaq-item[open] .pfaq-ico { transform: rotate(135deg) scale(1.12); border-radius: 9px; }
+.pfaq[data-icon="glow"]   .pfaq-item[open] .pfaq-ico { box-shadow: 0 0 12px var(--pf-2), 0 0 22px color-mix(in srgb, var(--pf-2) 55%, transparent); }
+.pfaq[data-icon="gradient"] .pfaq-ico { background: var(--pf-grad); color: #fff; background-size: 200% 200%; }
+.pfaq[data-icon="gradient"] .pfaq-item[open] .pfaq-ico { animation: pfShift 3s ease infinite; }
+
+/* ========================================================== BORDER EFFECTS */
+.pfaq[data-border="gradient"] .pfaq-item[open] { border-color: transparent; }
+.pfaq[data-border="gradient"] .pfaq-item[open]::before {
+    content: ''; position: absolute; inset: -1.5px; border-radius: inherit; z-index: -1; background: var(--pf-grad);
+}
+.pfaq[data-border="rainbow"] .pfaq-item[open]::before {
+    content: ''; position: absolute; inset: -1.5px; border-radius: inherit; z-index: -1;
+    background: linear-gradient(120deg, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7, #ef4444);
+    background-size: 300% 300%; animation: pfShift 5s linear infinite;
+}
+.pfaq[data-border="neon"]   .pfaq-item[open] { border-color: var(--pf-2); box-shadow: 0 0 8px var(--pf-2), 0 0 22px color-mix(in srgb, var(--pf-2) 60%, transparent); }
+.pfaq[data-border="dashed"] .pfaq-item { border-style: dashed; }
+.pfaq[data-border="dashed"] .pfaq-item[open] { border-color: var(--pf-1); }
+.pfaq[data-border="pulse"]  .pfaq-item[open] { animation: pfPulse 1.8s ease infinite; }
+.pfaq[data-border="shimmer"] .pfaq-item[open]::before {
+    content: ''; position: absolute; inset: -1.5px; border-radius: inherit; z-index: -1;
+    background: linear-gradient(90deg, transparent, var(--pf-2), transparent);
+    background-size: 200% 100%; animation: pfShimmer 2.2s linear infinite;
+}
+@keyframes pfShimmer { to { background-position: 200% 0; } }
+.pfaq[data-border="glow"]   .pfaq-item[open] { box-shadow: 0 0 0 3px color-mix(in srgb, var(--pf-1) 22%, transparent); }
+.pfaq[data-border="liquid"] .pfaq-item[open] { border-radius: calc(var(--pf-r) + 14px) var(--pf-r) calc(var(--pf-r) + 14px) var(--pf-r); }
+
+/* Bare mode — dropped inside a page that already has its own FAQ heading, so
+   it contributes no background, no padding and no section chrome. */
+.pfaq.pfaq-bare { padding: 0; background: none; overflow: visible; }
+.pfaq-inner { width: 100%; }
+
+/* Empty state for search */
+.pfaq-empty { text-align: center; padding: 2rem 1rem; color: var(--pf-muted); display: none; }
+.pfaq-empty.is-on { display: block; }
+
+/* ============================================================ ACCESSIBILITY */
+@media (prefers-reduced-motion: reduce) {
+    .pfaq *, .pfaq *::before, .pfaq *::after {
+        animation: none !important;
+        transition-duration: .01ms !important;
+    }
+    .pfaq-item { opacity: 1; transform: none; }
+    .pfaq-item:hover { transform: none !important; }
+}
+@media (max-width: 560px) {
+    .pfaq-q { padding: .95rem 1rem; }
+    .pfaq-a { padding: 0 1rem 1rem; }
+}

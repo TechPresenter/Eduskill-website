@@ -1,33 +1,70 @@
-# Secrets & environment — never committed, never in a release ZIP.
-/config/config.php
+# =============================================================================
+#  EDUSKILL INDIA FOUNDATION — .gitignore
+#  Anything pushed to GitHub must be treated as permanently public, even if
+#  deleted later. Secrets, runtime state and user data stay out of the repo.
+# =============================================================================
 
-# Runtime state.
-/storage/logs/*
-!/storage/logs/.gitkeep
-/storage/cache/*
-!/storage/cache/.gitkeep
+# ── Secrets ──────────────────────────────────────────────────────────────────
+# Live credentials + the AES-256 encryption key live here.
+# Cloners copy config.example.php -> config.php and fill it in.
+/config.php
+.env
+.env.*
+!.env.example
 
-# User uploads (created at runtime).
-/uploads/
+# ── Runtime user uploads ─────────────────────────────────────────────────────
+# Keep the directory tree (the app writes into it) and the .htaccess guard that
+# disables script execution — but never commit visitor-submitted files.
+/uploads/**
+!/uploads/**/
+!/uploads/.htaccess
+!/uploads/**/.gitkeep
 
-# Build & release output.
-/dist/*
-!/dist/.gitkeep
+# ── Runtime storage: backups, caches, pre-rebrand file snapshots ─────────────
+# storage/rebrand-backup/ contains an old copy of config.php WITH the live key.
+/storage/*
+!/storage/.htaccess
+!/storage/.gitkeep
 
-# Dev-only Tailwind build.
-/src-build/node_modules/
-
-# OS / editor cruft.
-Thumbs.db
-.DS_Store
+# ── Logs ─────────────────────────────────────────────────────────────────────
+/logs/*
+!/logs/.htaccess
+!/logs/.gitkeep
 *.log
 
-# Temp/dev preview files
-/_pm-preview.php
+# ── Database dumps (schema/seed .sql ARE committed; dumps are not) ───────────
+/database/backups/
+*.sql.gz
+*.dump
+dump.sql
+backup*.sql
 
-# Runtime user uploads (keep dir, ignore contents)
-/assets/uploads/*
-!/assets/uploads/.gitkeep
+# ── Local preview / scratch artefacts ────────────────────────────────────────
+_dochub_preview.html
+_*-preview.php
+_*-preview.html
+/tmp/
+/temp/
 
-# Local build tooling deps
-/src-build/node_modules/
+# ── Editor & OS cruft ────────────────────────────────────────────────────────
+*.bak
+*.orig
+*.rej
+*~
+*.swp
+*.swo
+*.pre-*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+desktop.ini
+.DS_Store
+.AppleDouble
+.vscode/
+.idea/
+*.sublime-workspace
+*.code-workspace
+
+# ── Dependency dirs (project is Composer-free / Node-free by design) ─────────
+node_modules/
+vendor/composer/

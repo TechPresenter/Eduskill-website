@@ -1,68 +1,209 @@
 <?php
-require __DIR__ . '/includes/auth.php';
-require_admin('pages.view');
-$admin_title = 'Pages';
+/**
+ * =============================================================================
+ *  Admin — Pages CRUD  (CMS pages editor: privacy, terms, disclaimer, etc.).
+ *  list + create + edit + delete, CSRF, validation, pagination,
+ *  banner-image upload (with old-file cleanup), slug generation, activity log.
+ *  Follows the standard admin CRUD pattern (see admin/programs.php).
+ * =============================================================================
+ */
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_admin();
 
-// Create a new page.
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf($_POST['_csrf'] ?? null)) {
-    $action = (string) ($_POST['action'] ?? '');
-    if ($action === 'create' && user_can('pages.create')) {
-        $title = trim((string) ($_POST['title'] ?? ''));
-        if ($title !== '') {
-            $slug = unique_slug('pages', str_slug((string) ($_POST['slug'] ?: $title)));
-            $id = db_insert("INSERT INTO pages (slug, title, status, created_by) VALUES (?, ?, 'draft', ?)", [$slug, $title, (int) ($_SESSION['uid'] ?? 0)]);
-            flash('success', 'Page created — add some sections and publish.');
-            redirect('admin/page-editor.php?id=' . $id);
-        }
-        flash('error', 'Please enter a title.');
-        redirect('admin/pages.php');
+$table  = 'pages';
+$action = get('action', 'list');
+$id     = (int) get('id', 0);
+
+/* -------------------------------------------------------------- SAVE (create/update) */
+if (is_post() && post('_do') === 'save') {
+    require_csrf();
+    $editId = (int) post('id', 0);
+
+    $errors = validate($_POST, ['title' => 'required|max:191']);
+    if ($errors) {
+        set_flash('error', reset($errors));
+        redirect('/admin/pages?action=' . ($editId ? 'edit&id=' . $editId : 'create'));
     }
-    if ($action === 'delete' && user_can('pages.delete')) {
-        $p = db_one("SELECT is_system FROM pages WHERE id = ?", [(int) ($_POST['id'] ?? 0)]);
-        if ($p && (int) $p['is_system'] === 1) {
-            flash('error', 'System pages cannot be deleted.');
-        } else {
-            db_exec("UPDATE pages SET deleted_at = NOW() WHERE id = ?", [(int) $_POST['id']]);
-            flash('success', 'Page moved to trash.');
+
+    $data = [
+        'title'    => clean(post('title')),
+        'slug'     => unique_slug($table, post('slug') ?: post('title'), $editId ?: null),
+        'subtitle' => clean(post('subtitle', '')),
+        'content'  => post('content', ''), // rich text / HTML allowed
+        'status'   => in_array(post('status'), ['draft', 'published'], true) ? post('status') : 'published',
+    ];
+
+    // Optional banner image upload (replaces + deletes the old one).
+    if (!empty($_FILES['banner_image']['name'])) {
+        $up = upload_image($_FILES['banner_image'], 'pages');
+        if (!$up['success']) {
+            set_flash('error', $up['error']);
+            redirect('/admin/pages?action=' . ($editId ? 'edit&id=' . $editId : 'create'));
         }
-        redirect('admin/pages.php');
+        $data['banner_image'] = $up['path'];
+        if ($editId) {
+            $old = find($table, $editId);
+            if ($old && !empty($old['banner_image'])) delete_upload($old['banner_image']);
+        }
     }
+
+    if ($editId) {
+        db_update($table, $data, 'id = :id', [':id' => $editId]);
+        log_activity('update', 'pages', 'Updated page #' . $editId);
+        set_flash('success', 'Page updated successfully.');
+    } else {
+        $newId = db_insert($table, $data);
+        log_activity('create', 'pages', 'Created page #' . $newId);
+        set_flash('success', 'Page created successfully.');
+    }
+    redirect('/admin/pages');
 }
 
-$rows = db_all("SELECT id, slug, title, status, is_system, updated_at FROM pages WHERE deleted_at IS NULL ORDER BY is_system DESC, title ASC");
-require __DIR__ . '/includes/header.php';
+/* -------------------------------------------------------------- DELETE */
+if (is_post() && post('_do') === 'delete') {
+    require_csrf();
+    $delId = (int) post('id', 0);
+    $row = find($table, $delId);
+    if ($row) {
+        if (!empty($row['banner_image'])) delete_upload($row['banner_image']);
+        db_delete($table, 'id = :id', [':id' => $delId]);
+        log_activity('delete', 'pages', 'Deleted page #' . $delId);
+        set_flash('success', 'Page deleted.');
+    }
+    redirect('/admin/pages');
+}
+
+/* -------------------------------------------------------------- FORM (create/edit) */
+if ($action === 'create' || $action === 'edit') {
+    $row = $action === 'edit' ? find($table, $id) : [];
+    if ($action === 'edit' && !$row) {
+        set_flash('error', 'Page not found.');
+        redirect('/admin/pages');
+    }
+    $page_title = $action === 'edit' ? 'Edit Page' : 'Add Page';
+    include __DIR__ . '/partials/head.php';
+    ?>
+    <div class="admin-page-head">
+        <div><h1><?= e($page_title) ?></h1><span class="muted">Pages / <?= $action === 'edit' ? 'Edit' : 'Create' ?></span></div>
+        <a class="btn btn-secondary" href="<?= e(admin_url('pages')) ?>">← Back to list</a>
+    </div>
+
+    <div class="panel">
+        <form class="admin-form panel-body" method="post" enctype="multipart/form-data" action="<?= e(admin_url('pages')) ?>">
+            <?= csrf_field() ?>
+            <input type="hidden" name="_do" value="save">
+            <input type="hidden" name="id" value="<?= (int) ($row['id'] ?? 0) ?>">
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Title <span class="req">*</span></label>
+                    <input class="form-control" name="title" data-slug-source required value="<?= e($row['title'] ?? '') ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Slug</label>
+                    <input class="form-control" name="slug" data-slug-target value="<?= e($row['slug'] ?? '') ?>" placeholder="auto-generated">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Subtitle</label>
+                <input class="form-control" name="subtitle" value="<?= e($row['subtitle'] ?? '') ?>" placeholder="Optional short tagline shown under the title">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Content</label>
+                <textarea class="form-textarea" name="content" data-wysiwyg style="min-height:320px;"><?= e($row['content'] ?? '') ?></textarea>
+                <small class="form-hint">HTML is allowed. This is the body of the page (privacy policy, terms, etc.).</small>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="published" <?= (($row['status'] ?? 'published') === 'published') ? 'selected' : '' ?>>Published</option>
+                        <option value="draft"     <?= (($row['status'] ?? '') === 'draft') ? 'selected' : '' ?>>Draft</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Banner Image</label>
+                    <input class="form-control" type="file" name="banner_image" accept="image/*" data-preview="#imgPreview">
+                    <img id="imgPreview" class="img-preview" src="<?= e(!empty($row['banner_image']) ? upload_url($row['banner_image']) : asset('images/placeholder.svg')) ?>" alt="preview" style="<?= empty($row['banner_image']) ? 'display:none;' : '' ?>">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit"><?= $action === 'edit' ? 'Update' : 'Create' ?> Page</button>
+                <a class="btn btn-ghost" href="<?= e(admin_url('pages')) ?>">Cancel</a>
+            </div>
+        </form>
+    </div>
+    <?php
+    include __DIR__ . '/partials/foot.php';
+    exit;
+}
+
+/* -------------------------------------------------------------- LIST */
+$page_title = 'Pages';
+$search = trim((string) get('q', ''));
+$where  = '1=1';
+$params = [];
+if ($search !== '') {
+    $where .= " AND CONCAT_WS(' ', title, slug) LIKE :q";
+    $params[':q'] = '%' . $search . '%';
+}
+$p = paginate("SELECT * FROM $table WHERE $where ORDER BY id DESC", $params, 12);
+
+include __DIR__ . '/partials/head.php';
 ?>
-<div class="page-header">
-  <div><h2 class="page-title">Pages</h2><p class="page-subtitle">Build website pages from sections.</p></div>
-  <?php if (user_can('pages.create')): ?>
-    <div class="page-actions"><button type="button" onclick="document.getElementById('new-page').classList.toggle('hidden')" class="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-on-brand hover:bg-brand-700"><i class="fa-solid fa-plus"></i> New page</button></div>
-  <?php endif; ?>
+<div class="admin-page-head">
+    <div><h1>Pages</h1><span class="muted"><?= (int) $p['total'] ?> total</span></div>
+    <a class="btn btn-primary" href="<?= e(admin_url('pages?action=create')) ?>">+ Add Page</a>
 </div>
 
-<div id="new-page" class="mb-5 hidden max-w-xl rounded-2xl border border-edge bg-surface p-5 shadow-card">
-  <form method="post" class="flex flex-wrap items-end gap-3"><?= csrf_field() ?><input type="hidden" name="action" value="create">
-    <div class="flex-1"><label class="block text-sm font-medium text-content">Page title</label><input name="title" required placeholder="e.g. About Us" class="mt-1 w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm text-content focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"></div>
-    <button type="submit" class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-on-brand hover:bg-brand-700">Create</button>
-  </form>
+<div class="panel">
+    <div class="panel-body">
+        <div class="data-toolbar">
+            <form class="search" method="get" action="<?= e(admin_url('pages')) ?>">
+                <input class="form-control" type="search" name="q" value="<?= e($search) ?>" placeholder="Search pages…">
+            </form>
+        </div>
+
+        <?php if ($p['items']): ?>
+        <div class="table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Banner</th><th>Title</th><th>Slug</th><th>Status</th><th>Updated</th><th style="text-align:right;">Actions</th></tr></thead>
+                <tbody>
+                <?php foreach ($p['items'] as $r): ?>
+                    <tr>
+                        <td><img class="thumb" src="<?= e(!empty($r['banner_image']) ? upload_url($r['banner_image']) : asset('images/placeholder.svg')) ?>" alt=""></td>
+                        <td>
+                            <strong><?= e($r['title']) ?></strong><br>
+                            <small class="text-muted"><?= e(excerpt($r['subtitle'] ?? '', 12)) ?></small>
+                        </td>
+                        <td><code><?= e($r['slug']) ?></code></td>
+                        <td><span class="pill <?= $r['status'] === 'published' ? 'pill-green' : 'pill-gray' ?>"><?= e(ucfirst($r['status'])) ?></span></td>
+                        <td><small class="text-muted"><?= e(format_date($r['updated_at'] ?? $r['created_at'], 'd M Y')) ?></small></td>
+                        <td>
+                            <div class="actions">
+                                <a class="icon-btn" href="<?= e(admin_url('pages?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
+                                <form method="post" action="<?= e(admin_url('pages')) ?>" data-confirm="Delete this page permanently?" style="display:inline;">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="_do" value="delete">
+                                    <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
+                                    <button class="icon-btn danger" type="submit" title="Delete"><?= lucide('trash-2') ?></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?= $p['links'] ?>
+        <?php else: ?>
+            <div class="empty-state"><div class="icon"><?= lucide('file-text') ?></div>No pages yet. <a href="<?= e(admin_url('pages?action=create')) ?>">Add your first page</a>.</div>
+        <?php endif; ?>
+    </div>
 </div>
 
-<div class="overflow-hidden rounded-2xl border border-edge bg-surface shadow-card">
-  <div class="scroll-x"><table class="w-full text-left text-sm">
-    <thead class="border-b border-edge bg-surface-sunken text-xs uppercase tracking-wide text-content-muted"><tr><th class="px-4 py-3 font-semibold">Title</th><th class="px-4 py-3 font-semibold">URL</th><th class="px-4 py-3 font-semibold">Status</th><th class="px-4 py-3 text-right font-semibold">Actions</th></tr></thead>
-    <tbody class="divide-y divide-edge">
-      <?php foreach ($rows as $p): $pub = $p['slug'] === 'home' ? 'index.php' : $p['slug'] . '.php'; ?>
-        <tr class="hover:bg-surface-sunken/50">
-          <td class="px-4 py-3"><span class="font-medium text-content"><?= e($p['title']) ?></span><?php if ((int) $p['is_system'] === 1): ?><span class="ml-1.5 rounded bg-surface-sunken px-1.5 py-0.5 text-2xs font-semibold text-content-subtle ring-1 ring-inset ring-edge">System</span><?php endif; ?></td>
-          <td class="px-4 py-3 text-content-muted">/<?= e($p['slug'] === 'home' ? '' : $p['slug']) ?></td>
-          <td class="px-4 py-3"><?= $p['status'] === 'published' ? '<span class="rounded-full bg-success-50 px-2 py-0.5 text-xs font-semibold text-success-700">Published</span>' : '<span class="rounded-full bg-surface-sunken px-2 py-0.5 text-xs font-semibold text-content-muted ring-1 ring-inset ring-edge">Draft</span>' ?></td>
-          <td class="px-4 py-3"><div class="row-actions">
-            <a href="<?= e(url('admin/page-editor.php?id=' . (int) $p['id'])) ?>" class="rounded-lg px-3 py-1.5 text-sm font-medium text-brand-600 hover:bg-brand-50">Edit</a>
-            <a href="<?= e(url($pub)) ?>" target="_blank" class="rounded-lg px-3 py-1.5 text-sm font-medium text-content-muted hover:bg-surface-sunken">View</a>
-            <?php if ((int) $p['is_system'] === 0 && user_can('pages.delete')): ?><form method="post" onsubmit="return confirm('Trash this page?')"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $p['id'] ?>"><button class="rounded-lg px-3 py-1.5 text-sm font-medium text-danger-600 hover:bg-danger-50">Delete</button></form><?php endif; ?>
-          </div></td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table></div>
-</div>
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php include __DIR__ . '/partials/foot.php'; ?>

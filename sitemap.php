@@ -1,80 +1,76 @@
 <?php
-/** Human-readable HTML sitemap, auto-built from the live content tables. */
-require __DIR__ . '/includes/config.php';
-$page_title = 'Sitemap';
+/**
+ * =============================================================================
+ *  Dynamic XML sitemap — served at /sitemap.xml (see .htaccess rewrite).
+ *  Always reflects currently-published content.
+ * =============================================================================
+ */
+require_once __DIR__ . '/includes/bootstrap.php';
 
-$main = [
-    'Home' => 'index.php', 'About Us' => 'about.php', 'Mission & Vision' => 'mission.php',
-    'Our Team' => 'team.php', 'Programmes' => 'programs.php', 'Schemes & Initiatives' => 'schemes.php',
-    'Campaigns' => 'campaigns.php', 'Events' => 'events.php', 'Photo Gallery' => 'gallery.php',
-    'Video Gallery' => 'videos.php', 'Blog' => 'blog.php', 'News & Media' => 'news.php',
-    'Testimonials' => 'testimonials.php', 'FAQ' => 'faq.php', 'Contact' => 'contact.php',
-];
-$involved = [
-    'Donate' => 'donate.php', 'Volunteer' => 'volunteer.php', 'Become a Partner' => 'partners.php',
-    'Careers' => 'careers.php', 'Scholarships' => 'scholarships.php', 'Internships' => 'internships.php',
-    'Verify Certificate' => 'verify-certificate.php', 'Download Center' => 'downloads.php',
-];
-$legal = [
-    'Privacy Policy' => 'privacy-policy.php', 'Terms & Conditions' => 'terms.php',
-    'Refund Policy' => 'refund-policy.php', 'Disclaimer' => 'disclaimer.php', 'Cookie Policy' => 'cookie-policy.php',
-];
-$grab = static function (string $sql): array { try { return db_all($sql); } catch (Throwable) { return []; } };
-$campaigns = $grab("SELECT title, slug FROM campaigns WHERE deleted_at IS NULL AND status IN ('active','completed','closed') ORDER BY id DESC LIMIT 50");
-$posts = $grab("SELECT title, slug FROM posts WHERE deleted_at IS NULL AND status='published' ORDER BY COALESCE(published_at,created_at) DESC LIMIT 50");
-$events = $grab("SELECT title, slug FROM events WHERE deleted_at IS NULL AND status <> 'draft' ORDER BY starts_at DESC LIMIT 50");
+header('Content-Type: application/xml; charset=utf-8');
 
-$col = static function (string $title, array $links): void { ?>
-  <div>
-    <h2 class="footer-heading text-content"><?= e($title) ?></h2>
-    <ul class="space-y-1.5">
-      <?php foreach ($links as $label => $file): ?>
-        <li><a href="<?= e(url($file)) ?>" class="text-sm text-content-muted hover:text-brand-600"><?= e($label) ?></a></li>
-      <?php endforeach; ?>
-    </ul>
-  </div>
-<?php };
-require __DIR__ . '/includes/header.php';
-?>
-<section class="section">
-  <div class="container-site">
-    <div class="mx-auto mb-12 max-w-2xl text-center" data-aos="fade-up">
-      <span class="eyebrow">Find your way</span>
-      <h1 class="section-heading">Sitemap</h1>
-      <p class="section-subheading mx-auto">Every page on the Eduskill India Foundation website, in one place.</p>
-    </div>
-    <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
-      <?php $col('Explore', $main); ?>
-      <?php $col('Get Involved', $involved); ?>
-      <?php $col('Legal', $legal); ?>
+/** Collect URLs as [loc, lastmod, changefreq, priority]. */
+$urls = [];
+$add = static function (string $path, ?string $lastmod = null, string $freq = 'weekly', string $priority = '0.6') use (&$urls) {
+    $urls[] = [
+        'loc'      => abs_url(ltrim($path, '/')),
+        'lastmod'  => $lastmod ? date('Y-m-d', strtotime($lastmod)) : date('Y-m-d'),
+        'freq'     => $freq,
+        'priority' => $priority,
+    ];
+};
 
-      <?php if ($campaigns !== []): ?>
-      <div>
-        <h2 class="footer-heading text-content">Campaigns</h2>
-        <ul class="space-y-1.5">
-          <?php foreach ($campaigns as $c): ?><li><a href="<?= e(url('campaign-details.php?slug=' . urlencode((string) $c['slug']))) ?>" class="text-sm text-content-muted hover:text-brand-600"><?= e($c['title']) ?></a></li><?php endforeach; ?>
-        </ul>
-      </div>
-      <?php endif; ?>
+// Static high-value pages.
+$add('/', null, 'daily', '1.0');
+foreach ([
+    'about', 'our-story', 'mission-vision', 'leadership-team', 'management-body', 'team', 'ngo-details',
+    'programs', 'projects', 'causes', 'schemes', 'campaigns', 'skill-development', 'achievements', 'certificates', 'courses',
+    'gallery', 'media', 'news-media', 'blogs', 'success-stories', 'testimonials', 'resources',
+    'events', 'calendar', 'volunteer', 'internship', 'membership', 'career', 'become-partner',
+    'scholarship', 'verify-certificate', 'donate', 'contact', 'feedback', 'faqs',
+    'privacy-policy', 'terms', 'refund-policy', 'disclaimer', 'cookie-policy', 'sitemap-page',
+] as $p) {
+    $add('/' . $p, null, 'weekly', '0.7');
+}
 
-      <?php if ($events !== []): ?>
-      <div>
-        <h2 class="footer-heading text-content">Events</h2>
-        <ul class="space-y-1.5">
-          <?php foreach ($events as $ev): ?><li><a href="<?= e(url('event-details.php?slug=' . urlencode((string) $ev['slug']))) ?>" class="text-sm text-content-muted hover:text-brand-600"><?= e($ev['title']) ?></a></li><?php endforeach; ?>
-        </ul>
-      </div>
-      <?php endif; ?>
+// Dynamic published content.
+try {
+    foreach (db_all("SELECT slug, updated_at FROM programs WHERE status='active'") as $r) {
+        $add('/programs?slug=' . $r['slug'], $r['updated_at'], 'monthly', '0.6');
+    }
+    foreach (db_all("SELECT slug, updated_at, published_at FROM blogs WHERE status='published'") as $r) {
+        $add('/blog-details?slug=' . $r['slug'], $r['updated_at'] ?: $r['published_at'], 'monthly', '0.6');
+    }
+    foreach (db_all("SELECT slug, updated_at FROM events WHERE status='published'") as $r) {
+        $add('/events?slug=' . $r['slug'], $r['updated_at'], 'weekly', '0.6');
+    }
+    foreach (db_all("SELECT slug, updated_at FROM campaigns WHERE status IN ('active','completed')") as $r) {
+        $add('/campaigns?slug=' . $r['slug'], $r['updated_at'], 'weekly', '0.7');
+    }
+    foreach (db_all("SELECT slug, updated_at FROM schemes WHERE status='active'") as $r) {
+        $add('/schemes?slug=' . $r['slug'], $r['updated_at'], 'monthly', '0.5');
+    }
+    foreach (db_all("SELECT slug, updated_at FROM careers WHERE status='open'") as $r) {
+        $add('/career?slug=' . $r['slug'], $r['updated_at'], 'weekly', '0.5');
+    }
+    foreach (db_all("SELECT slug, updated_at FROM projects WHERE deleted_at IS NULL") as $r) {
+        $add('/projects?slug=' . $r['slug'], $r['updated_at'], 'monthly', '0.6');
+    }
+    foreach (db_all("SELECT slug, updated_at FROM courses WHERE status='published'") as $r) {
+        $add('/course?slug=' . $r['slug'], $r['updated_at'], 'monthly', '0.6');
+    }
+} catch (Throwable $e) {
+    // Tables may be partly seeded; static URLs still emit.
+}
 
-      <?php if ($posts !== []): ?>
-      <div>
-        <h2 class="footer-heading text-content">Latest posts</h2>
-        <ul class="space-y-1.5">
-          <?php foreach ($posts as $p): ?><li><a href="<?= e(url('blog-details.php?slug=' . urlencode((string) $p['slug']))) ?>" class="text-sm text-content-muted hover:text-brand-600"><?= e($p['title']) ?></a></li><?php endforeach; ?>
-        </ul>
-      </div>
-      <?php endif; ?>
-    </div>
-  </div>
-</section>
-<?php require __DIR__ . '/includes/footer.php'; ?>
+echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+foreach ($urls as $u) {
+    echo "  <url>\n";
+    echo '    <loc>' . e($u['loc']) . "</loc>\n";
+    echo '    <lastmod>' . e($u['lastmod']) . "</lastmod>\n";
+    echo '    <changefreq>' . e($u['freq']) . "</changefreq>\n";
+    echo '    <priority>' . e($u['priority']) . "</priority>\n";
+    echo "  </url>\n";
+}
+echo '</urlset>';

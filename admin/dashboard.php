@@ -1,172 +1,348 @@
 <?php
-require __DIR__ . '/includes/auth.php';
-$admin_title = 'Dashboard';
-$u = current_user();
-$hour = (int) date('H');
-$greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+/**
+ * =============================================================================
+ *  Admin dashboard — real stat counts, Chart.js charts, recent activity,
+ *  quick actions. Every count is a live query.
+ * =============================================================================
+ */
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_admin();
 
-/* ---- real KPIs from the database ---- */
-$raised = (int) db_val("SELECT COALESCE(SUM(raised_amount),0) FROM campaigns WHERE deleted_at IS NULL");
-$kpis = [
-    ['label' => 'Total Raised', 'value' => '₹' . inr($raised), 'sub' => 'All campaigns', 'icon' => 'fa-hand-holding-dollar', 'grad' => 'from-emerald-500 to-emerald-600', 'flag' => false],
-    ['label' => 'Active Campaigns', 'value' => (string) (int) db_val("SELECT COUNT(*) FROM campaigns WHERE deleted_at IS NULL AND status='active'"), 'sub' => 'Running now', 'icon' => 'fa-bullhorn', 'grad' => 'from-orange-500 to-orange-600', 'flag' => false],
-    ['label' => 'Programmes', 'value' => (string) (int) db_val("SELECT COUNT(*) FROM programs WHERE deleted_at IS NULL"), 'sub' => 'Active programmes', 'icon' => 'fa-graduation-cap', 'grad' => 'from-purple-500 to-purple-600', 'flag' => false],
-    ['label' => 'Donors', 'value' => (string) (int) db_val("SELECT COALESCE(SUM(donor_count),0) FROM campaigns WHERE deleted_at IS NULL"), 'sub' => 'Total supporters', 'icon' => 'fa-hand-holding-heart', 'grad' => 'from-rose-500 to-rose-600', 'flag' => false],
-    ['label' => 'Unread Messages', 'value' => (string) (int) db_val("SELECT COUNT(*) FROM contacts WHERE is_read=0"), 'sub' => 'Contact inbox', 'icon' => 'fa-inbox', 'grad' => 'from-sky-500 to-sky-600', 'flag' => (int) db_val("SELECT COUNT(*) FROM contacts WHERE is_read=0") > 0],
-    ['label' => 'Team Members', 'value' => (string) (int) db_val("SELECT COUNT(*) FROM team_members WHERE deleted_at IS NULL"), 'sub' => 'Staff & leadership', 'icon' => 'fa-users', 'grad' => 'from-pink-500 to-pink-600', 'flag' => false],
-    ['label' => 'Testimonials', 'value' => (string) (int) db_val("SELECT COUNT(*) FROM testimonials WHERE deleted_at IS NULL"), 'sub' => 'Community voices', 'icon' => 'fa-quote-left', 'grad' => 'from-amber-500 to-amber-600', 'flag' => false],
-    ['label' => 'Published Pages', 'value' => (string) (int) db_val("SELECT COUNT(*) FROM pages WHERE deleted_at IS NULL AND status='published'"), 'sub' => 'Live on site', 'icon' => 'fa-file-lines', 'grad' => 'from-cyan-500 to-cyan-600', 'flag' => false],
+$page_title  = 'Dashboard';
+$load_charts = true;
+
+/* ---- Live counts (each in a try in case a table is briefly unavailable) --- */
+$stat = static function (string $table, string $where = '', array $p = []): int {
+    try { return db_count($table, $where, $p); } catch (Throwable $e) { return 0; }
+};
+
+$stats = [
+    ['label' => 'Published Blogs', 'value' => $stat('blogs', "status='published'"),        'icon' => 'pen-line',       'sub' => 'Live on the site',  'grad' => 'dg-green',  'link' => 'blogs'],
+    ['label' => 'Upcoming Events', 'value' => $stat('events', "start_datetime>=NOW() AND status='published'"), 'icon' => 'calendar-days', 'sub' => 'Scheduled ahead', 'grad' => 'dg-teal',   'link' => 'events'],
+    ['label' => 'Total Donations','value' => $stat('donations'),                            'icon' => 'coins',          'sub' => 'All-time received', 'grad' => 'dg-gold',   'link' => 'donations'],
+    ['label' => 'New Volunteers',  'value' => $stat('volunteers', "status='new'"),          'icon' => 'hand-heart',     'sub' => 'Awaiting review',   'grad' => 'dg-blue',   'link' => 'volunteers'],
+    ['label' => 'Unread Messages', 'value' => $stat('contact_messages', "status='unread'"), 'icon' => 'message-square', 'sub' => 'In your inbox',     'grad' => 'dg-rose',   'link' => 'contact-messages'],
+    ['label' => 'Subscribers',     'value' => $stat('newsletter_subscribers', "status='subscribed'"), 'icon' => 'mail', 'sub' => 'Newsletter list',   'grad' => 'dg-cyan',   'link' => 'newsletter'],
+    ['label' => 'Programs',        'value' => $stat('programs', "status='active'"),         'icon' => 'layout-grid',    'sub' => 'Currently active',  'grad' => 'dg-violet', 'link' => 'programs'],
+    ['label' => 'Team Members',    'value' => $stat('team_members', 'status=1'),            'icon' => 'users',          'sub' => 'Active profiles',   'grad' => 'dg-indigo', 'link' => 'team'],
 ];
 
-/* ---- chart data (real) ---- */
-$campaignRows = db_all("SELECT title, raised_amount, goal_amount FROM campaigns WHERE deleted_at IS NULL ORDER BY raised_amount DESC LIMIT 6");
-$chartLabels = array_map(fn ($r) => mb_strlen($r['title']) > 18 ? mb_substr($r['title'], 0, 18) . '…' : $r['title'], $campaignRows);
-$chartRaised = array_map(fn ($r) => round((int) $r['raised_amount'] / 100), $campaignRows);
-$chartGoal = array_map(fn ($r) => round((int) $r['goal_amount'] / 100), $campaignRows);
+/* ---- Donations over the last 6 months (for the line chart) ---- */
+$months = [];
+$donationSeries = [];
+for ($i = 5; $i >= 0; $i--) {
+    $label = date('M Y', strtotime("-$i months"));
+    $ym    = date('Y-m', strtotime("-$i months"));
+    $months[] = $label;
+    try {
+        $donationSeries[] = (float) db_value(
+            "SELECT COALESCE(SUM(amount),0) FROM donations WHERE DATE_FORMAT(created_at,'%Y-%m') = :ym",
+            [':ym' => $ym]
+        );
+    } catch (Throwable $e) {
+        $donationSeries[] = 0;
+    }
+}
 
-$content = [
-    'Campaigns' => (int) db_val("SELECT COUNT(*) FROM campaigns WHERE deleted_at IS NULL"),
-    'Programmes' => (int) db_val("SELECT COUNT(*) FROM programs WHERE deleted_at IS NULL"),
-    'Events' => (int) db_val("SELECT COUNT(*) FROM events WHERE deleted_at IS NULL"),
-    'Team' => (int) db_val("SELECT COUNT(*) FROM team_members WHERE deleted_at IS NULL"),
-    'Testimonials' => (int) db_val("SELECT COUNT(*) FROM testimonials WHERE deleted_at IS NULL"),
-    'FAQs' => (int) db_val("SELECT COUNT(*) FROM faqs WHERE deleted_at IS NULL"),
+/* ---- Content overview (for the doughnut chart) ---- */
+$overview = [
+    'Blogs'    => $stat('blogs'),
+    'Events'   => $stat('events'),
+    'Programs' => $stat('programs'),
+    'Projects' => $stat('projects'),
+    'Gallery'  => $stat('gallery_media'),
+    'Team'     => $stat('team_members'),
 ];
 
-$activity = db_all("SELECT a.action, a.created_at, u.name FROM user_activity_logs a LEFT JOIN users u ON u.id=a.user_id ORDER BY a.id DESC LIMIT 6");
-$messages = db_all("SELECT name, subject, is_read, created_at FROM contacts ORDER BY id DESC LIMIT 6");
+/* ---- Recent activity & messages (login/logout noise filtered out) ---- */
+try {
+    $activity = db_all("SELECT a.*, u.name AS user_name FROM activity_logs a
+                        LEFT JOIN users u ON u.id = a.user_id
+                        WHERE a.action NOT IN ('login','logout')
+                        ORDER BY a.created_at DESC LIMIT 8");
+    if (!$activity) { // fall back to everything if there's nothing else yet
+        $activity = db_all("SELECT a.*, u.name AS user_name FROM activity_logs a
+                            LEFT JOIN users u ON u.id = a.user_id ORDER BY a.created_at DESC LIMIT 8");
+    }
+} catch (Throwable $e) { $activity = []; }
 
-require __DIR__ . '/includes/header.php';
+/** Pick an icon for an activity row from its action verb. */
+$actIcon = static function (string $action): string {
+    return match (true) {
+        str_contains($action, 'issue')  => 'file-check',
+        str_contains($action, 'backup') => 'database-backup',
+        str_contains($action, 'create') => 'plus',
+        str_contains($action, 'update') => 'pencil',
+        str_contains($action, 'delete') => 'trash-2',
+        str_contains($action, 'export') => 'download',
+        str_contains($action, '2fa')    => 'shield-check',
+        default                         => 'circle-dot',
+    };
+};
+try {
+    $messages = db_all("SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 5");
+} catch (Throwable $e) { $messages = []; }
+
+/* ---- Campaign performance (goal vs raised, ranked) ---- */
+try {
+    $campaignPerf = db_all("SELECT title, slug, goal_amount, raised_amount FROM campaigns
+                            WHERE deleted_at IS NULL AND status IN ('active','completed')
+                            ORDER BY raised_amount DESC LIMIT 5");
+} catch (Throwable $e) { $campaignPerf = []; }
+
+/* ---- Pending approvals across every application type ---- */
+$pendingItems = [
+    ['label' => 'Volunteer Applications',   'icon' => 'hand-heart',     'link' => 'volunteers',                'count' => $stat('volunteers', "status='new'")],
+    ['label' => 'Internship Applications',  'icon' => 'graduation-cap', 'link' => 'internships',               'count' => $stat('internships', "status='new'")],
+    ['label' => 'Partner Requests',         'icon' => 'handshake',      'link' => 'partner-applications',      'count' => $stat('partner_applications', "status='new'")],
+    ['label' => 'Scholarship Applications', 'icon' => 'clipboard-list', 'link' => 'scholarship-applications',  'count' => $stat('scholarship_applications', "status='new'")],
+    ['label' => 'Membership Applications',  'icon' => 'id-card',        'link' => 'membership-applications',   'count' => $stat('membership_applications', "status='new'")],
+    ['label' => 'Job Applications',         'icon' => 'briefcase',      'link' => 'job-applications',          'count' => $stat('job_applications', "status='new'")],
+    ['label' => 'Comments to moderate',     'icon' => 'message-square', 'link' => 'comments',                  'count' => $stat('blog_comments', "status='pending'")],
+];
+$pendingTotal = array_sum(array_column($pendingItems, 'count'));
+
+/* ---- Greeting (from the hour) + banner pending counts (all live, all safe) ---- */
+$hour = (int) date('G');
+if ($hour < 12)     { $greeting = 'Good morning';   $greetIcon = 'sunrise'; }
+elseif ($hour < 17) { $greeting = 'Good afternoon'; $greetIcon = 'sun'; }
+else                { $greeting = 'Good evening';   $greetIcon = 'moon'; }
+
+$pendingApprovals = $stat('blog_comments', "status='pending'")
+                  + $stat('event_registrations', "status='pending'");
+$newMessages      = $stat('contact_messages', "status='unread'");
+$todayLabel       = date('l, j M Y');
+
+include __DIR__ . '/partials/head.php';
 ?>
 
-<!-- ===== Welcome banner ===== -->
-<div class="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-800 via-brand-700 to-brand-900 p-6 text-white shadow-xl sm:p-8">
-  <div class="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-accent-500/20 blur-2xl"></div>
-  <div class="absolute -bottom-10 right-24 h-32 w-32 rounded-full bg-white/10 blur-2xl"></div>
-  <div class="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-    <div>
-      <p class="text-sm text-white/70"><?= e($greeting) ?>,</p>
-      <h2 class="mt-1 font-display text-2xl font-extrabold sm:text-3xl"><?= e($u['name'] ?? 'Admin') ?> 👋</h2>
-      <p class="mt-2 text-sm text-white/70"><i class="fa-regular fa-calendar mr-1"></i><?= date('l, d M Y') ?></p>
-      <?php $unread = (int) db_val("SELECT COUNT(*) FROM contacts WHERE is_read=0"); ?>
-      <?php if ($unread > 0): ?><p class="mt-3 inline-flex items-center gap-2 text-sm text-amber-300"><span class="h-1.5 w-1.5 rounded-full bg-amber-300"></span> <?= $unread ?> new message<?= $unread === 1 ? '' : 's' ?> waiting</p><?php endif; ?>
+<!-- Welcome banner -->
+<div class="dash-welcome">
+    <div class="dash-welcome__main">
+        <img class="dash-welcome__avatar" src="<?= e(image_url($admin['avatar'] ?? null, 'avatar')) ?>" alt="">
+        <div class="dash-welcome__intro">
+            <span class="dash-welcome__eyebrow"><?= lucide($greetIcon) ?> <?= e($greeting) ?>,</span>
+            <h1 class="dash-welcome__name">
+                <?= e($admin['name'] ?? 'Admin') ?>
+                <span class="dash-role-pill"><?= lucide('shield-check') ?> Super Admin</span>
+            </h1>
+            <div class="dash-welcome__meta">
+                <span><?= lucide('calendar-days') ?> <?= e($todayLabel) ?></span>
+                <span><?= lucide('clock') ?> <span id="dashClock">--:--:--</span></span>
+                <?php $lastLogin = db_value("SELECT last_login_at FROM users WHERE id = :id", [':id' => current_user_id()]);
+                if ($lastLogin): ?><span><?= lucide('log-in') ?> Last login <?= e(format_datetime($lastLogin)) ?></span><?php endif; ?>
+            </div>
+            <div class="dash-pending">
+                <span class="dash-chip"><?= lucide('clipboard-check') ?> <strong><?= e(number_format($pendingApprovals)) ?></strong> pending approvals</span>
+                <span class="dash-chip"><?= lucide('mail') ?> <strong><?= e(number_format($newMessages)) ?></strong> new messages</span>
+            </div>
+        </div>
     </div>
-    <div class="flex flex-wrap gap-2">
-      <a href="<?= e(url('admin/campaign-form.php')) ?>" class="rounded-xl bg-accent-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg transition hover:bg-accent-600"><i class="fa-solid fa-plus mr-1.5"></i>New Campaign</a>
-      <a href="<?= e(url('admin/programs-form.php')) ?>" class="rounded-xl bg-white/15 px-4 py-2.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/25"><i class="fa-solid fa-graduation-cap mr-1.5"></i>Add Programme</a>
-      <a href="<?= e(url('admin/events-form.php')) ?>" class="rounded-xl bg-white/15 px-4 py-2.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/25"><i class="fa-solid fa-calendar-plus mr-1.5"></i>Add Event</a>
+    <div class="dash-welcome__actions">
+        <a class="dbtn dbtn-solid" href="<?= e(admin_url('blogs?action=create')) ?>"><?= lucide('plus') ?> New Blog Post</a>
+        <a class="dbtn dbtn-ghost" href="<?= e(admin_url('events?action=create')) ?>"><?= lucide('calendar-plus') ?> Add Event</a>
+        <a class="dbtn dbtn-ghost" href="<?= e(url('/')) ?>" target="_blank"><?= lucide('external-link') ?> View Site</a>
     </div>
-  </div>
 </div>
 
-<!-- ===== KPI cards ===== -->
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-  <?php foreach ($kpis as $k): ?>
-    <div class="relative rounded-2xl border border-edge bg-surface p-5 shadow-card transition hover:shadow-raised">
-      <?php if ($k['flag']): ?><span class="absolute right-4 top-4 h-2.5 w-2.5 rounded-full bg-rose-500"></span><?php endif; ?>
-      <span class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br <?= e($k['grad']) ?> text-white shadow-lg"><i class="fa-solid <?= e($k['icon']) ?> text-lg"></i></span>
-      <div class="mt-4 font-display text-2xl font-extrabold tracking-tight text-content sm:text-3xl"><?= e($k['value']) ?></div>
-      <div class="mt-1 text-sm font-semibold text-content"><?= e($k['label']) ?></div>
-      <div class="text-xs text-content-muted"><?= e($k['sub']) ?></div>
+<!-- Quick action strip -->
+<div class="dash-quickbar">
+    <a class="dash-qa" href="<?= e(admin_url('hero-slides?action=create')) ?>"><?= lucide('image') ?> Add Slide</a>
+    <a class="dash-qa" href="<?= e(admin_url('programs?action=create')) ?>"><?= lucide('layout-grid') ?> Add Program</a>
+    <a class="dash-qa" href="<?= e(admin_url('events?action=create')) ?>"><?= lucide('calendar-days') ?> Add Event</a>
+    <a class="dash-qa" href="<?= e(admin_url('gallery-albums?action=create')) ?>"><?= lucide('camera') ?> New Album</a>
+    <a class="dash-qa" href="<?= e(admin_url('team?action=create')) ?>"><?= lucide('users') ?> Add Member</a>
+    <a class="dash-qa" href="<?= e(admin_url('document-hub')) ?>"><?= lucide('stamp') ?> Documents</a>
+    <a class="dash-qa" href="<?= e(admin_url('settings')) ?>"><?= lucide('settings') ?> Settings</a>
+</div>
+
+<!-- Section: Overview -->
+<div class="dash-section-head"><h2><?= lucide('layout-dashboard') ?> Overview</h2><span class="muted">Live figures across your platform</span></div>
+<div class="dash-stats">
+    <?php foreach ($stats as $s): ?>
+        <a class="dash-stat" href="<?= e(admin_url($s['link'])) ?>">
+            <div class="dash-stat__icon <?= e($s['grad']) ?>"><?= lucide($s['icon']) ?></div>
+            <div class="dash-stat__body">
+                <div class="dash-stat__value" data-count="<?= (int) $s['value'] ?>"><?= e(number_format($s['value'])) ?></div>
+                <div class="dash-stat__label"><?= e($s['label']) ?></div>
+                <div class="dash-stat__sub"><?= e($s['sub']) ?></div>
+            </div>
+            <span class="dash-stat__go"><?= lucide('arrow-up-right') ?></span>
+        </a>
+    <?php endforeach; ?>
+</div>
+
+<!-- Section: Analytics -->
+<div class="dash-section-head"><h2><?= lucide('bar-chart-3') ?> Analytics &amp; Actions</h2><span class="muted">Trends and what needs your attention</span></div>
+<div class="dash-grid-2-1">
+    <div class="panel">
+        <div class="panel-head"><h3 class="panel-title"><?= lucide('trending-up') ?> Donations — Last 6 Months</h3></div>
+        <div class="panel-body"><canvas id="donationChart" height="150"></canvas></div>
     </div>
-  <?php endforeach; ?>
-</div>
-
-<!-- ===== Secondary quick stats ===== -->
-<?php
-$publishedContent = (int) db_val("SELECT COUNT(*) FROM campaigns WHERE deleted_at IS NULL")
-    + (int) db_val("SELECT COUNT(*) FROM programs WHERE deleted_at IS NULL")
-    + (int) db_val("SELECT COUNT(*) FROM events WHERE deleted_at IS NULL AND status='published'")
-    + (int) db_val("SELECT COUNT(*) FROM posts WHERE deleted_at IS NULL AND status='published'");
-$subscribers = (int) db_val("SELECT COUNT(*) FROM newsletter_subscribers WHERE status='subscribed'");
-?>
-<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-  <div class="flex items-center gap-4 rounded-2xl border border-edge bg-surface p-5 shadow-card">
-    <span class="grid h-14 w-14 place-items-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg"><i class="fa-solid fa-layer-group text-xl"></i></span>
-    <div><div class="font-display text-2xl font-extrabold text-content"><?= $publishedContent ?></div><div class="text-sm font-medium text-content-muted">Published content items</div><div class="text-xs text-content-subtle">Campaigns · programmes · events · posts</div></div>
-  </div>
-  <div class="flex items-center gap-4 rounded-2xl border border-edge bg-surface p-5 shadow-card">
-    <span class="grid h-14 w-14 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 text-white shadow-lg"><i class="fa-solid fa-paper-plane text-xl"></i></span>
-    <div><div class="font-display text-2xl font-extrabold text-content"><?= $subscribers ?></div><div class="text-sm font-medium text-content-muted">Newsletter subscribers</div><div class="text-xs text-content-subtle">Opted in for updates</div></div>
-  </div>
-</div>
-
-<!-- ===== Charts row ===== -->
-<div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-  <div class="rounded-2xl border border-edge bg-surface p-6 shadow-card lg:col-span-2">
-    <div class="mb-4 flex items-center justify-between">
-      <div><h3 class="font-display text-base font-bold text-content">Campaign funds</h3><p class="text-xs text-content-muted">Raised vs goal (₹)</p></div>
-      <span class="rounded-lg bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700"><i class="fa-solid fa-indian-rupee-sign mr-1"></i>Fundraising</span>
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title"><?= lucide('clipboard-check') ?> Pending Approvals</h3>
+            <?php if ($pendingTotal > 0): ?><span class="pill pill-amber"><?= (int) $pendingTotal ?> total</span><?php endif; ?>
+        </div>
+        <div class="panel-body">
+            <ul class="approval-list">
+                <?php foreach ($pendingItems as $pi): ?>
+                    <li>
+                        <a href="<?= e(admin_url($pi['link'])) ?>">
+                            <span class="ap-ico"><?= lucide($pi['icon']) ?></span>
+                            <span class="ap-label"><?= e($pi['label']) ?></span>
+                            <span class="ap-count <?= $pi['count'] > 0 ? 'has' : '' ?>"><?= (int) $pi['count'] ?></span>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
     </div>
-    <div class="h-72"><canvas id="chartCampaigns"></canvas></div>
-  </div>
-  <div class="rounded-2xl border border-edge bg-surface p-6 shadow-card">
-    <div class="mb-4"><h3 class="font-display text-base font-bold text-content">Content overview</h3><p class="text-xs text-content-muted">Items by type</p></div>
-    <div class="h-72"><canvas id="chartContent"></canvas></div>
-  </div>
 </div>
 
-<!-- ===== Activity + messages ===== -->
-<div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-  <div class="rounded-2xl border border-edge bg-surface p-6 shadow-card lg:col-span-2">
-    <div class="mb-4 flex items-center justify-between"><h3 class="font-display text-base font-bold text-content">Recent messages</h3><a href="<?= e(url('admin/contacts.php')) ?>" class="text-sm font-semibold text-brand-700 hover:text-accent-600">View all →</a></div>
-    <div class="scroll-x"><table class="w-full text-left text-sm">
-      <thead class="border-b border-edge text-xs uppercase tracking-wide text-content-muted"><tr><th class="pb-2 font-semibold">From</th><th class="pb-2 font-semibold">Subject</th><th class="pb-2 font-semibold">When</th><th class="pb-2 font-semibold">Status</th></tr></thead>
-      <tbody class="divide-y divide-edge">
-        <?php if ($messages === []): ?><tr><td colspan="4" class="py-6 text-center text-content-muted">No messages yet.</td></tr>
-        <?php else: foreach ($messages as $m): ?>
-          <tr><td class="py-2.5 font-medium text-content"><?= e($m['name']) ?></td>
-            <td class="py-2.5 text-content-muted"><?= e($m['subject'] ?: '(no subject)') ?></td>
-            <td class="py-2.5 text-content-subtle"><?= e(date('d M', strtotime((string) $m['created_at']))) ?></td>
-            <td class="py-2.5"><?= (int) $m['is_read'] === 0 ? '<span class="rounded-full bg-amber-50 px-2 py-0.5 text-2xs font-semibold text-amber-700">New</span>' : '<span class="rounded-full bg-surface-sunken px-2 py-0.5 text-2xs font-semibold text-content-muted">Read</span>' ?></td></tr>
-        <?php endforeach; endif; ?>
-      </tbody>
-    </table></div>
-  </div>
-  <div class="rounded-2xl border border-edge bg-surface p-6 shadow-card">
-    <h3 class="mb-4 font-display text-base font-bold text-content">Activity log</h3>
-    <ol class="space-y-4">
-      <?php if ($activity === []): ?><li class="text-sm text-content-muted">No activity yet.</li>
-      <?php else: foreach ($activity as $a): ?>
-        <li class="flex gap-3">
-          <span class="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600"><i class="fa-solid fa-wave-square text-xs"></i></span>
-          <div><p class="text-sm text-content"><?= e(ucwords(str_replace(['.', '_'], ' ', (string) $a['action']))) ?></p>
-            <p class="text-xs text-content-muted"><?= e($a['name'] ?? 'System') ?> · <?= e(date('d M, h:i A', strtotime((string) $a['created_at']))) ?></p></div>
-        </li>
-      <?php endforeach; endif; ?>
-    </ol>
-  </div>
+<div class="dash-grid-1-1">
+    <div class="panel">
+        <div class="panel-head"><h3 class="panel-title"><?= lucide('pie-chart') ?> Content Overview</h3></div>
+        <div class="panel-body" style="display:grid;place-items:center;"><canvas id="overviewChart" height="150"></canvas></div>
+    </div>
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title"><?= lucide('megaphone') ?> Campaign Performance</h3>
+            <a class="btn btn-outline btn-sm" href="<?= e(admin_url('campaigns')) ?>">All campaigns</a>
+        </div>
+        <div class="panel-body">
+            <?php if ($campaignPerf): ?>
+                <?php foreach ($campaignPerf as $r => $cp):
+                    $goal = (float) $cp['goal_amount']; $raised = (float) $cp['raised_amount'];
+                    $pct = $goal > 0 ? min(100, (int) round($raised / $goal * 100)) : 0; ?>
+                    <div class="camp-row">
+                        <div class="camp-top">
+                            <span class="camp-rank"><?= $r + 1 ?></span>
+                            <span class="camp-name"><?= e($cp['title']) ?></span>
+                            <strong><?= (int) $pct ?>%</strong>
+                        </div>
+                        <div class="progress"><div class="progress-bar" style="width:<?= (int) $pct ?>%;"></div></div>
+                        <div class="camp-meta"><?= e(money($raised)) ?> raised of <?= e(money($goal)) ?> goal</div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="empty-state"><div class="icon"><?= lucide('megaphone') ?></div>No campaigns yet. <a href="<?= e(admin_url('campaigns?action=create')) ?>">Create one</a>.</div>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
 
-<?php
-$labels = json_encode($chartLabels);
-$raisedJson = json_encode($chartRaised);
-$goalJson = json_encode($chartGoal);
-$contentLabels = json_encode(array_keys($content));
-$contentData = json_encode(array_values($content));
-$admin_scripts = <<<JS
+<!-- Section: Recent -->
+<div class="dash-section-head"><h2><?= lucide('history') ?> Recent</h2><span class="muted">Latest activity and messages</span></div>
+<div class="dash-grid-1-1">
+    <div class="panel">
+        <div class="panel-head"><h3 class="panel-title"><?= lucide('activity') ?> Recent Activity</h3><a class="btn btn-outline btn-sm" href="<?= e(admin_url('activity-logs')) ?>">View all</a></div>
+        <div class="panel-body">
+            <?php if ($activity): ?>
+                <ul class="activity-list dash-feed">
+                    <?php foreach ($activity as $a): ?>
+                        <li class="activity-item">
+                            <span class="dot"><?= lucide($actIcon((string) $a['action'])) ?></span>
+                            <div>
+                                <strong><?= e($a['user_name'] ?? 'System') ?></strong>
+                                <?= e($a['description'] ?: $a['action']) ?>
+                                <br><time><?= e(time_ago($a['created_at'])) ?></time>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php else: ?>
+                <div class="empty-state"><div class="icon"><?= lucide('clipboard-list') ?></div>No activity yet.</div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h3 class="panel-title"><?= lucide('mail') ?> Recent Messages</h3><a class="btn btn-outline btn-sm" href="<?= e(admin_url('contact-messages')) ?>">Inbox</a></div>
+        <div class="panel-body">
+            <?php if ($messages): ?>
+                <ul class="activity-list dash-feed">
+                    <?php foreach ($messages as $m): ?>
+                        <li class="activity-item msg">
+                            <span class="dot"><?= lucide('mail') ?></span>
+                            <div>
+                                <strong><?= e($m['name']) ?></strong>
+                                <?php if ($m['status'] === 'unread'): ?><span class="pill pill-blue">New</span><?php endif; ?>
+                                <br><?= e(excerpt($m['message'], 12)) ?>
+                                <br><time><?= e(time_ago($m['created_at'])) ?></time>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php else: ?>
+                <div class="empty-state"><div class="icon"><?= lucide('inbox') ?></div>No messages yet.</div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
 <script>
-(function () {
-  if (!window.Chart) return;
-  Chart.defaults.font.family = "Inter, system-ui, sans-serif";
-  var c1 = document.getElementById('chartCampaigns');
-  if (c1) new Chart(c1, {
-    type: 'bar',
-    data: { labels: {$labels}, datasets: [
-      { label: 'Raised', data: {$raisedJson}, backgroundColor: '#f97316', borderRadius: 6, maxBarThickness: 28 },
-      { label: 'Goal', data: {$goalJson}, backgroundColor: 'rgba(30,58,138,0.25)', borderRadius: 6, maxBarThickness: 28 }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } },
-      scales: { y: { beginAtZero: true, ticks: { callback: function (v) { return '₹' + v.toLocaleString('en-IN'); } } } } }
-  });
-  var c2 = document.getElementById('chartContent');
-  if (c2) new Chart(c2, {
-    type: 'doughnut',
-    data: { labels: {$contentLabels}, datasets: [{ data: {$contentData},
-      backgroundColor: ['#1e3a8a','#7c3aed','#0891b2','#db2777','#f59e0b','#059669'], borderWidth: 0 }]},
-    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom' } } }
-  });
-})();
+    // Chart data injected from PHP. Charts are created after Chart.js loads
+    // (foot.php loads it synchronously before DOMContentLoaded fires).
+    window.__DASH__ = {
+        months: <?= json_encode($months) ?>,
+        donations: <?= json_encode($donationSeries) ?>,
+        overviewLabels: <?= json_encode(array_keys($overview)) ?>,
+        overviewData: <?= json_encode(array_values($overview)) ?>,
+    };
+
+    // Live ticking clock in the welcome banner.
+    (function () {
+        var el = document.getElementById('dashClock');
+        if (!el) return;
+        function tick() {
+            el.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        tick(); setInterval(tick, 1000);
+    })();
+
+    // Animated KPI counters (respects reduced-motion).
+    (function () {
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var nodes = document.querySelectorAll('.dash-stat__value[data-count]');
+        nodes.forEach(function (el) {
+            var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+            if (reduce || target <= 0) { el.textContent = target.toLocaleString(); return; }
+            var start = null, dur = 900;
+            function step(ts) {
+                if (start === null) start = ts;
+                var p = Math.min((ts - start) / dur, 1);
+                var eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(target * eased).toLocaleString();
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        });
+    })();
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof Chart === 'undefined') return;
+        const d = window.__DASH__;
+        const brand = '#063566';
+        new Chart(document.getElementById('donationChart'), {
+            type: 'line',
+            data: { labels: d.months, datasets: [{
+                label: 'Donations (INR)', data: d.donations, borderColor: brand,
+                backgroundColor: 'rgba(6,53,102,.14)', fill: true, tension: .35, pointRadius: 4,
+                pointBackgroundColor: brand,
+            }]},
+            options: { responsive: true, plugins: { legend: { display: false } },
+                       scales: { y: { beginAtZero: true } } },
+        });
+        new Chart(document.getElementById('overviewChart'), {
+            type: 'doughnut',
+            data: { labels: d.overviewLabels, datasets: [{
+                data: d.overviewData,
+                backgroundColor: ['#063566','#084881','#E67B1D','#063566','#084881','#e11d48'],
+            }]},
+            options: { responsive: true, plugins: { legend: { position: 'right' } }, cutout: '62%' },
+        });
+    });
 </script>
-JS;
-require __DIR__ . '/includes/footer.php';
+
+<?php include __DIR__ . '/partials/foot.php'; ?>

@@ -1,53 +1,169 @@
-# Eduskill India Foundation — flat-file Core PHP. No front controller: each .php page serves itself.
+# =============================================================================
+#  EDUSKILL INDIA FOUNDATION — Apache configuration
+# =============================================================================
+#  Works on Apache shared hosting with mod_rewrite. If the site is installed at
+#  a different path, update RewriteBase below.
+# =============================================================================
 
-Options -Indexes
+Options -Indexes +FollowSymLinks
 DirectoryIndex index.php
 
-# ---------------------------------------------------------------- clean URLs (optional)
-# Lets /about resolve to about.php (SEO-friendly). Real files/dirs are served as-is.
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-
-  # Block risky HTTP methods.
-  RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
-  RewriteRule ^ - [F]
-
-  # If "/name" has no extension and "name.php" exists, serve it.
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}.php -f
-  RewriteRule ^(.+?)/?$ $1.php [L]
-</IfModule>
-
-# ---------------------------------------------------------------- protect sensitive folders
-# includes/, database/ (holds database.sql), storage/ are loaded server-side only.
-RedirectMatch 403 ^.*/(includes|database|storage)/.*\.(php|sql|log|md)$
-
-# ---------------------------------------------------------------- deny dotfiles (.env, .git, .htaccess)
-<FilesMatch "^\.(?!well-known)">
-  <IfModule mod_authz_core.c>
-    Require all denied
-  </IfModule>
-  <IfModule !mod_authz_core.c>
-    Order deny,allow
-    Deny from all
-  </IfModule>
+# -----------------------------------------------------------------------------
+# Never serve developer/config files that live in the web root.
+# README.md, INSTALL.md and TESTING.md are unlinked but were fetchable with a
+# plain GET — INSTALL.md documents the deployment layout and DB setup steps.
+# Handled with FilesMatch (not a RewriteRule) so it still applies on hosts where
+# mod_rewrite is unavailable.
+# -----------------------------------------------------------------------------
+<FilesMatch "\.(md|markdown|sql|log|ini|yml|yaml|lock|json|dist|bak|old|orig|save|swp|sh)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
 </FilesMatch>
 
-# ---------------------------------------------------------------- security headers
-<IfModule mod_headers.c>
-  Header always set X-Content-Type-Options "nosniff"
-  Header always set X-Frame-Options "SAMEORIGIN"
-  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+# manifest.php serves the PWA manifest through a rewrite, so the .json deny
+# above must not apply to a real manifest file if one is ever generated.
+<Files "manifest.webmanifest">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+</Files>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # If installed in a subfolder (local XAMPP), this is /pwf/.
+    # If installed at a domain root, change to:  RewriteBase /
+    RewriteBase /pwf/
+
+    # -------------------------------------------------------------------------
+    # Reject TRACK and other non-standard methods here. NOTE: real TRACE cannot
+    # be blocked from .htaccess — Apache's core answers TRACE before mod_rewrite
+    # runs — so it is disabled with "TraceEnable off" in httpd.conf (applied at
+    # server level; see the VAPT report's production checklist).
+    # -------------------------------------------------------------------------
+    RewriteCond %{REQUEST_METHOD} ^(TRACK|DEBUG)$ [NC]
+    RewriteRule ^ - [F]
+
+    # -------------------------------------------------------------------------
+    # Force HTTPS (uncomment on production once an SSL certificate is active)
+    # -------------------------------------------------------------------------
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # -------------------------------------------------------------------------
+    # Block direct access to sensitive folders/files
+    # -------------------------------------------------------------------------
+    RewriteRule ^(includes|database|logs|docs)/ - [F,L]
+    RewriteRule ^config\.php$ - [F,L]
+
+    # Dynamic XML sitemap (only when no static sitemap.xml has been generated)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+    # PWA manifest
+    RewriteRule ^manifest\.webmanifest$ manifest.php [L]
+
+    # Pretty content URLs (optional): /blog/slug, /program/slug, etc.
+    RewriteRule ^blog/([A-Za-z0-9\-]+)/?$ blog-details.php?slug=$1 [L,QSA]
+    RewriteRule ^program/([A-Za-z0-9\-]+)/?$ programs.php?slug=$1 [L,QSA]
+    RewriteRule ^event/([A-Za-z0-9\-]+)/?$ events.php?slug=$1 [L,QSA]
+    RewriteRule ^campaign/([A-Za-z0-9\-]+)/?$ campaigns.php?slug=$1 [L,QSA]
+    RewriteRule ^scheme/([A-Za-z0-9\-]+)/?$ schemes.php?slug=$1 [L,QSA]
+
+    # -------------------------------------------------------------------------
+    # Clean URLs: /about  ->  /about.php  (only if the .php file exists)
+    # -------------------------------------------------------------------------
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}\.php -f
+    RewriteRule ^(.+?)/?$ $1.php [L]
+
+    # Redirect requests that explicitly include .php to the clean URL.
+    # %1 is captured from THE_REQUEST, so it is the FULL path from the server
+    # root (e.g. "pwf/about" on a subfolder install, "about" at a domain root).
+    # It must be substituted with a leading slash: a relative substitution is
+    # resolved against RewriteBase and would yield /pwf/pwf/about -> 404.
+    RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+    RewriteRule ^ /%1 [R=301,L,NE]
 </IfModule>
 
-# ---------------------------------------------------------------- caching for static assets
-<IfModule mod_expires.c>
-  ExpiresActive On
-  ExpiresByType text/css "access plus 7 days"
-  ExpiresByType application/javascript "access plus 7 days"
-  ExpiresByType image/png "access plus 30 days"
-  ExpiresByType image/jpeg "access plus 30 days"
-  ExpiresByType image/svg+xml "access plus 30 days"
-  ExpiresByType image/webp "access plus 30 days"
+# -----------------------------------------------------------------------------
+# Custom error pages
+# -----------------------------------------------------------------------------
+ErrorDocument 404 /pwf/404.php
+ErrorDocument 403 /pwf/404.php
+
+# -----------------------------------------------------------------------------
+# Block dotfiles (.env, .git, .htaccess, etc.)
+# -----------------------------------------------------------------------------
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Extra guard for config in case mod_rewrite is unavailable
+<Files "config.php">
+    Require all denied
+</Files>
+
+# -----------------------------------------------------------------------------
+# Security response headers
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # The campaign embed widget is INTENTIONALLY frame-able by third-party
+    # sites — exempt it from the anti-framing headers (PHP header_remove()
+    # cannot undo "Header always set", and "Header set" would clobber the
+    # page's own frame-ancestors CSP).
+    SetEnvIf Request_URI "/campaign-embed" PWF_EMBED_OK
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN" env=!PWF_EMBED_OK
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    # HSTS — only emitted over HTTPS (a browser ignores it on plain HTTP, and
+    # sending it during local HTTP dev would be wrong). Once the site is served
+    # over TLS this pins clients to HTTPS for a year, including subdomains.
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+    # Content-Security-Policy is intentionally permissive for the CDN scripts
+    # (Chart.js, SweetAlert2, Lucide, CKEditor) used in the admin panel. Tighten for production.
+    # Razorpay is the only gateway that runs IN the browser (donate-pay.php:148
+    # loads checkout.razorpay.com and the modal opens an api.razorpay.com iframe).
+    # Without these three entries the donation checkout is blocked by our own CSP.
+    # Cashfree/Stripe/PayPal are server-side redirects and need no CSP entry.
+    # frame-src also needs 'self' for the admin Theme Settings live preview iframe.
+    Header set Content-Security-Policy "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.ckeditor.com https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.clarity.ms https://static.hotjar.com https://script.hotjar.com https://checkout.razorpay.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdn.ckeditor.com https://www.gstatic.com https://translate.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdn.ckeditor.com data:; connect-src 'self' https://cdn.ckeditor.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://connect.facebook.net https://*.clarity.ms https://*.hotjar.com wss://*.hotjar.com https://api.razorpay.com https://lumberjack.razorpay.com https://translate.googleapis.com https://translate-pa.googleapis.com; frame-src 'self' https://www.google.com https://www.youtube.com https://www.googletagmanager.com https://*.hotjar.com https://api.razorpay.com https://checkout.razorpay.com https://translate.google.com;" env=!PWF_EMBED_OK
 </IfModule>
+
+# -----------------------------------------------------------------------------
+# Gzip / Deflate compression
+# -----------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+    AddOutputFilterByType DEFLATE application/json application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# Browser caching
+# -----------------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css                "access plus 1 month"
+    ExpiresByType application/javascript  "access plus 1 month"
+    ExpiresByType image/jpeg              "access plus 6 months"
+    ExpiresByType image/png               "access plus 6 months"
+    ExpiresByType image/webp              "access plus 6 months"
+    ExpiresByType image/svg+xml           "access plus 6 months"
+    ExpiresByType image/x-icon            "access plus 1 year"
+    ExpiresByType font/woff2              "access plus 1 year"
+    ExpiresByType text/html               "access plus 0 seconds"
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# UTF-8 default
+# -----------------------------------------------------------------------------
+AddDefaultCharset UTF-8

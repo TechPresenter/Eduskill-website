@@ -1,135 +1,698 @@
 <?php
-require __DIR__ . '/includes/auth.php';
-require_admin('settings.manage');
-$admin_title = 'Settings';
+/**
+ * =============================================================================
+ *  Admin — Website Settings (key/value editor).  SPECIAL module.
+ *  The master site-config page. Edits the `settings` table via
+ *  get_setting()/set_setting(), grouped into panels (General, Contact,
+ *  Homepage, Legal/Org, Social & Footer). Handles image uploads for the
+ *  site logo + favicon (replacing and deleting the previous file).
+ *  On first load any missing core keys are seeded with sensible defaults so
+ *  the form is never empty.
+ * =============================================================================
+ */
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_admin();
 
-// Grouped settings schema: group => [ [key, label, type, group_name] ]. type: text|textarea|color|number|tel|email
-$schema = [
+/* -----------------------------------------------------------------------------
+ |  Field map — the single source of truth for this page.
+ |  Each panel: label => [group, fields].  Each field:
+ |    type  = storage type stored in settings.type (text|textarea|email|url|image|color)
+ |    input = HTML input type for scalar fields (text|email|url|date|color)
+ |    raw   = true to store the value un-sanitised (needed for HTML embeds)
+ |    hint  = optional helper text under the field
+ |    default = value seeded on first load when the key is missing
+ |--------------------------------------------------------------------------- */
+$panels = [
     'General' => [
-        ['site_name', 'Site name', 'text', 'general'],
-        ['site_tagline', 'Tagline', 'textarea', 'general'],
+        'group'  => 'general',
+        'fields' => [
+            'site_name'        => ['type' => 'text',     'input' => 'text',  'default' => 'EDUSKILL INDIA FOUNDATION', 'label' => 'Site Name'],
+            'site_tagline'     => ['type' => 'text',     'input' => 'text',  'default' => 'Empowering Communities • Spreading Hope • Creating Change', 'label' => 'Site Tagline'],
+            'site_description'  => ['type' => 'textarea', 'default' => 'EDUSKILL INDIA FOUNDATION is a registered non-profit in Patna, Bihar working to empower communities through education, healthcare, skill development and relief.', 'label' => 'Site Description', 'hint' => 'Used as the default meta description.'],
+            'site_keywords'    => ['type' => 'text',     'input' => 'text',  'default' => 'NGO Patna, Bihar NGO, charity India, donation, volunteer', 'label' => 'Site Keywords', 'hint' => 'Comma-separated keywords.'],
+            'site_logo'        => ['type' => 'image',    'default' => '',    'label' => 'Site Logo', 'hint' => 'PNG/SVG recommended. Leave empty to keep the current logo.'],
+            'favicon'          => ['type' => 'image',    'default' => '',    'label' => 'Favicon', 'hint' => 'Square icon (e.g. 64×64). Leave empty to keep the current one.'],
+        ],
     ],
-    'Branding' => [
-        ['brand_color', 'Primary colour', 'color', 'theme'],
-        ['accent_color', 'Accent colour', 'color', 'theme'],
+    'Contact' => [
+        'group'  => 'contact',
+        'fields' => [
+            'contact_email'   => ['type' => 'email',    'input' => 'email', 'default' => 'info@eduskillindia.org', 'label' => 'Contact Email'],
+            'contact_phone'   => ['type' => 'text',     'input' => 'text',  'default' => '+91 74919 32148', 'label' => 'Contact Phone'],
+            'contact_address' => ['type' => 'textarea', 'default' => 'Patna, Bihar, India 840007', 'label' => 'Contact Address'],
+            'whatsapp_number' => ['type' => 'text',     'input' => 'text',  'default' => '917491932148', 'label' => 'WhatsApp Number', 'hint' => 'Digits only, with country code (no + or spaces).'],
+            'google_map'      => ['type' => 'textarea', 'default' => '', 'raw' => true, 'label' => 'Google Map Embed', 'hint' => 'Paste the full Google Maps <iframe> embed code or a map URL.'],
+        ],
     ],
-    'Homepage hero' => [
-        ['hero_eyebrow', 'Eyebrow text', 'text', 'home'],
-        ['hero_title', 'Headline', 'text', 'home'],
-        ['hero_subtitle', 'Sub-headline', 'textarea', 'home'],
-        ['stat_students', 'Stat: students supported', 'number', 'home'],
-        ['stat_schools', 'Stat: partner schools', 'number', 'home'],
-        ['stat_volunteers', 'Stat: volunteers', 'number', 'home'],
-        ['stat_districts', 'Stat: districts', 'number', 'home'],
+    'Homepage' => [
+        'group'  => 'homepage',
+        'fields' => [
+            'home_about_title' => ['type' => 'text',     'input' => 'text', 'default' => 'A movement for dignity, hope and opportunity', 'label' => 'Home About Title'],
+            'home_about_text'  => ['type' => 'textarea', 'default' => 'EDUSKILL INDIA FOUNDATION is a registered non-profit based in Patna, Bihar. We work hand-in-hand with communities to deliver education, healthcare, skill development, and emergency relief.', 'label' => 'Home About Text'],
+            'mission_short'    => ['type' => 'textarea', 'default' => 'To empower underserved communities by providing access to quality education, healthcare, and sustainable livelihoods.', 'label' => 'Mission (short)'],
+            'vision_short'     => ['type' => 'textarea', 'default' => 'An equitable society where every individual has the opportunity to live with dignity and reach their full potential.', 'label' => 'Vision (short)'],
+        ],
     ],
-    'Contact & social' => [
-        ['contact_email', 'Contact email', 'email', 'general'],
-        ['contact_phone', 'Contact phone', 'tel', 'general'],
-        ['contact_address', 'Address', 'text', 'general'],
-        ['whatsapp_number', 'WhatsApp number (digits only)', 'tel', 'general'],
+    'Legal / Organisation' => [
+        'group'  => 'org',
+        'fields' => [
+            'cin'                => ['type' => 'text', 'input' => 'text', 'default' => 'U88900BR2026NPL081597', 'label' => 'CIN'],
+            'pan'                => ['type' => 'text', 'input' => 'text', 'default' => '', 'label' => 'PAN'],
+            'tan'                => ['type' => 'text', 'input' => 'text', 'default' => '', 'label' => 'TAN'],
+            'incorporation_date' => ['type' => 'text', 'input' => 'date', 'default' => '2025-01-15', 'label' => 'Incorporation Date'],
+        ],
     ],
-    'Email (SMTP)' => [
-        ['mail_driver', 'Sending mode', 'select', 'mail', ['log' => 'Log only (test — do not send)', 'smtp' => 'SMTP (send for real)']],
-        ['smtp_host', 'SMTP host', 'text', 'mail'],
-        ['smtp_port', 'SMTP port', 'number', 'mail'],
-        ['smtp_encryption', 'Encryption', 'select', 'mail', ['tls' => 'TLS (port 587)', 'ssl' => 'SSL (port 465)', 'none' => 'None']],
-        ['smtp_username', 'SMTP username', 'text', 'mail'],
-        ['smtp_password', 'SMTP password', 'password', 'mail'],
-        ['mail_from_email', 'From email', 'email', 'mail'],
-        ['mail_from_name', 'From name', 'text', 'mail'],
-        ['mail_notify_email', 'Send contact notices to', 'email', 'mail'],
+    'Social & Footer' => [
+        'group'  => 'social',
+        'fields' => [
+            'social_facebook'  => ['type' => 'url', 'input' => 'url', 'default' => '', 'label' => 'Facebook URL'],
+            'social_twitter'   => ['type' => 'url', 'input' => 'url', 'default' => '', 'label' => 'Twitter / X URL'],
+            'social_instagram' => ['type' => 'url', 'input' => 'url', 'default' => '', 'label' => 'Instagram URL'],
+            'social_youtube'   => ['type' => 'url', 'input' => 'url', 'default' => '', 'label' => 'YouTube URL'],
+            'social_linkedin'  => ['type' => 'url', 'input' => 'url', 'default' => '', 'label' => 'LinkedIn URL'],
+            'footer_about'     => ['type' => 'textarea', 'default' => 'EDUSKILL INDIA FOUNDATION works across Bihar to empower communities through education, healthcare, skill development and relief.', 'label' => 'Footer About Text'],
+        ],
+    ],
+
+    'FAQ Section' => [
+        'group'  => 'faq',
+        'fields' => [
+            'faq_theme'       => ['type' => 'select', 'default' => 'ngo', 'label' => 'Colour theme',
+                'options' => ['ngo' => 'NGO (green / blue / orange)', 'blue-purple' => 'Blue → Purple', 'orange-pink' => 'Orange → Pink',
+                              'green-cyan' => 'Green → Cyan', 'indigo-violet' => 'Indigo → Violet', 'red-orange' => 'Red → Orange',
+                              'teal-emerald' => 'Teal → Emerald', 'rainbow' => 'Rainbow', 'corporate' => 'Corporate', 'minimal' => 'Minimal White']],
+            'faq_animation'   => ['type' => 'select', 'default' => 'slide', 'label' => 'Accordion animation',
+                'options' => ['slide' => 'Smooth Slide Down', 'fade-slide' => 'Fade In + Slide', 'scale' => 'Scale Expand',
+                              'bounce' => 'Bounce Open', 'elastic' => 'Elastic Expand', 'flip' => 'Flip Down', 'rotate' => 'Rotate Reveal',
+                              'zoom' => 'Zoom In', 'fold' => '3D Fold', 'curtain' => 'Curtain Reveal', 'morph' => 'Morph Expand',
+                              'liquid' => 'Liquid', 'spring' => 'Spring Motion', 'ripple' => 'Ripple Expansion']],
+            'faq_hover'       => ['type' => 'select', 'default' => 'lift', 'label' => 'Hover effect',
+                'options' => ['lift' => 'Lift on Hover', 'gradient-border' => 'Gradient Border Glow', 'neon' => 'Neon Glow',
+                              'gradient-bg' => 'Animated Gradient Background', 'float' => 'Floating Card', 'glass' => 'Glass Reflection',
+                              'shine' => 'Shine Sweep', 'magnetic' => 'Magnetic Hover', 'border-draw' => 'Border Animation',
+                              'pulse' => 'Soft Pulse', 'shadow' => 'Shadow Expansion', 'color' => 'Colour Transition',
+                              'tilt' => 'Tilt Effect', 'ring' => 'Glow Ring']],
+            'faq_icon'        => ['type' => 'select', 'default' => 'plus-minus', 'label' => 'Icon animation',
+                'options' => ['plus-minus' => 'Plus → Minus Rotation', 'arrow' => 'Arrow Rotation', 'chevron' => 'Chevron Flip',
+                              'pulse' => 'Pulse Icon', 'bounce' => 'Bounce Icon', 'wiggle' => 'Wiggle', 'morph' => 'Morphing',
+                              'circular' => 'Circular Rotation', 'glow' => 'Glow Animation', 'gradient' => 'Gradient Fill']],
+            'faq_border'      => ['type' => 'select', 'default' => 'gradient', 'label' => 'Border effect',
+                'options' => ['gradient' => 'Gradient Border', 'rainbow' => 'Rainbow Border', 'neon' => 'Neon Border',
+                              'dashed' => 'Animated Dashed', 'pulse' => 'Pulse Border', 'shimmer' => 'Shimmer Border',
+                              'glow' => 'Glow Border', 'liquid' => 'Liquid Border']],
+            'faq_background'  => ['type' => 'select', 'default' => 'mesh', 'label' => 'Animated background',
+                'options' => ['mesh' => 'Mesh Gradient', 'none' => 'None (flat)', 'aurora' => 'Aurora Effect', 'blobs' => 'Floating Blurred Circles',
+                              'particles' => 'Floating Particles', 'waves' => 'Waves', 'rays' => 'Soft Light Rays', 'sparkles' => 'Sparkles']],
+            'faq_duration'    => ['type' => 'number', 'input' => 'number', 'default' => '380', 'label' => 'Animation duration (ms)', 'hint' => '80–1200. Lower is snappier.'],
+            'faq_radius'      => ['type' => 'number', 'input' => 'number', 'default' => '20',  'label' => 'Corner radius (px)', 'hint' => '0–40.'],
+            'faq_shadow'      => ['type' => 'number', 'input' => 'number', 'default' => '3',   'label' => 'Shadow intensity', 'hint' => '0 (flat) – 5 (deep).'],
+            'faq_glow'        => ['type' => 'number', 'input' => 'number', 'default' => '2',   'label' => 'Glow intensity', 'hint' => '0 (none) – 5 (strong), applied to the open item.'],
+            'faq_spacing'     => ['type' => 'number', 'input' => 'number', 'default' => '12',  'label' => 'Gap between items (px)', 'hint' => '0–40.'],
+            'faq_font_size'   => ['type' => 'number', 'input' => 'number', 'default' => '16',  'label' => 'Question font size (px)', 'hint' => '12–24.'],
+            'faq_single_open' => ['type' => 'boolean', 'default' => '1', 'label' => 'Only one answer open at a time'],
+            'faq_show_search' => ['type' => 'boolean', 'default' => '1', 'label' => 'Show the search box', 'hint' => 'Appears automatically once there are more than three questions.'],
+            'faq_custom_css'  => ['type' => 'textarea', 'default' => '', 'raw' => true, 'label' => 'Custom CSS', 'hint' => 'Scope rules to .pfaq so they cannot leak into the rest of the site.'],
+            'faq_custom_js'   => ['type' => 'textarea', 'default' => '', 'raw' => true, 'label' => 'Custom JavaScript', 'hint' => 'Injected on any page showing the FAQ section. Leave empty unless you need it.'],
+        ],
+    ],
+
+    'Social Login' => [
+        'group'  => 'oauth',
+        'fields' => [
+            'google_login_enabled'   => ['type' => 'boolean',  'default' => '0', 'label' => 'Enable Google sign-in', 'hint' => 'The Google button only appears on the login page once this is on AND both credentials below are filled in.'],
+            'google_client_id'       => ['type' => 'text',     'input' => 'text', 'default' => '', 'label' => 'Google Client ID'],
+            'google_client_secret'   => ['type' => 'text',     'input' => 'text', 'default' => '', 'label' => 'Google Client Secret'],
+            'google_redirect_uri'    => ['type' => 'url',      'input' => 'url',  'default' => '', 'label' => 'Google Redirect URI', 'hint' => 'Leave blank to use the automatic URL shown below — only set this if the site sits behind a proxy on a different hostname.'],
+            'facebook_login_enabled' => ['type' => 'boolean',  'default' => '0', 'label' => 'Enable Facebook sign-in', 'hint' => 'Requires the App ID and App Secret below.'],
+            'facebook_app_id'        => ['type' => 'text',     'input' => 'text', 'default' => '', 'label' => 'Facebook App ID'],
+            'facebook_app_secret'    => ['type' => 'text',     'input' => 'text', 'default' => '', 'label' => 'Facebook App Secret'],
+            'facebook_redirect_uri'  => ['type' => 'url',      'input' => 'url',  'default' => '', 'label' => 'Facebook Redirect URI', 'hint' => 'Leave blank to use the automatic URL.'],
+        ],
+    ],
+
+    'Maintenance' => [
+        'group'  => 'maintenance',
+        'fields' => [
+            'maintenance_mode'            => ['type' => 'boolean',  'default' => '0', 'label' => 'Enable maintenance mode', 'hint' => 'Public pages answer 503 with the maintenance notice. The admin panel stays reachable, signed-in admins browse the site normally, and payment return URLs keep working so in-flight donations still settle.'],
+            'maintenance_message'         => ['type' => 'textarea', 'default' => 'We\'re carrying out some scheduled maintenance to make things better. The site will be back shortly — thank you for your patience.', 'label' => 'Notice shown to visitors'],
+            'maintenance_eta'             => ['type' => 'text',     'input' => 'text',   'default' => '', 'label' => 'Expected back (optional)', 'hint' => 'Free text, e.g. "today at 6:00 PM IST". Left empty, no ETA is shown.'],
+            'maintenance_retry_minutes'   => ['type' => 'number',   'input' => 'number', 'default' => '30', 'label' => 'Retry-After (minutes)', 'hint' => 'Tells search engines how long the outage lasts so they do not de-index the site.'],
+        ],
     ],
 ];
 
-// "Send test email" — sends to the logged-in admin and shows the SMTP transcript.
-if (($_POST['action'] ?? '') === 'test_email' && verify_csrf($_POST['_csrf'] ?? null)) {
-    $me = current_user();
-    $transcript = '';
-    $ok = send_mail((string) $me['email'], 'Eduskill test email', '<p>This is a test email from your Eduskill admin panel. If you are reading it, sending works. 🎉</p>', (string) $me['name'], $transcript);
-    flash($ok ? 'success' : 'error', ($ok ? 'Test email processed. ' : 'Test email failed. ') . 'See details below.');
-    $_SESSION['_mail_transcript'] = $transcript;
-    redirect('admin/settings.php');
-}
+/* -------------------------------------------------------------- SAVE */
+if (is_post() && post('_do') === 'save') {
+    require_csrf();
 
-// Save.
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf($_POST['_csrf'] ?? null)) {
-        flash('error', 'Session expired. Please try again.');
-        redirect('admin/settings.php');
-    }
-    foreach ($schema as $fields) {
-        foreach ($fields as $f) {
-            [$key, $label, $type, $group] = $f;
-            $value = trim((string) ($_POST[$key] ?? ''));
-            // A blank password means "keep the current one" — never wipe a stored SMTP password.
-            if ($type === 'password' && $value === '') {
+    foreach ($panels as $panel) {
+        foreach ($panel['fields'] as $key => $meta) {
+            if ($meta['type'] === 'image') {
+                continue; // images handled separately below
+            }
+            if ($meta['type'] === 'boolean') {
+                // An unticked checkbox posts nothing at all, so it must be
+                // normalised to an explicit '0' rather than left as ''.
+                set_setting($key, post($key) === '1' ? '1' : '0', $panel['group'], 'boolean');
                 continue;
             }
-            $storeType = $type === 'number' ? 'int' : 'string';
-            db_exec(
-                "INSERT INTO settings (setting_key, setting_value, type, group_name) VALUES (?, ?, ?, ?)
-                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
-                [$key, $value, $storeType, $group]
-            );
+            if ($meta['type'] === 'select') {
+                // Clamp to the declared options so a hand-crafted POST cannot
+                // store a value the renderer has no styling for.
+                $allowed = array_keys($meta['options'] ?? []);
+                $picked  = (string) post($key, '');
+                set_setting($key, in_array($picked, $allowed, true) ? $picked : (string) ($meta['default'] ?? ''), $panel['group'], 'text');
+                continue;
+            }
+            $value = (string) post($key, '');
+            $value = !empty($meta['raw']) ? $value : clean($value);
+            set_setting($key, $value, $panel['group'], $meta['type']);
         }
     }
-    activity_log('settings.updated', (int) ($_SESSION['uid'] ?? 0));
-    flash('success', 'Settings saved. Refresh the site to see changes.');
-    redirect('admin/settings.php');
+
+    // Image settings (logo + favicon): replace + delete old file on new upload.
+    foreach ($panels as $panel) {
+        foreach ($panel['fields'] as $key => $meta) {
+            if ($meta['type'] !== 'image' || empty($_FILES[$key]['name'])) {
+                continue;
+            }
+            $up = upload_image($_FILES[$key], 'images');
+            if (!$up['success']) {
+                set_flash('error', $up['error']);
+                redirect('/admin/settings');
+            }
+            $old = get_setting($key);
+            set_setting($key, $up['path'], $panel['group'], 'image');
+            if ($old) {
+                delete_upload($old);
+            }
+        }
+    }
+
+    log_activity('update', 'settings', 'Updated website settings');
+    set_flash('success', 'Settings saved successfully.');
+    redirect('/admin/settings');
 }
 
-$in = 'mt-1 w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm text-content focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20';
-require __DIR__ . '/includes/header.php';
+/* -------------------------------------------------------------- SEED missing keys */
+$existing = all_settings();
+foreach ($panels as $panel) {
+    foreach ($panel['fields'] as $key => $meta) {
+        if (!array_key_exists($key, $existing)) {
+            set_setting($key, (string) ($meta['default'] ?? ''), $panel['group'], $meta['type']);
+        }
+    }
+}
+
+/* -------------------------------------------------------------- VIEW */
+$page_title = 'Website Settings';
+
+/* Presentational metadata per panel — purely cosmetic, does not touch the
+   field map, the save handler or any stored value. `hue` drives the tab's
+   colour coding: one accent per category, applied via a CSS custom property so
+   the same rules serve every tab. */
+$panelMeta = [
+    'General'              => ['icon' => 'sliders-horizontal',     'desc' => 'Site identity, branding and SEO basics',   'hue' => '#2563eb'], // blue
+    'Contact'              => ['icon' => 'phone',                  'desc' => 'How supporters reach you',                 'hue' => '#16a34a'], // green
+    'Homepage'             => ['icon' => 'layout-dashboard',       'desc' => 'Headline content on the front page',       'hue' => '#7c3aed'], // purple
+    'Legal / Organisation' => ['icon' => 'landmark',               'desc' => 'Registration and compliance details',      'hue' => '#ea580c'], // orange
+    'Social & Footer'      => ['icon' => 'share-2',                'desc' => 'Social profiles and footer copy',          'hue' => '#db2777'], // pink
+    'FAQ Section'          => ['icon' => 'message-circle-question','desc' => 'Theme, animation and hover styling',       'hue' => '#0891b2'], // cyan
+    'Social Login'         => ['icon' => 'key-round',              'desc' => 'Google / Facebook OAuth credentials',      'hue' => '#8b5cf6'], // violet
+    'Maintenance'          => ['icon' => 'construction',           'desc' => 'Temporarily take the public site offline', 'hue' => '#475569'], // slate
+];
+$panelKeys = array_keys($panels);
+include __DIR__ . '/partials/head.php';
 ?>
-<div class="page-header">
-  <div><h2 class="page-title">Settings</h2><p class="page-subtitle">Everything here is live on the public site.</p></div>
-</div>
+<form id="settingsForm" class="settings-page admin-form" method="post" enctype="multipart/form-data" action="<?= e(admin_url('settings')) ?>">
+    <?= csrf_field() ?>
+    <input type="hidden" name="_do" value="save">
 
-<form method="post" class="max-w-3xl space-y-6">
-  <?= csrf_field() ?>
-  <?php foreach ($schema as $group => $fields): ?>
-    <div class="rounded-2xl border border-edge bg-surface p-6 shadow-card">
-      <h3 class="mb-4 font-display text-sm font-bold uppercase tracking-wide text-content-muted"><?= e($group) ?></h3>
-      <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-        <?php foreach ($fields as $f): [$key, $label, $type, $g] = $f; $opts = $f[4] ?? []; $val = (string) setting($key, ''); ?>
-          <div class="<?= $type === 'textarea' ? 'sm:col-span-2' : '' ?>">
-            <label class="block text-sm font-medium text-content"><?= e($label) ?></label>
-            <?php if ($type === 'textarea'): ?>
-              <textarea name="<?= e($key) ?>" rows="2" class="<?= $in ?>"><?= e($val) ?></textarea>
-            <?php elseif ($type === 'color'): ?>
-              <div class="mt-1 flex items-center gap-3">
-                <input type="color" name="<?= e($key) ?>" value="<?= e($val ?: '#4f46e5') ?>" class="h-11 w-16 cursor-pointer rounded-lg border border-edge bg-surface p-1">
-                <span class="rounded-lg bg-surface-sunken px-3 py-2 font-mono text-sm text-content-muted"><?= e($val) ?></span>
-              </div>
-            <?php elseif ($type === 'select'): ?>
-              <select name="<?= e($key) ?>" class="<?= $in ?>"><?php foreach ($opts as $ov => $ol): ?><option value="<?= e($ov) ?>" <?= $val === (string) $ov ? 'selected' : '' ?>><?= e($ol) ?></option><?php endforeach; ?></select>
-            <?php elseif ($type === 'password'): ?>
-              <input type="password" name="<?= e($key) ?>" value="" placeholder="<?= $val !== '' ? '••••••• (unchanged)' : '' ?>" autocomplete="new-password" class="<?= $in ?>">
-            <?php else: ?>
-              <input type="<?= $type === 'number' ? 'number' : ($type === 'email' ? 'email' : ($type === 'tel' ? 'tel' : 'text')) ?>" name="<?= e($key) ?>" value="<?= e($val) ?>" class="<?= $in ?>">
-            <?php endif; ?>
-          </div>
-        <?php endforeach; ?>
-      </div>
-      <?php if ($group === 'Email (SMTP)'): ?>
-        <div class="mt-4 flex flex-wrap items-center gap-3 border-t border-edge pt-4">
-          <button type="submit" form="test-email-form" class="rounded-lg border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-100"><i class="fa-solid fa-paper-plane mr-1.5"></i>Send test email</button>
-          <span class="text-xs text-content-muted">Sends to your account email. Save your SMTP settings first.</span>
+    <!-- Sticky page header -->
+    <header class="settings-topbar">
+        <div class="settings-head-txt">
+            <nav class="settings-crumb" aria-label="Breadcrumb">
+                <a href="<?= e(admin_url('dashboard')) ?>"><?= lucide('home') ?> Admin</a>
+                <?= lucide('chevron-right') ?><span>Website Settings</span>
+            </nav>
+            <h1>Website Settings</h1>
+            <p>Master configuration for your public site — identity, contact, content, legal and social.</p>
         </div>
-        <?php $tr = $_SESSION['_mail_transcript'] ?? null; unset($_SESSION['_mail_transcript']); ?>
-        <?php if ($tr !== null): ?>
-          <pre class="mt-3 max-h-64 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-900 p-4 text-xs text-slate-200"><?= e($tr) ?></pre>
-        <?php endif; ?>
-      <?php endif; ?>
-    </div>
-  <?php endforeach; ?>
+        <div class="settings-actions">
+            <a class="btn btn-outline btn-sm" href="<?= e(url('/')) ?>" target="_blank" rel="noopener"><?= lucide('external-link') ?> View Site</a>
+            <button class="btn btn-primary btn-sm" type="submit" data-save><?= lucide('save') ?> Save Changes</button>
+        </div>
+    </header>
 
-  <div class="sticky bottom-0 flex items-center justify-end gap-3 rounded-2xl border border-edge bg-surface/95 p-4 shadow-card backdrop-blur">
-    <a href="<?= e(url('admin/dashboard.php')) ?>" class="text-sm font-medium text-content-muted hover:text-content">Cancel</a>
-    <button type="submit" class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-on-brand hover:bg-brand-700"><i class="fa-solid fa-floppy-disk mr-1.5"></i>Save settings</button>
-  </div>
+    <!-- Horizontal, scrollable, colour-coded category tabs -->
+    <div class="settings-tabbar">
+        <button type="button" class="stab-arrow prev" data-stab-prev aria-label="Scroll categories left"><?= lucide('chevron-left') ?></button>
+        <div class="settings-tabs" role="tablist" aria-label="Settings categories" data-stab-track>
+            <?php foreach ($panelKeys as $i => $label): $m = $panelMeta[$label] ?? ['icon' => 'settings', 'desc' => '', 'hue' => '#2563eb']; ?>
+                <button type="button" class="stab<?= $i === 0 ? ' is-active' : '' ?>" role="tab"
+                        style="--stab-hue:<?= e($m['hue']) ?>"
+                        data-tab="stab<?= $i ?>" aria-controls="stab<?= $i ?>" aria-selected="<?= $i === 0 ? 'true' : 'false' ?>">
+                    <span class="stab-ico"><?= lucide($m['icon']) ?></span>
+                    <span class="stab-lbl"><?= e($label) ?></span>
+                    <span class="stab-count"><?= count($panels[$label]['fields']) ?></span>
+                </button>
+            <?php endforeach; ?>
+        </div>
+        <button type="button" class="stab-arrow next" data-stab-next aria-label="Scroll categories right"><?= lucide('chevron-right') ?></button>
+    </div>
+
+    <!-- Global search across every setting on the page -->
+    <div class="settings-search">
+        <?= lucide('search') ?>
+        <input type="search" placeholder="Search all settings — try &quot;logo&quot;, &quot;email&quot;, &quot;maintenance&quot;…"
+               aria-label="Search settings" data-settings-search autocomplete="off">
+        <button type="button" class="ss-clear" data-settings-clear aria-label="Clear search" hidden><?= lucide('x') ?></button>
+    </div>
+    <p class="settings-search-note" data-settings-note hidden></p>
+
+    <div class="settings-layout">
+        <!-- Content: one card per panel -->
+        <div class="settings-content">
+            <?php foreach ($panelKeys as $i => $label): $panel = $panels[$label]; $m = $panelMeta[$label] ?? ['icon' => 'settings', 'desc' => '']; ?>
+            <section class="settings-card<?= $i === 0 ? ' is-active' : '' ?>" id="stab<?= $i ?>" role="tabpanel"
+                     style="--stab-hue:<?= e($m['hue'] ?? '#2563eb') ?>"
+                     data-panel-label="<?= e($label) ?>" aria-hidden="<?= $i === 0 ? 'false' : 'true' ?>">
+                <header class="settings-card-head">
+                    <span class="sch-ico"><?= lucide($m['icon']) ?></span>
+                    <div><h2><?= e($label) ?></h2><p><?= e($m['desc']) ?></p></div>
+                </header>
+                <div class="settings-card-body">
+                    <div class="settings-grid">
+                        <?php foreach ($panel['fields'] as $key => $meta):
+                            $value  = (string) get_setting($key, $meta['default'] ?? '');
+                            $flabel = $meta['label'] ?? ucwords(str_replace('_', ' ', $key));
+                            $wide   = in_array($meta['type'], ['textarea', 'image', 'boolean'], true);
+                        ?>
+                        <div class="settings-field<?= $wide ? ' span-2' : '' ?>"
+                             data-field-search="<?= e(mb_strtolower($flabel . ' ' . $key . ' ' . ($meta['hint'] ?? ''))) ?>">
+                            <?php if ($meta['type'] === 'boolean'): ?>
+                                <label class="settings-toggle" for="f_<?= e($key) ?>">
+                                    <input type="hidden" name="<?= e($key) ?>" value="0">
+                                    <input class="st-input" type="checkbox" id="f_<?= e($key) ?>" name="<?= e($key) ?>" value="1" <?= $value === '1' ? 'checked' : '' ?>>
+                                    <span class="st-track" aria-hidden="true"><span class="st-thumb"></span></span>
+                                    <span class="st-text"><?= e($flabel) ?></span>
+                                </label>
+                            <?php elseif ($meta['type'] === 'select'): ?>
+                                <label class="settings-label" for="f_<?= e($key) ?>"><?= e($flabel) ?></label>
+                                <select class="form-select" id="f_<?= e($key) ?>" name="<?= e($key) ?>">
+                                    <?php foreach (($meta['options'] ?? []) as $ov => $ol): ?>
+                                        <option value="<?= e($ov) ?>"<?= (string) $ov === $value ? ' selected' : '' ?>><?= e($ol) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            <?php elseif ($meta['type'] === 'textarea'): ?>
+                                <div class="ff">
+                                    <textarea class="ff-input" id="f_<?= e($key) ?>" name="<?= e($key) ?>" placeholder=" " rows="4"><?= e($value) ?></textarea>
+                                    <label class="ff-label" for="f_<?= e($key) ?>"><?= e($flabel) ?></label>
+                                </div>
+                            <?php elseif ($meta['type'] === 'image'): ?>
+                                <label class="settings-label" for="f_<?= e($key) ?>"><?= e($flabel) ?></label>
+                                <div class="settings-upload">
+                                    <img id="preview_<?= e($key) ?>" class="su-preview" src="<?= e($value !== '' ? upload_url($value) : asset('images/placeholder.svg')) ?>" alt="<?= e($flabel) ?> preview">
+                                    <div class="su-body">
+                                        <input class="su-file" type="file" id="f_<?= e($key) ?>" name="<?= e($key) ?>" accept="image/*" data-preview="#preview_<?= e($key) ?>">
+                                        <label class="btn btn-outline btn-sm" for="f_<?= e($key) ?>"><?= lucide('upload') ?> Choose image</label>
+                                        <small class="su-note">Leave empty to keep the current file.</small>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="ff<?= in_array($meta['input'] ?? '', ['date', 'color'], true) ? ' ff-static' : '' ?>">
+                                    <input class="ff-input" type="<?= e($meta['input'] ?? 'text') ?>" id="f_<?= e($key) ?>" name="<?= e($key) ?>" value="<?= e($value) ?>" placeholder=" ">
+                                    <label class="ff-label" for="f_<?= e($key) ?>"><?= e($flabel) ?></label>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!empty($meta['hint'])): ?>
+                                <small class="settings-hint"><?= lucide('info') ?> <?= e($meta['hint']) ?></small>
+                            <?php endif; ?>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <!-- Sticky footer action bar -->
+    <div class="settings-footbar">
+        <span class="sf-note"><?= lucide('shield-check') ?> Changes apply site-wide immediately after saving.</span>
+        <div class="sf-actions">
+            <a class="btn btn-ghost" href="<?= e(admin_url('settings')) ?>"><?= lucide('rotate-ccw') ?> Reset</a>
+            <a class="btn btn-secondary" href="<?= e(admin_url('dashboard')) ?>">Cancel</a>
+            <button class="btn btn-primary" type="submit" data-save><?= lucide('save') ?> Save Changes</button>
+        </div>
+    </div>
 </form>
 
-<!-- Separate form so "Send test email" uses the SAVED SMTP settings, not unsaved form values. -->
-<form id="test-email-form" method="post" class="hidden"><?= csrf_field() ?><input type="hidden" name="action" value="test_email"></form>
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<style>
+/* ===================== PREMIUM WEBSITE SETTINGS (scoped) ===================== */
+.settings-page { --sp-radius: 16px; margin: -0.25rem 0 0; }
+
+/* Sticky header */
+.settings-topbar {
+    position: sticky; top: 60px; z-index: 30;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    margin: 0 0 1.4rem; padding: 1.1rem 1.3rem;
+    background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--border, #e2e8f0); border-radius: var(--sp-radius);
+    box-shadow: 0 10px 30px -18px rgba(6,53,102,.4);
+}
+html[data-theme="dark"] .settings-topbar { background: rgba(17,24,39,.72); }
+.settings-crumb { display: inline-flex; align-items: center; gap: .35rem; font-size: .78rem; font-weight: 600; color: var(--muted, #64748b); margin-bottom: .35rem; }
+.settings-crumb a { color: var(--muted, #64748b); display: inline-flex; align-items: center; gap: .25rem; }
+.settings-crumb a:hover { color: #063566; }
+.settings-crumb svg { width: 13px; height: 13px; }
+.settings-topbar h1 { font-size: 1.5rem; margin: 0; letter-spacing: -.02em; }
+.settings-topbar p { margin: .2rem 0 0; color: var(--muted, #64748b); font-size: .9rem; max-width: 60ch; }
+.settings-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* Single-column layout — the category list is the horizontal bar above. */
+.settings-layout { display: block; }
+
+/* ---------------------------------------------- horizontal category tabs */
+.settings-tabbar {
+    position: sticky; top: 122px; z-index: 29; display: flex; align-items: center; gap: .3rem;
+    margin: 0 0 .9rem; padding: .4rem;
+    background: rgba(255,255,255,.76); -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--border, #e2e8f0); border-radius: 18px;
+    box-shadow: 0 10px 30px -22px rgba(6,53,102,.5);
+}
+html[data-theme="dark"] .settings-tabbar { background: rgba(17,24,39,.78); }
+
+.settings-tabs {
+    display: flex; gap: .3rem; overflow-x: auto; scroll-behavior: smooth; flex: 1 1 auto;
+    scrollbar-width: none; -ms-overflow-style: none;
+}
+.settings-tabs::-webkit-scrollbar { display: none; }
+
+.stab {
+    --stab-hue: #2563eb;
+    position: relative; display: inline-flex; align-items: center; gap: .5rem; flex: 0 0 auto;
+    padding: .6rem .9rem; border-radius: 13px; cursor: pointer; white-space: nowrap;
+    border: 1px solid transparent; background: transparent; color: var(--muted, #64748b);
+    font: inherit; font-size: .86rem; font-weight: 650;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+.stab:hover { background: color-mix(in srgb, var(--stab-hue) 10%, transparent); color: var(--stab-hue); transform: translateY(-1px); }
+.stab:focus-visible { outline: 2px solid var(--stab-hue); outline-offset: 2px; }
+.stab.is-active {
+    color: #fff;
+    background: linear-gradient(135deg, var(--stab-hue), color-mix(in srgb, var(--stab-hue) 62%, #000));
+    box-shadow: 0 10px 22px -12px color-mix(in srgb, var(--stab-hue) 85%, transparent);
+}
+/* Animated underline that slides with the active tab. */
+.stab.is-active::after {
+    content: ''; position: absolute; left: 18%; right: 18%; bottom: -.42rem; height: 3px; border-radius: 3px;
+    background: var(--stab-hue); animation: stabUnderline .3s ease both;
+}
+@keyframes stabUnderline { from { transform: scaleX(.2); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.stab-ico { display: grid; place-items: center; flex: 0 0 auto; }
+.stab-ico svg { width: 16px; height: 16px; }
+.stab-count {
+    font-size: .68rem; font-weight: 800; padding: .08rem .38rem; border-radius: 999px;
+    background: color-mix(in srgb, var(--stab-hue) 14%, transparent); color: var(--stab-hue);
+}
+.stab.is-active .stab-count { background: rgba(255,255,255,.24); color: #fff; }
+
+.stab-arrow {
+    flex: 0 0 auto; display: none; place-items: center; width: 30px; height: 30px; cursor: pointer;
+    border: 1px solid var(--border, #e2e8f0); border-radius: 9px; background: var(--surface, #fff); color: var(--muted, #64748b);
+}
+.stab-arrow:hover { color: var(--primary, #063566); border-color: var(--primary, #063566); }
+.stab-arrow svg { width: 15px; height: 15px; }
+.settings-tabbar.is-scrollable .stab-arrow { display: grid; }
+
+/* ------------------------------------------------------- global search */
+.settings-search { position: relative; margin: 0 0 1.1rem; }
+.settings-search > svg {
+    position: absolute; left: .95rem; top: 50%; transform: translateY(-50%);
+    width: 17px; height: 17px; color: var(--muted, #64748b); pointer-events: none;
+}
+.settings-search input {
+    width: 100%; padding: .8rem 2.6rem .8rem 2.6rem; font: inherit; font-size: .92rem;
+    border: 1.5px solid var(--border, #e2e8f0); border-radius: 13px;
+    background: var(--surface, #fff); color: var(--text, #0f172a);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.settings-search input:focus {
+    outline: none; border-color: var(--primary, #063566);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary, #063566) 13%, transparent);
+}
+.ss-clear {
+    position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
+    display: grid; place-items: center; width: 26px; height: 26px; cursor: pointer;
+    border: 0; border-radius: 7px; background: var(--surface-2, #f1f5f9); color: var(--muted, #64748b);
+}
+.ss-clear:hover { color: #dc2626; }
+.ss-clear svg { width: 14px; height: 14px; }
+.settings-search-note { margin: -.5rem 0 1rem; font-size: .84rem; color: var(--muted, #64748b); }
+
+/* While searching, show every matching field across all categories at once. */
+.settings-page.is-searching .settings-card { display: block !important; margin-bottom: 1rem; }
+.settings-page.is-searching .settings-card.no-match { display: none !important; }
+.settings-page.is-searching .settings-field.no-match { display: none; }
+.settings-page.is-searching .settings-tabbar { opacity: .45; pointer-events: none; }
+
+/* Colour-code each card's header to match its tab. */
+.settings-card .sch-ico { background: color-mix(in srgb, var(--stab-hue, #2563eb) 13%, transparent); color: var(--stab-hue, #2563eb); }
+.settings-card { border-top: 3px solid var(--stab-hue, #2563eb); }
+
+@media (max-width: 720px) {
+    .settings-tabbar { top: 96px; }
+    .stab-lbl { display: none; }
+    .stab { padding: .6rem .7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .stab, .settings-tabs { transition: none; scroll-behavior: auto; }
+    .stab:hover { transform: none; }
+    .stab.is-active::after { animation: none; }
+}
+
+/* Cards */
+.settings-card { display: none; background: var(--surface, #fff); border: 1px solid var(--border, #e2e8f0); border-radius: var(--sp-radius); box-shadow: 0 1px 2px rgba(6,53,102,.04), 0 18px 40px -30px rgba(6,53,102,.35); overflow: hidden; }
+.settings-card.is-active { display: block; animation: sp-fade .35s cubic-bezier(.16,1,.3,1); }
+@keyframes sp-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.settings-card-head { display: flex; align-items: center; gap: .85rem; padding: 1.15rem 1.4rem; border-bottom: 1px solid var(--border, #e2e8f0); background: linear-gradient(180deg, var(--surface-2, #f8fafc), transparent); }
+.sch-ico { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, rgba(6,53,102,.14), rgba(8,72,129,.14)); color: #063566; }
+.sch-ico svg { width: 21px; height: 21px; }
+.settings-card-head h2 { font-size: 1.12rem; margin: 0; }
+.settings-card-head p { margin: .1rem 0 0; font-size: .82rem; color: var(--muted, #64748b); }
+.settings-card-body { padding: 1.4rem; }
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.3rem 1.2rem; }
+.settings-field { min-width: 0; }
+.settings-field.span-2 { grid-column: 1 / -1; }
+
+/* Floating-label fields */
+.ff { position: relative; }
+.ff-input {
+    width: 100%; padding: 1.15rem .9rem .5rem; border: 1.5px solid var(--border, #e2e8f0); border-radius: 12px;
+    background: var(--surface, #fff); color: var(--text, #0f172a); font: inherit; font-size: .92rem; outline: none;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+textarea.ff-input { padding-top: 1.4rem; resize: vertical; line-height: 1.6; }
+.ff-input:hover { border-color: #BBD3EA; }
+.ff-input:focus { border-color: #063566; box-shadow: 0 0 0 4px rgba(6,53,102,.14); background: var(--surface, #fff); }
+.ff-label {
+    position: absolute; left: .95rem; top: .82rem; font-size: .92rem; color: var(--muted, #64748b); pointer-events: none;
+    transform-origin: left top; transition: transform .16s ease, color .16s ease;
+    max-width: calc(100% - 1.8rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ff-input:focus + .ff-label,
+.ff-input:not(:placeholder-shown) + .ff-label,
+.ff-static .ff-label { transform: translateY(-.55rem) scale(.78); color: #063566; font-weight: 600; }
+.ff-static .ff-input { padding-top: 1.15rem; }
+
+/* Image upload */
+.settings-label { display: block; font-size: .82rem; font-weight: 600; color: var(--text, #0f172a); margin-bottom: .5rem; }
+.settings-upload { display: flex; align-items: center; gap: 1rem; padding: .9rem; border: 1.5px dashed var(--border, #cbd5e1); border-radius: 12px; background: var(--surface-2, #f8fafc); }
+.su-preview { width: 64px; height: 64px; object-fit: contain; border-radius: 10px; background: #fff; border: 1px solid var(--border, #e2e8f0); flex: 0 0 auto; }
+.su-body { display: flex; flex-direction: column; gap: .35rem; align-items: flex-start; }
+.su-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.su-note { font-size: .74rem; color: var(--muted, #64748b); }
+
+.settings-hint { display: inline-flex; align-items: center; gap: .35rem; margin-top: .45rem; font-size: .77rem; color: var(--muted, #64748b); }
+.settings-hint svg { width: 13px; height: 13px; flex: 0 0 auto; }
+
+/* Boolean toggle switch */
+.settings-toggle { display: inline-flex; align-items: center; gap: .75rem; cursor: pointer; user-select: none; }
+.settings-toggle .st-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.st-track {
+    position: relative; flex: 0 0 auto; width: 46px; height: 26px; border-radius: 999px;
+    background: var(--border, #cbd5e1); transition: background .2s ease;
+}
+.st-thumb {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.28); transition: transform .2s ease;
+}
+.st-input:checked + .st-track { background: var(--primary, #063566); }
+.st-input:checked + .st-track .st-thumb { transform: translateX(20px); }
+.st-input:focus-visible + .st-track { outline: 2px solid var(--primary, #063566); outline-offset: 3px; }
+.st-text { font-size: .86rem; font-weight: 600; color: var(--text, #0f172a); }
+@media (prefers-reduced-motion: reduce) { .st-track, .st-thumb { transition: none; } }
+
+/* Sticky footer bar */
+.settings-footbar {
+    position: sticky; bottom: 0; z-index: 30; margin-top: 1.4rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    padding: .85rem 1.2rem; border: 1px solid var(--border, #e2e8f0); border-radius: 14px;
+    background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: 0 -10px 30px -18px rgba(6,53,102,.4);
+}
+html[data-theme="dark"] .settings-footbar { background: rgba(17,24,39,.82); }
+.sf-note { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--muted, #64748b); }
+.sf-note svg { width: 15px; height: 15px; color: #58A42F; }
+.sf-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.btn[data-save].is-saving { opacity: .75; pointer-events: none; }
+
+/* Responsive */
+@media (max-width: 940px) {
+    .settings-topbar { top: 60px; }
+    .settings-tabbar { top: 108px; }
+}
+@media (max-width: 620px) {
+    .settings-grid { grid-template-columns: 1fr; }
+    .settings-topbar { position: static; }
+    .settings-footbar { flex-direction: column; align-items: stretch; }
+    .sf-actions { justify-content: stretch; }
+    .sf-actions .btn { flex: 1; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .settings-card.is-active { animation: none; }
+    .stab, .ff-input, .ff-label { transition: none; }
+}
+</style>
+
+<script>
+(function () {
+    var form = document.getElementById('settingsForm');
+    if (!form) return;
+    var tabs  = Array.prototype.slice.call(form.querySelectorAll('.stab'));
+    var panes = Array.prototype.slice.call(form.querySelectorAll('.settings-card'));
+    var track = form.querySelector('[data-stab-track]');
+    var bar   = form.querySelector('.settings-tabbar');
+
+    function activate(id, store) {
+        tabs.forEach(function (t) {
+            var on = t.getAttribute('data-tab') === id;
+            t.classList.toggle('is-active', on);
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        panes.forEach(function (p) {
+            var on = p.id === id;
+            p.classList.toggle('is-active', on);
+            p.setAttribute('aria-hidden', on ? 'false' : 'true');
+        });
+        if (store) { try { localStorage.setItem('pwf-settings-tab', id); } catch (e) {} if (history.replaceState) history.replaceState(null, '', '#' + id); }
+        // Keep the active tab visible in the scroller.
+        var on = tabs.filter(function (t) { return t.getAttribute('data-tab') === id; })[0];
+        if (on && on.scrollIntoView) { on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+    }
+    tabs.forEach(function (t) { t.addEventListener('click', function () { activate(t.getAttribute('data-tab'), true); }); });
+
+    /* ---- arrow keys move between tabs (WAI-ARIA tablist behaviour) ------- */
+    tabs.forEach(function (t, i) {
+        t.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') { return; }
+            e.preventDefault();
+            var n = e.key === 'ArrowRight' ? (i + 1) % tabs.length : (i <= 0 ? tabs.length - 1 : i - 1);
+            tabs[n].focus();
+            activate(tabs[n].getAttribute('data-tab'), true);
+        });
+    });
+
+    /* ---- horizontal scroll arrows, shown only when the bar overflows ----- */
+    if (track && bar) {
+        var syncArrows = function () { bar.classList.toggle('is-scrollable', track.scrollWidth > track.clientWidth + 4); };
+        syncArrows();
+        window.addEventListener('resize', syncArrows);
+        var prev = form.querySelector('[data-stab-prev]');
+        var next = form.querySelector('[data-stab-next]');
+        if (prev) { prev.addEventListener('click', function () { track.scrollBy({ left: -220, behavior: 'smooth' }); }); }
+        if (next) { next.addEventListener('click', function () { track.scrollBy({ left:  220, behavior: 'smooth' }); }); }
+    }
+
+    /* ---- global settings search ----------------------------------------- */
+    var search = form.querySelector('[data-settings-search]');
+    var clear  = form.querySelector('[data-settings-clear]');
+    var note   = form.querySelector('[data-settings-note]');
+    var page   = form;
+
+    function runSearch(q) {
+        q = (q || '').trim().toLowerCase();
+        if (clear) { clear.hidden = q === ''; }
+
+        if (q === '') {
+            page.classList.remove('is-searching');
+            panes.forEach(function (p) { p.classList.remove('no-match'); });
+            form.querySelectorAll('.settings-field').forEach(function (f) { f.classList.remove('no-match'); });
+            if (note) { note.hidden = true; }
+            return;
+        }
+
+        // Show every category at once and hide the fields that do not match, so
+        // a search spans the whole page rather than just the open tab.
+        page.classList.add('is-searching');
+        var hits = 0;
+        panes.forEach(function (p) {
+            var local = 0;
+            p.querySelectorAll('[data-field-search]').forEach(function (f) {
+                var hit = (f.getAttribute('data-field-search') || '').indexOf(q) > -1;
+                f.classList.toggle('no-match', !hit);
+                if (hit) { local++; hits++; }
+            });
+            p.classList.toggle('no-match', local === 0);
+        });
+        if (note) {
+            note.hidden = false;
+            note.textContent = hits === 0
+                ? 'No setting matches “' + q + '”.'
+                : hits + ' setting' + (hits === 1 ? '' : 's') + ' match “' + q + '”.';
+        }
+    }
+
+    if (search) {
+        var st;
+        search.addEventListener('input', function () {
+            clearTimeout(st);
+            st = setTimeout(function () { runSearch(search.value); }, 120);
+        });
+        search.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { search.value = ''; runSearch(''); }
+        });
+    }
+    if (clear) {
+        clear.addEventListener('click', function () { search.value = ''; runSearch(''); search.focus(); });
+    }
+
+    // Restore last tab (hash wins, then localStorage).
+    var initial = (location.hash || '').replace('#', '');
+    if (!panes.some(function (p) { return p.id === initial; })) {
+        try { initial = localStorage.getItem('pwf-settings-tab') || ''; } catch (e) { initial = ''; }
+    }
+    if (panes.some(function (p) { return p.id === initial; })) { activate(initial, false); }
+
+    // Saving state on submit (submission proceeds normally).
+    form.addEventListener('submit', function () {
+        form.querySelectorAll('[data-save]').forEach(function (b) {
+            b.classList.add('is-saving'); b.setAttribute('aria-busy', 'true');
+        });
+    });
+
+    // Turn server flash alerts into modern toasts.
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.Swal) return;
+        document.querySelectorAll('.admin-content > .alert').forEach(function (al) {
+            var icon = al.classList.contains('alert-success') ? 'success' : (al.classList.contains('alert-error') || al.classList.contains('alert-danger') ? 'error' : 'info');
+            Swal.fire({ toast: true, position: 'top-end', icon: icon, title: al.textContent.trim(), showConfirmButton: false, timer: 3200, timerProgressBar: true });
+            al.remove();
+        });
+    });
+})();
+</script>
+
+<?php include __DIR__ . '/partials/foot.php'; ?>

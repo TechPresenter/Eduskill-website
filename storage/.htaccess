@@ -1,8 +1,8 @@
-# No direct web access to this directory. Files here are loaded server-side by the app only.
-<IfModule mod_authz_core.c>
-  Require all denied
-</IfModule>
+# Storage is private. Never serve anything under /storage over the web.
+# Backups, temp exports and other server-only files live here.
+Require all denied
 <IfModule !mod_authz_core.c>
-  Order deny,allow
-  Deny from all
+    Order allow,deny
+    Deny from all
 </IfModule>
+Options -Indexes

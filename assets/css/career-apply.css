@@ -1,0 +1,350 @@
+/* =============================================================================
+ *  Careers — premium application section
+ * -----------------------------------------------------------------------------
+ *  Two-column: an information panel on the left, a glassmorphic multi-step
+ *  application card on the right, over an animated mesh background.
+ *
+ *  Motion budget: every animated property is transform or opacity so the
+ *  compositor handles it — nothing here triggers layout. All of it is disabled
+ *  under prefers-reduced-motion.
+ * ========================================================================== */
+
+.cap {
+    --cap-primary:  #0B4EA2;
+    --cap-secondary:#1F6BFF;
+    --cap-accent:   #18C37E;
+    --cap-grad:     linear-gradient(135deg, #0B4EA2 0%, #4F8DFF 100%);
+    --cap-ink:      #0f172a;
+    --cap-muted:    #64748b;
+    --cap-line:     rgba(15, 23, 42, .09);
+    --cap-card:     rgba(255, 255, 255, .74);
+    --cap-bg:       #f6f9ff;
+    --cap-r:        24px;
+
+    position: relative; isolation: isolate; overflow: hidden;
+    padding: clamp(3rem, 7vw, 5.5rem) 0;
+    background: var(--cap-bg);
+    color: var(--cap-ink);
+}
+:root[data-theme="dark"] .cap {
+    --cap-ink: #e2e8f0; --cap-muted: #94a3b8;
+    --cap-line: rgba(255,255,255,.12); --cap-card: rgba(17,26,46,.72); --cap-bg: #070c18;
+}
+
+/* ---------------------------------------------------------- animated backdrop */
+.cap-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.cap-blob {
+    position: absolute; border-radius: 50%; filter: blur(72px); opacity: .38;
+    will-change: transform;
+}
+.cap-blob.b1 { width: 520px; height: 520px; top: -160px; left: -120px;
+    background: radial-gradient(circle, var(--cap-secondary), transparent 68%);
+    animation: capFloat 19s ease-in-out infinite; }
+.cap-blob.b2 { width: 440px; height: 440px; bottom: -180px; right: -100px;
+    background: radial-gradient(circle, var(--cap-accent), transparent 68%);
+    animation: capFloat 24s ease-in-out infinite reverse; }
+.cap-blob.b3 { width: 360px; height: 360px; top: 38%; left: 46%;
+    background: radial-gradient(circle, #8b5cf6, transparent 70%);
+    animation: capFloat 28s ease-in-out infinite; }
+@keyframes capFloat {
+    0%, 100% { transform: translate3d(0,0,0) scale(1); }
+    33%      { transform: translate3d(34px,-38px,0) scale(1.07); }
+    66%      { transform: translate3d(-28px,26px,0) scale(.94); }
+}
+/* Fine mesh so the flat background reads as a surface, not a colour block. */
+.cap-mesh {
+    position: absolute; inset: 0; opacity: .5;
+    background-image:
+        radial-gradient(at 18% 22%, rgba(31,107,255,.16) 0, transparent 52%),
+        radial-gradient(at 82% 14%, rgba(24,195,126,.14) 0, transparent 48%),
+        radial-gradient(at 68% 88%, rgba(11,78,162,.14) 0, transparent 50%);
+}
+
+/* --------------------------------------------------------------- grid shell */
+.cap-grid {
+    display: grid; gap: clamp(1.6rem, 3.6vw, 3.2rem);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
+    align-items: start;
+}
+@media (max-width: 992px) { .cap-grid { grid-template-columns: 1fr; } }
+
+/* ------------------------------------------------------------- left: content */
+.cap-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .42rem .95rem; border-radius: 999px;
+    font-size: .74rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: #fff; background: var(--cap-grad); background-size: 200% 200%;
+    animation: capShift 6s ease infinite;
+    box-shadow: 0 8px 22px -8px rgba(11,78,162,.6);
+}
+.cap-badge svg { width: 14px; height: 14px; }
+@keyframes capShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+.cap-h1 {
+    font-size: clamp(2.1rem, 4.6vw, 3.4rem); line-height: 1.08; font-weight: 800;
+    letter-spacing: -.03em; margin: 1rem 0 .9rem; text-wrap: balance;
+}
+.cap-h1 .hl {
+    background: var(--cap-grad); -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+}
+.cap-lead { font-size: clamp(1rem, 1.4vw, 1.1rem); line-height: 1.75; color: var(--cap-muted); max-width: 54ch; margin-bottom: 1.8rem; }
+
+/* Why-join cards */
+.cap-why { display: grid; gap: .8rem; margin-bottom: 2rem; }
+.cap-why-card {
+    display: flex; gap: .9rem; align-items: flex-start; padding: 1rem 1.1rem;
+    border-radius: 16px; border: 1px solid var(--cap-line);
+    background: var(--cap-card); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    transition: transform .28s cubic-bezier(.34,1.3,.64,1), box-shadow .28s ease, border-color .28s ease;
+    will-change: transform;
+}
+.cap-why-card:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--cap-secondary) 40%, transparent);
+    box-shadow: 0 18px 38px -18px rgba(11,78,162,.45);
+}
+.cap-why-ico {
+    flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+    background: var(--cap-grad); color: #fff;
+}
+.cap-why-ico svg { width: 19px; height: 19px; }
+.cap-why-card:hover .cap-why-ico svg { animation: capPop .5s ease; }
+@keyframes capPop { 50% { transform: scale(1.22) rotate(-8deg); } }
+.cap-why-card h3 { font-size: .98rem; font-weight: 700; margin: 0 0 .2rem; }
+.cap-why-card p  { font-size: .86rem; color: var(--cap-muted); margin: 0; line-height: 1.55; }
+
+/* Counters */
+.cap-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; margin-bottom: 1.9rem; }
+@media (max-width: 560px) { .cap-stats { grid-template-columns: repeat(2, 1fr); } }
+.cap-stat {
+    padding: .95rem .7rem; border-radius: 16px; text-align: center;
+    border: 1px solid var(--cap-line); background: var(--cap-card);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.cap-stat-n {
+    font-size: clamp(1.3rem, 2.4vw, 1.75rem); font-weight: 800; line-height: 1;
+    background: var(--cap-grad); -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+    font-variant-numeric: tabular-nums;
+}
+.cap-stat-l { display: block; margin-top: .3rem; font-size: .74rem; font-weight: 600; color: var(--cap-muted); }
+
+/* Benefit pills */
+.cap-pills { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.9rem; }
+.cap-pill {
+    display: inline-flex; align-items: center; gap: .38rem;
+    padding: .44rem .85rem; border-radius: 999px; font-size: .8rem; font-weight: 600;
+    border: 1px solid var(--cap-line); background: var(--cap-card); color: var(--cap-ink);
+    transition: transform .2s ease, border-color .2s ease, color .2s ease;
+}
+.cap-pill svg { width: 13px; height: 13px; color: var(--cap-accent); }
+.cap-pill:hover { transform: translateY(-2px); border-color: var(--cap-accent); color: var(--cap-accent); }
+
+/* Team preview */
+.cap-team { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.9rem; }
+.cap-avatars { display: flex; }
+.cap-av {
+    width: 38px; height: 38px; border-radius: 50%; border: 2.5px solid var(--cap-bg);
+    margin-left: -12px; display: grid; place-items: center; font-size: .78rem; font-weight: 800; color: #fff;
+    background: var(--cap-grad); transition: transform .24s ease;
+}
+.cap-av:first-child { margin-left: 0; }
+.cap-avatars:hover .cap-av { transform: translateY(-3px); }
+.cap-team-txt { font-size: .87rem; color: var(--cap-muted); }
+.cap-team-txt b { color: var(--cap-ink); }
+
+/* Timeline */
+.cap-tl { position: relative; padding-left: 1.6rem; }
+.cap-tl::before {
+    content: ''; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px;
+    background: linear-gradient(180deg, var(--cap-secondary), var(--cap-accent));
+    opacity: .3;
+}
+.cap-tl-item { position: relative; padding-bottom: 1.05rem; }
+.cap-tl-item:last-child { padding-bottom: 0; }
+.cap-tl-item::before {
+    content: ''; position: absolute; left: -1.6rem; top: 5px; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--cap-bg); border: 2.5px solid var(--cap-secondary);
+    transition: transform .3s ease, background .3s ease;
+}
+.cap-tl-item.is-in::before { background: var(--cap-secondary); transform: scale(1.16); }
+.cap-tl-item strong { display: block; font-size: .92rem; }
+.cap-tl-item span   { font-size: .82rem; color: var(--cap-muted); }
+
+/* ------------------------------------------------------------ right: the card */
+.cap-card {
+    position: relative; border-radius: var(--cap-r); padding: clamp(1.4rem, 2.6vw, 2.1rem);
+    background: var(--cap-card); -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid var(--cap-line);
+    box-shadow: 0 30px 70px -28px rgba(11,78,162,.42);
+}
+/* Animated gradient border, painted in a pseudo-element so it never affects layout. */
+.cap-card::before {
+    content: ''; position: absolute; inset: -1.5px; border-radius: calc(var(--cap-r) + 1.5px); z-index: -1;
+    background: linear-gradient(120deg, var(--cap-primary), var(--cap-secondary), var(--cap-accent), var(--cap-primary));
+    background-size: 300% 300%; animation: capShift 9s ease infinite; opacity: .55;
+}
+.cap-card-head { margin-bottom: 1.3rem; }
+.cap-card-head h2 { font-size: 1.4rem; font-weight: 800; margin: 0 0 .2rem; }
+.cap-card-head p  { font-size: .87rem; color: var(--cap-muted); margin: 0; }
+
+/* Step indicator */
+.cap-steps { display: flex; align-items: center; gap: .4rem; margin: 1.1rem 0 1.4rem; }
+.cap-step { display: flex; align-items: center; gap: .45rem; flex: 0 0 auto; }
+.cap-step-dot {
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    font-size: .8rem; font-weight: 800; border: 2px solid var(--cap-line);
+    background: transparent; color: var(--cap-muted); transition: .3s ease;
+}
+.cap-step.is-active .cap-step-dot { background: var(--cap-grad); border-color: transparent; color: #fff; transform: scale(1.06); }
+.cap-step.is-done   .cap-step-dot { background: var(--cap-accent); border-color: transparent; color: #fff; }
+.cap-step-lbl { font-size: .78rem; font-weight: 600; color: var(--cap-muted); }
+.cap-step.is-active .cap-step-lbl { color: var(--cap-ink); }
+.cap-step-bar { flex: 1 1 auto; height: 2px; background: var(--cap-line); border-radius: 2px; overflow: hidden; }
+.cap-step-bar i { display: block; height: 100%; width: 0; background: var(--cap-grad); transition: width .45s ease; }
+@media (max-width: 560px) { .cap-step-lbl { display: none; } }
+
+/* Panels */
+.cap-panel { display: none; }
+.cap-panel.is-on { display: block; animation: capIn .34s ease both; }
+@keyframes capIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.cap-row { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+.cap-row.one { grid-template-columns: 1fr; }
+@media (max-width: 560px) { .cap-row { grid-template-columns: 1fr; } }
+
+/* Floating-label fields */
+.cap-f { position: relative; }
+.cap-f > input, .cap-f > select, .cap-f > textarea {
+    width: 100%; padding: 1.05rem .85rem .5rem 2.35rem; font: inherit; font-size: .93rem;
+    border: 1.5px solid var(--cap-line); border-radius: 13px; background: rgba(255,255,255,.6);
+    color: var(--cap-ink); transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+:root[data-theme="dark"] .cap-f > input,
+:root[data-theme="dark"] .cap-f > select,
+:root[data-theme="dark"] .cap-f > textarea { background: rgba(255,255,255,.05); }
+.cap-f > textarea { min-height: 104px; resize: vertical; padding-top: 1.35rem; }
+.cap-f > input:focus, .cap-f > select:focus, .cap-f > textarea:focus {
+    outline: none; border-color: var(--cap-secondary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--cap-secondary) 16%, transparent);
+    background: rgba(255,255,255,.85);
+}
+.cap-f > label {
+    position: absolute; left: 2.35rem; top: .82rem; font-size: .92rem; color: var(--cap-muted);
+    pointer-events: none; transform-origin: left top;
+    transition: transform .18s ease, color .18s ease;
+}
+.cap-f > input:focus + label, .cap-f > input:not(:placeholder-shown) + label,
+.cap-f > textarea:focus + label, .cap-f > textarea:not(:placeholder-shown) + label,
+.cap-f > select:focus + label, .cap-f > select.has-value + label {
+    transform: translateY(-.62rem) scale(.76); color: var(--cap-secondary);
+}
+.cap-f-ico {
+    position: absolute; left: .8rem; top: .92rem; width: 17px; height: 17px;
+    color: var(--cap-muted); pointer-events: none; transition: color .2s ease;
+}
+.cap-f > input:focus ~ .cap-f-ico, .cap-f > textarea:focus ~ .cap-f-ico { color: var(--cap-secondary); }
+.cap-f.has-error > input, .cap-f.has-error > select, .cap-f.has-error > textarea { border-color: #dc2626; }
+.cap-f.is-ok > input, .cap-f.is-ok > select { border-color: var(--cap-accent); }
+.cap-err { display: block; margin-top: .25rem; font-size: .76rem; color: #dc2626; }
+.cap-count { position: absolute; right: .7rem; bottom: .5rem; font-size: .72rem; color: var(--cap-muted); }
+
+/* Country selector inherits the card's rounding */
+.cap-f-country .cs-control { border-radius: 13px; border-width: 1.5px; }
+.cap-f-country .cs-label { font-size: .78rem; color: var(--cap-muted); }
+
+/* Upload zone */
+.cap-drop {
+    position: relative; display: grid; place-items: center; gap: .5rem; text-align: center;
+    padding: 1.5rem 1rem; border-radius: 16px; cursor: pointer;
+    border: 2px dashed color-mix(in srgb, var(--cap-secondary) 42%, transparent);
+    background: color-mix(in srgb, var(--cap-secondary) 5%, transparent);
+    transition: border-color .22s ease, background .22s ease, transform .22s ease;
+}
+.cap-drop:hover, .cap-drop.is-over {
+    border-color: var(--cap-secondary); background: color-mix(in srgb, var(--cap-secondary) 11%, transparent);
+    transform: translateY(-2px);
+}
+.cap-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.cap-drop-ico {
+    width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--cap-grad); color: #fff;
+}
+.cap-drop-ico svg { width: 21px; height: 21px; }
+.cap-drop.is-over .cap-drop-ico { animation: capBounce .6s ease infinite; }
+@keyframes capBounce { 50% { transform: translateY(-5px); } }
+.cap-drop b { font-size: .92rem; }
+.cap-drop small { font-size: .78rem; color: var(--cap-muted); }
+
+.cap-file {
+    display: none; align-items: center; gap: .7rem; margin-top: .6rem; padding: .7rem .85rem;
+    border-radius: 12px; border: 1px solid var(--cap-line); background: var(--cap-card);
+}
+.cap-file.is-on { display: flex; animation: capIn .3s ease both; }
+.cap-file-ico { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--cap-accent) 16%, transparent); color: var(--cap-accent); flex: 0 0 auto; }
+.cap-file-meta { flex: 1 1 auto; min-width: 0; }
+.cap-file-meta b { display: block; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cap-file-meta span { font-size: .75rem; color: var(--cap-muted); }
+.cap-file-x { flex: 0 0 auto; border: 0; background: transparent; cursor: pointer; color: var(--cap-muted); padding: .25rem; border-radius: 6px; }
+.cap-file-x:hover { color: #dc2626; background: rgba(220,38,38,.1); }
+.cap-file-bar { height: 3px; border-radius: 3px; background: var(--cap-line); overflow: hidden; margin-top: .35rem; }
+.cap-file-bar i { display: block; height: 100%; width: 0; background: var(--cap-accent); transition: width .3s ease; }
+
+/* Actions */
+.cap-actions { display: flex; gap: .6rem; margin-top: 1.3rem; }
+.cap-btn {
+    position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    padding: .92rem 1.6rem; border-radius: 14px; border: 0; cursor: pointer;
+    font: inherit; font-weight: 700; font-size: .96rem; color: #fff; background: var(--cap-grad);
+    background-size: 180% 180%;
+    transition: transform .2s cubic-bezier(.34,1.4,.64,1), box-shadow .25s ease, filter .25s ease;
+    box-shadow: 0 12px 26px -12px rgba(11,78,162,.7);
+}
+.cap-btn:hover { transform: translateY(-2px); filter: brightness(1.07); box-shadow: 0 18px 34px -14px rgba(11,78,162,.8); }
+.cap-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.cap-btn.ghost { background: transparent; color: var(--cap-ink); border: 1.5px solid var(--cap-line); box-shadow: none; }
+.cap-btn.ghost:hover { border-color: var(--cap-secondary); color: var(--cap-secondary); }
+.cap-btn.grow { flex: 1 1 auto; }
+.cap-ripple { position: absolute; border-radius: 50%; transform: scale(0); background: rgba(255,255,255,.45);
+    animation: capRipple .6s ease-out; pointer-events: none; }
+@keyframes capRipple { to { transform: scale(4); opacity: 0; } }
+.cap-spin { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+    border-radius: 50%; animation: capSpin .7s linear infinite; }
+@keyframes capSpin { to { transform: rotate(360deg); } }
+
+.cap-note { margin-top: .9rem; font-size: .78rem; color: var(--cap-muted); display: flex; gap: .4rem; align-items: flex-start; }
+.cap-note svg { width: 14px; height: 14px; flex: 0 0 auto; margin-top: .1rem; color: var(--cap-accent); }
+
+/* Success state */
+.cap-done { display: none; text-align: center; padding: 2rem 1rem; }
+.cap-done.is-on { display: block; animation: capIn .4s ease both; }
+.cap-done-ico {
+    width: 74px; height: 74px; margin: 0 auto 1.1rem; border-radius: 50%; display: grid; place-items: center;
+    background: var(--cap-accent); color: #fff;
+}
+.cap-done-ico svg { width: 36px; height: 36px; stroke-dasharray: 48; stroke-dashoffset: 48; animation: capTick .5s .15s ease forwards; }
+@keyframes capTick { to { stroke-dashoffset: 0; } }
+
+/* Scroll reveal (driven by IntersectionObserver) */
+.cap-rv { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s ease; }
+.cap-rv.is-in { opacity: 1; transform: none; }
+
+/* Mobile sticky apply */
+.cap-sticky {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; display: none;
+    padding: .7rem 1rem calc(.7rem + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--cap-bg) 92%, transparent);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border-top: 1px solid var(--cap-line);
+}
+@media (max-width: 992px) { .cap-sticky.is-on { display: block; } }
+.cap-sticky .cap-btn { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+    .cap-blob, .cap-badge, .cap-card::before, .cap-drop.is-over .cap-drop-ico { animation: none !important; }
+    .cap-rv { opacity: 1; transform: none; transition: none; }
+    .cap-why-card, .cap-btn, .cap-pill, .cap-drop { transition: none; }
+    .cap-why-card:hover, .cap-btn:hover, .cap-pill:hover, .cap-drop:hover { transform: none; }
+}

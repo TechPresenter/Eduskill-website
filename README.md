@@ -1,139 +1,119 @@
-<div align="center">
+# EDUSKILL INDIA FOUNDATION — NGO Management System
 
-# 🎓 Eduskill India Foundation
+A complete, production-ready NGO website + admin panel built in **Core PHP 8.2+**
+with **PDO/MySQL**, a hand-written static **CSS design system**, and **vanilla JS**.
+No framework, no Composer, no Node — runs on any Apache shared host.
 
-### Enterprise-grade NGO website & content management platform
-
-*Empowering underserved communities across India through education, skills, and opportunity.*
-
-![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL%2FMariaDB-utf8mb4-4479A1?logo=mysql&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4?logo=tailwindcss&logoColor=white)
-![No Framework](https://img.shields.io/badge/framework-none-success)
-![No Composer](https://img.shields.io/badge/composer-not%20required-success)
-![License](https://img.shields.io/badge/license-Proprietary-lightgrey)
-
-</div>
+> Empowering Communities • Spreading Hope • Creating Change
+> Patna, Bihar 840007 · info@eduskillindia.org · +91-9955446477
+> CIN U88900BR2025NPL079155 · Directors: Shanti Devi & Prashant Kumar
 
 ---
 
-## 📖 Overview
+## Highlights
 
-**Eduskill India Foundation** is a complete, self-hosted website + admin CMS for a modern NGO. It is
-built in **Core PHP 8 + MySQL** with a **flat-file architecture** and a **REST API** — deliberately
-**no Node.js, Composer, React, or build step at runtime**. Everything ships ready to upload to any
-PHP 8 shared host (Hostinger, cPanel, etc.).
+- **60+ pages** — a premium public website + a custom admin panel (no template).
+- **Fully DB-driven** — every piece of content is editable from the admin panel.
+- **Security first** — CSRF on every form, PDO prepared statements everywhere,
+  output escaping, `password_hash`, hardened sessions, throttled login, strict
+  file-upload validation, security headers.
+- **Premium UI** — Outfit/Jakarta typography, blue→purple→orange→green gradient
+  system, 3D & glass buttons, mega menu, animated footer, page loader, scroll
+  reveal, counters, tilt, marquee, lightbox, timeline, tabs, accordions, FAB,
+  toasts, skeletons — all light/dark aware and fully responsive.
+- **Member accounts** — signup, login, email + OTP verification, password reset.
+- **REST API** at `/api/v1` returning JSON with pagination & filters (+ JWT scaffold).
+- **SEO** — dynamic `sitemap.xml`, per-page meta overrides, Open Graph, Twitter
+  cards, JSON-LD (Organization / Breadcrumb / Article).
 
-A non-technical owner manages the **entire site** — pages, campaigns, programmes, events, blog,
-gallery, team, testimonials, enquiries and more — through a polished admin panel. No code editing.
+## Tech stack
 
-> This repository is the full source: public website (30 pages), admin panel, REST API, database
-> schema + seed data, the compiled design system, and complete documentation.
+| Layer     | Choice                                             |
+|-----------|----------------------------------------------------|
+| Language  | PHP 8.2+ (no framework)                            |
+| Database  | MySQL / MariaDB 10.4+ (InnoDB, utf8mb4)            |
+| DB access | PDO, prepared statements only                      |
+| Styling   | Static hand-written CSS (`tailwind.css`, `premium.css`, `admin.css`) |
+| JS        | Vanilla ES6 (`main.js`, `premium.js`, `forms.js`, `admin.js`) |
+| CDN (opt) | SweetAlert2 (forms) · Chart.js (admin dashboard) · Google Fonts |
 
-## ✨ Highlights
-
-- **30-page public website** — dynamic, database-driven, SEO-friendly, fully responsive
-- **Full admin CMS** — page builder (drag-and-drop sections), content modules, media library, forms inbox, users & roles
-- **REST API** — clean JSON endpoints powering the frontend and admin (AJAX + Fetch)
-- **RBAC security** — 8 roles, granular permissions, bcrypt, CSRF, login throttling, HTML sanitizer
-- **Premium UI/UX** — glassmorphism header, mega menu, gradient/ripple buttons, scroll animations, dark mode
-- **Zero runtime dependencies** — precompiled Tailwind CSS, inline SVG icons, CDN-optional libraries
-- **Deploy by upload** — no SSH, no npm, no composer on the server
-
-## 🧱 Tech stack
-
-| Layer | Technology |
-|---|---|
-| Language | Core PHP 8.2 (no framework) |
-| Database | MySQL 8 / MariaDB 10.4+ (utf8mb4_unicode_ci) |
-| Styling | Tailwind CSS 3.4 (precompiled → committed) + custom premium theme layer |
-| Frontend JS | Vanilla ES6, Fetch API |
-| Libraries (CDN, optional) | SweetAlert2, Chart.js, AOS, Font Awesome |
-| Fonts | Plus Jakarta Sans (display), Inter (body) |
-| Architecture | Flat-file pages + `includes/` engine + `api/` REST + MySQL |
-
-## 📂 Project structure
+## Folder map
 
 ```
-eduskill/
-├── index.php, about.php, programs.php … (30 public pages)
-├── includes/            → engine: config, db, functions, auth, session, header, footer, navbar
-│   ├── sections/        → CMS section renderers (hero, counters, campaign_list, …)
-│   ├── *-premium.php     → premium redesign partials (mega-menu navbar, rich footer)
-├── admin/               → admin panel (dashboard, CRUD modules, page editor, users)
-│   └── includes/        → admin shell (header, sidebar, footer, auth guard)
-├── api/                 → REST endpoints (contact, newsletter, campaigns, …)
-├── assets/
-│   ├── css/             → compiled app.css, admin.css + premium.css, premium-admin.css
-│   ├── js/              → app.js, admin.js, premium.js, premium-admin.js
-│   ├── images/, uploads/
-├── config/              → per-install secrets (git-ignored)
-├── database/            → schema.sql, seed.sql, eduskill_full.sql, migrations/
-├── src-build/           → Tailwind source + config (dev-only; compiled CSS is committed)
-├── storage/             → logs & cache (runtime)
-└── docs/                → PRD, TRD, features, setup guide, branding, workflow
+config.php                  All environment constants (DB, URLs, mail, security)
+.htaccess                   Clean URLs, HTTPS-ready, security headers, gzip, cache
+robots.txt / sitemap.php    SEO (sitemap.xml served dynamically via rewrite)
+
+includes/                   The "spine" (shared, reused everywhere)
+  bootstrap.php               Single entry point every page requires first
+  database.php                PDO singleton (getPDO)
+  functions.php               DB helpers, settings, escaping, dates, validation…
+  csrf.php  auth.php  member_auth.php   Security + admin + member auth
+  upload.php  pagination.php  helper.php  seo.php  mailer.php
+  header.php  navbar.php  footer.php  sidebar.php    Layout partials
+
+assets/
+  css/{tailwind,premium,admin}.css     Design system
+  js/{main,premium,forms,admin}.js     Behaviour
+  images/                              Logo + SVG placeholders
+
+<public pages>.php          index, about, our-story, programs, causes, schemes,
+                            scholarship, campaigns, events, calendar, gallery,
+                            media, news-media, blogs, blog-details, testimonials,
+                            success-stories, team, leadership-team, management-body,
+                            ngo-details, achievements, certificates, verify-certificate,
+                            resources, volunteer, internship, membership, career,
+                            become-partner, donate, contact, feedback, faqs,
+                            privacy-policy, terms, refund-policy, disclaimer,
+                            cookie-policy, sitemap-page, 404
+<auth pages>.php            login, signup, forgot-password, reset-password,
+                            verify-email, verify-otp, account, logout
+
+forms/                      AJAX POST handlers → JSON (contact, newsletter,
+                            volunteer, internship, donate, feedback, comment,
+                            event-register, partner, scholarship, career-apply,
+                            membership, download)
+
+api/v1/                     REST endpoints (blogs, events, gallery, team,
+                            testimonials, programs, contact, volunteer, donate)
+
+admin/                      Custom admin panel (login, dashboard, ~50 modules)
+  partials/head.php foot.php   Admin layout
+
+database/                   schema.sql, schema_v2.sql, schema_v3.sql, sample_data.sql
+docs/                       DEV_CONTRACT.md, DEV_CONTRACT_V2.md (developer reference)
+uploads/                    User uploads (script execution disabled)
+logs/                       PHP error log
 ```
 
-## 🚀 Quick start (local — XAMPP)
+## Quick start (local XAMPP)
 
-```bash
-# 1. Place the project in your web root
-#    C:\xampp\htdocs\eduskill  (or a vhost)
+1. Place this folder at `C:\xampp\htdocs\pwf` (already there).
+2. Start **Apache** and **MySQL** in the XAMPP Control Panel.
+3. Create the database and import (phpMyAdmin, or shell):
+   ```
+   C:\xampp\mysql\bin\mysql.exe -u root < database\schema.sql
+   C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v2.sql
+   C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v3.sql
+   C:\xampp\mysql\bin\mysql.exe -u root pwf < database\sample_data.sql
+   ```
+4. Visit **http://localhost/pwf/**
+5. Admin: **http://localhost/pwf/admin/login**
+   - Email: `admin@eduskillindia.org`
+   - Password: `Admin@123`  → **change it immediately** (Admin → My Profile).
 
-# 2. Create the database and import the schema + seed data
-mysql -u root -e "CREATE DATABASE eduskill_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root eduskill_dev < database/eduskill_full.sql
+See **INSTALL.md** for shared-hosting deployment and **TESTING.md** for the
+full manual test checklist.
 
-# 3. Point your browser at the site
-#    http://localhost/eduskill
-```
+## Configuration
 
-Local DB credentials are the XAMPP defaults (`root` / no password) in `includes/config.php`.
-See **[docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md)** for production (Hostinger) deployment.
+All settings live in `config.php`:
+- `APP_ENV` — `development` (show errors) or `production` (hide + log errors).
+- `DB_*` — database credentials.
+- `BASE_URI` / `APP_URL` — where the site is installed (`/pwf` locally; `''` at a domain root).
+- `ASSET_VERSION` — bump to bust CSS/JS caches after edits.
+- Mail/SMTP — set `USE_SMTP` and `SMTP_*` (or override via Admin → Settings).
 
-### 🔑 Admin panel
+## License
 
-```
-URL:      http://localhost/eduskill/admin
-Email:    prashantmixadda@gmail.com
-Password: EduskillDemo2026!
-```
-
-*(Development credentials — change immediately on any real deployment.)*
-
-## 🎨 Rebuilding the CSS
-
-The compiled CSS is committed, so the owner never needs a build step. Developers editing the design:
-
-```bash
-cd src-build
-npm install                       # first time only
-npx tailwindcss -i ./src/app.css   -o ../assets/css/app.css   --minify
-npx tailwindcss -i ./src/admin.css -o ../assets/css/admin.css --minify
-```
-
-## 📚 Documentation
-
-| Document | Purpose |
-|---|---|
-| [PRD](docs/PRD.md) | Product requirements — vision, users, scope, roadmap |
-| [TRD](docs/TRD.md) | Technical requirements — architecture, schema, API, security |
-| [Features](docs/FEATURES.md) | Complete feature inventory (public + admin) |
-| [Setup Guide](docs/SETUP-GUIDE.md) | Local + production installation, step by step |
-| [Branding](docs/BRANDING.md) | Brand identity — colours, typography, logo, voice |
-| [Workflow](docs/WORKFLOW.md) | Dev workflow + content-management workflow |
-
-## 🗺️ Roadmap
-
-- **Phase 1 (this repo)** — Public website + admin CMS + REST API ✅
-- **Phase 2** — Email deliverability (SMTP + SPF/DKIM), two-factor auth, newsletter double opt-in
-- **Phase 3** — Online donations (Razorpay), 80G receipts, donor portal
-- **Phase 4+** — School / teacher / student / volunteer portals
-
-## 📄 License
-
-Copyright © 2026 Eduskill India Foundation. All rights reserved. See [LICENSE](LICENSE).
-
----
-
-<div align="center"><sub>Built with care in India 🇮🇳</sub></div>
+Proprietary — © 2026 EDUSKILL INDIA FOUNDATION. All rights reserved.

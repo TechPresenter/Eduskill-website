@@ -1,0 +1,1661 @@
+/* =============================================================================
+   ui.css — EDUSKILL INDIA FOUNDATION premium component system
+   -----------------------------------------------------------------------------
+   Loaded LAST on every public page (and the admin panel), so it is the single
+   deterministic winner for the shared components that were previously defined
+   in several files at once (.btn was declared 4×, .nav-link 3× …).
+
+   Rules of this file:
+     • Every colour / radius / shadow / motion value comes from a CSS custom
+       property, so the Global Theme Engine can restyle it with no code change.
+     • No !important unless it is undoing a legacy conflict (each one commented).
+     • Everything is keyboard accessible and honours prefers-reduced-motion.
+   Contents: 1 tokens · 2 a11y · 3 buttons · 4 cards · 5 forms · 6 tables
+             7 badges/alerts · 8 tabs/accordion · 9 pagination/breadcrumb
+            10 modal/dropdown/tooltip · 11 states (empty/skeleton) · 12 utilities
+   ============================================================================= */
+
+/* 1. ------------------------------------------------------------- LOCAL TOKENS
+   Derived from the theme tokens so components stay in sync automatically.     */
+:root {
+    --ui-ring: 0 0 0 4px var(--ring, rgba(8, 72, 129, .35));
+    --ui-lift: var(--hover-lift, 4px);
+    --ui-t: var(--transition, 250ms cubic-bezier(.4, 0, .2, 1));
+    --ui-gap: clamp(.75rem, 2vw, 1.25rem);
+    --ui-pad-card: clamp(1.1rem, 2.4vw, 1.6rem);
+}
+
+/* 2. --------------------------------------------------------------- ACCESSIBILITY
+   One consistent, always-visible focus indicator. Mouse users never see it
+   (:focus-visible), keyboard users always do — including inside components
+   that previously set `outline:none`.                                         */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--secondary, #084881);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 10px);
+}
+/* Never let a component silently remove the indicator. */
+:where(.btn, .ui-btn, .card, .pcard, .nav-link):focus-visible { outline-offset: 3px; }
+
+/* Screen-reader-only text (for icon-only controls). */
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+.sr-only-focusable:focus, .sr-only-focusable:focus-visible {
+    position: static; width: auto; height: auto; margin: 0; overflow: visible;
+    clip: auto; clip-path: none; white-space: normal;
+}
+
+/* Respect reduced motion everywhere, once. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;   /* undo legacy infinite animations */
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* 3. --------------------------------------------------------------------- BUTTONS
+   Single source of truth. `.ui-btn` is the modern class; `.btn` is aliased so
+   every existing template picks the new design up with no markup change.      */
+/* Layout/behaviour applies to EVERY button, including the bespoke premium
+   variants (.btn-3d, .btn-glow, .btn-grad, .btn-social) — these are shared,
+   non-visual properties so they can never clobber a variant's look. */
+.btn, .ui-btn {
+    --btn-bg: var(--primary, #063566);
+    --btn-fg: #fff;
+    --btn-shadow: 0 10px 22px -12px rgba(6, 53, 102, .7);
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
+    font: inherit; font-size: .95rem; font-weight: 700; line-height: 1.15;
+    text-decoration: none; cursor: pointer; isolation: isolate;
+    transition: transform var(--ui-t), box-shadow var(--ui-t), background var(--ui-t), border-color var(--ui-t), filter var(--ui-t);
+}
+/* Skin only the standard buttons. The bespoke premium variants keep their own
+   background/shadow from premium.css (they are excluded here on purpose). */
+.btn:where(:not(.btn-3d):not(.btn-glow):not(.btn-grad):not(.btn-social)), .ui-btn {
+    padding: .72rem 1.35rem;
+    border: 1px solid transparent; border-radius: var(--radius-sm, 10px);
+    background: var(--btn-bg); color: var(--btn-fg);
+    box-shadow: var(--btn-shadow);
+}
+.btn svg, .ui-btn svg { width: 1.05em; height: 1.05em; flex: 0 0 auto; }
+.btn:where(:not(.btn-3d):not(.btn-glow):not(.btn-grad):not(.btn-social)):hover,
+.ui-btn:hover { transform: translateY(-2px); filter: brightness(1.06); color: var(--btn-fg); }
+.btn:active, .ui-btn:active { transform: translateY(0) scale(.985); }
+.btn[disabled], .btn:disabled, .btn.is-disabled,
+.ui-btn[disabled], .ui-btn:disabled { opacity: .55; pointer-events: none; box-shadow: none; transform: none; }
+
+/* variants — each only redefines the three custom properties */
+.btn-primary   { --btn-bg: var(--primary, #063566); }
+.btn-primary:hover { --btn-bg: var(--secondary, #084881); }
+.btn-secondary { --btn-bg: var(--surface, #fff); --btn-fg: var(--primary, #063566); --btn-shadow: var(--shadow-sm); border-color: var(--border, #E5E7EB); }
+.btn-secondary:hover { --btn-bg: var(--primary, #063566); --btn-fg: #fff; }
+.btn-outline   { --btn-bg: transparent; --btn-fg: var(--primary, #063566); --btn-shadow: none; border-color: currentColor; }
+.btn-outline:hover { --btn-bg: var(--primary, #063566); --btn-fg: #fff; border-color: transparent; }
+.btn-ghost     { --btn-bg: transparent; --btn-fg: var(--text-soft, #374151); --btn-shadow: none; }
+.btn-ghost:hover { --btn-bg: var(--surface-2, #F4F8FC); --btn-fg: var(--text, #063566); }
+.btn-success   { --btn-bg: var(--green, #58A42F); --btn-shadow: 0 10px 22px -12px rgba(88,164,47,.75); }
+.btn-success:hover { --btn-bg: var(--green-dark, #308629); }
+.btn-danger    { --btn-bg: var(--danger, #DC2626); --btn-shadow: 0 10px 22px -12px rgba(220,38,38,.7); }
+.btn-warning   { --btn-bg: var(--orange, #E67B1D); --btn-shadow: 0 10px 22px -12px rgba(230,123,29,.7); }
+.btn-info      { --btn-bg: var(--secondary, #084881); }
+.btn-white     { --btn-bg: #fff; --btn-fg: var(--primary, #063566); }
+/* the donate / hero CTA: gradient + 3D base edge */
+.btn-donate, .btn-cta {
+    --btn-bg: var(--grad-donate, linear-gradient(135deg, #E67B1D, #F59E0B));
+    box-shadow: 0 5px 0 #A85410, 0 14px 30px -10px rgba(230, 123, 29, .7);
+}
+.btn-donate:hover, .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #A85410, 0 20px 40px -10px rgba(230, 123, 29, .85); }
+.btn-donate:active, .btn-cta:active { transform: translateY(1px); box-shadow: 0 2px 0 #A85410; }
+/* sizes + layout */
+.btn-sm { padding: .48rem .85rem; font-size: .84rem; border-radius: var(--radius-sm, 9px); }
+.btn-lg { padding: .95rem 1.7rem; font-size: 1.05rem; border-radius: var(--radius, 14px); }
+.btn-block { display: flex; width: 100%; }
+.btn-icon { padding: .6rem; aspect-ratio: 1; border-radius: 50%; }
+/* loading state */
+.btn.is-loading { color: transparent !important; pointer-events: none; }  /* hide label, keep width */
+.btn.is-loading::after {
+    content: ""; position: absolute; inset: 0; margin: auto; width: 1.05em; height: 1.05em;
+    border: 2px solid #fff; border-right-color: transparent; border-radius: 50%;
+    animation: ui-spin .6s linear infinite;
+}
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+
+/* 4. ----------------------------------------------------------------------- CARDS */
+.ui-card {
+    display: flex; flex-direction: column;
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #E5E7EB);
+    border-radius: var(--radius-lg, 20px);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: transform var(--ui-t), box-shadow var(--ui-t), border-color var(--ui-t);
+}
+.ui-card:hover { transform: translateY(calc(var(--ui-lift) * -1)); box-shadow: var(--shadow-lg); border-color: color-mix(in srgb, var(--primary, #063566) 35%, transparent); }
+.ui-card__media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--surface-2); }
+.ui-card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2, .7, .3, 1); }
+.ui-card:hover .ui-card__media img { transform: scale(1.06); }
+.ui-card__body { padding: var(--ui-pad-card); display: flex; flex-direction: column; gap: .45rem; flex: 1; }
+.ui-card__title { font-size: 1.12rem; font-weight: 800; line-height: 1.3; margin: 0; color: var(--primary, #063566); }
+.ui-card__text { font-size: .9rem; color: var(--muted, #6B7280); line-height: 1.6; margin: 0; }
+.ui-card__foot { margin-top: auto; padding-top: .9rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+/* responsive auto grid used by every listing page */
+.ui-grid { display: grid; gap: var(--ui-gap); grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.ui-grid--wide { grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); }
+.ui-grid--tight { grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
+
+/* 5. ----------------------------------------------------------------------- FORMS */
+.ui-field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; }
+.ui-label { font-size: .86rem; font-weight: 650; color: var(--text-soft, #374151); }
+.ui-label .req { color: var(--danger, #DC2626); }
+.ui-input, .ui-select, .ui-textarea,
+.form-control, .form-select, .form-textarea {
+    width: 100%; padding: .68rem .85rem;
+    border: 1.5px solid var(--border, #E5E7EB); border-radius: var(--radius-sm, 10px);
+    background: var(--surface, #fff); color: var(--text, #063566);
+    font: inherit; font-size: .94rem;
+    transition: border-color var(--ui-t), box-shadow var(--ui-t), background var(--ui-t);
+}
+.ui-input::placeholder, .form-control::placeholder { color: var(--muted, #6B7280); opacity: .85; }
+.ui-input:hover, .form-control:hover, .form-select:hover, .form-textarea:hover { border-color: color-mix(in srgb, var(--secondary, #084881) 45%, transparent); }
+.ui-input:focus, .ui-select:focus, .ui-textarea:focus,
+.form-control:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;                                  /* replaced by the ring below */
+    border-color: var(--secondary, #084881);
+    box-shadow: var(--ui-ring);
+}
+.ui-textarea, .form-textarea { min-height: 110px; resize: vertical; }
+.ui-hint { font-size: .78rem; color: var(--muted, #6B7280); }
+.ui-error { font-size: .8rem; color: var(--danger, #DC2626); font-weight: 600; }
+.is-invalid, .ui-input[aria-invalid="true"] { border-color: var(--danger, #DC2626) !important; }
+.is-valid { border-color: var(--green, #58A42F) !important; }
+/* input with a leading icon */
+.ui-input-icon { position: relative; display: block; }
+.ui-input-icon > svg { position: absolute; left: .8rem; top: 50%; transform: translateY(-50%); width: 1.05em; height: 1.05em; color: var(--muted); pointer-events: none; }
+.ui-input-icon > .ui-input, .ui-input-icon > .form-control { padding-left: 2.5rem; }
+/* checkbox / radio */
+.ui-check { display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; font-size: .92rem; }
+.ui-check input { accent-color: var(--primary, #063566); width: 1.05rem; height: 1.05rem; }
+/* actions row */
+.ui-actions { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; padding-top: 1.1rem; border-top: 1px solid var(--border); margin-top: .4rem; }
+
+/* 6. ---------------------------------------------------------------------- TABLES
+   Always wrapped so a wide table scrolls instead of breaking the page.        */
+.ui-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: var(--radius, 14px); background: var(--surface); }
+.ui-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .92rem; }
+.ui-table thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--surface-2); color: var(--muted);
+    font-size: .74rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+    text-align: left; padding: .8rem 1rem; white-space: nowrap; border-bottom: 1px solid var(--border);
+}
+.ui-table td { padding: .8rem 1rem; border-bottom: 1px solid var(--border-soft, #EEF2F7); vertical-align: middle; }
+.ui-table tbody tr { transition: background var(--ui-t); }
+.ui-table tbody tr:hover { background: color-mix(in srgb, var(--primary, #063566) 4%, transparent); }
+.ui-table tbody tr:last-child td { border-bottom: 0; }
+/* stack into cards on phones — needs data-label on each cell */
+@media (max-width: 620px) {
+    .ui-table--stack thead { display: none; }
+    .ui-table--stack tr { display: block; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .7rem; padding: .3rem .6rem; }
+    .ui-table--stack td { display: flex; justify-content: space-between; gap: 1rem; border: 0; padding: .45rem 0; }
+    .ui-table--stack td::before { content: attr(data-label); font-weight: 700; color: var(--muted); font-size: .78rem; text-transform: uppercase; }
+}
+
+/* 7. ------------------------------------------------------------- BADGES & ALERTS */
+.ui-badge, .badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .28rem .65rem; border-radius: 999px;
+    font-size: .74rem; font-weight: 800; line-height: 1.2;
+    background: color-mix(in srgb, var(--primary, #063566) 12%, transparent);
+    color: var(--primary, #063566);
+}
+.badge-success, .ui-badge--success { background: color-mix(in srgb, var(--green, #58A42F) 15%, transparent); color: var(--green-dark, #308629); }
+.badge-warning, .ui-badge--warning { background: color-mix(in srgb, var(--orange, #E67B1D) 16%, transparent); color: #9A5313; }
+.badge-danger,  .ui-badge--danger  { background: color-mix(in srgb, var(--danger, #DC2626) 13%, transparent); color: #B91C1C; }
+.badge-muted,   .ui-badge--muted   { background: var(--surface-2); color: var(--muted); }
+
+.ui-alert, .alert {
+    display: flex; align-items: flex-start; gap: .7rem;
+    padding: .9rem 1.1rem; border-radius: var(--radius-sm, 10px);
+    border: 1px solid; font-size: .92rem; line-height: 1.55;
+    background: var(--surface-2); border-color: var(--border); color: var(--text-soft);
+}
+.ui-alert svg, .alert svg { flex: 0 0 auto; margin-top: .12rem; }
+.alert-info,    .ui-alert--info    { background: color-mix(in srgb, var(--secondary, #084881) 8%, transparent);  border-color: color-mix(in srgb, var(--secondary, #084881) 28%, transparent); }
+.alert-success, .ui-alert--success { background: color-mix(in srgb, var(--green, #58A42F) 10%, transparent);     border-color: color-mix(in srgb, var(--green, #58A42F) 32%, transparent); }
+.alert-warning, .ui-alert--warning { background: color-mix(in srgb, var(--orange, #E67B1D) 10%, transparent);    border-color: color-mix(in srgb, var(--orange, #E67B1D) 34%, transparent); }
+.alert-danger, .alert-error, .ui-alert--danger { background: color-mix(in srgb, var(--danger, #DC2626) 8%, transparent); border-color: color-mix(in srgb, var(--danger, #DC2626) 30%, transparent); }
+
+/* 8. --------------------------------------------------------------- TABS & ACCORDION */
+.ui-tabs { display: flex; flex-wrap: wrap; gap: .3rem; border-bottom: 1px solid var(--border); margin-bottom: 1.3rem; }
+.ui-tab {
+    appearance: none; border: 0; background: transparent; color: var(--muted);
+    font: inherit; font-weight: 650; padding: .62rem 1rem; cursor: pointer;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    display: inline-flex; align-items: center; gap: .4rem;
+    transition: color var(--ui-t), background var(--ui-t), border-color var(--ui-t);
+}
+.ui-tab:hover { color: var(--text); background: var(--surface-2); }
+.ui-tab[aria-selected="true"], .ui-tab.is-active { color: var(--primary); border-bottom-color: var(--primary); }
+.ui-tabpanel[hidden] { display: none; }
+
+.ui-accordion { border: 1px solid var(--border); border-radius: var(--radius, 14px); overflow: hidden; background: var(--surface); }
+.ui-accordion + .ui-accordion { margin-top: .6rem; }
+.ui-accordion summary,
+.ui-accordion .ui-acc-head {
+    display: flex; align-items: center; gap: .7rem; width: 100%;
+    padding: 1rem 1.2rem; cursor: pointer; font-weight: 700; color: var(--primary);
+    background: var(--surface); border: 0; font: inherit; font-size: 1rem; text-align: left;
+    transition: background var(--ui-t);
+    list-style: none;
+}
+.ui-accordion summary::-webkit-details-marker { display: none; }
+.ui-accordion summary::after {
+    content: ""; margin-left: auto; width: .6rem; height: .6rem;
+    border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+    transform: rotate(45deg); transition: transform var(--ui-t);
+}
+.ui-accordion[open] summary::after { transform: rotate(-135deg); }
+.ui-accordion summary:hover { background: var(--surface-2); }
+.ui-accordion .ui-acc-body { padding: 0 1.2rem 1.15rem; color: var(--text-soft); line-height: 1.7; }
+
+/* 9. ------------------------------------------------------- PAGINATION & BREADCRUMB */
+.ui-pagination { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; justify-content: center; margin-top: 2rem; }
+.ui-pagination a, .ui-pagination span,
+.pagination a, .pagination span {
+    display: inline-grid; place-items: center; min-width: 40px; height: 40px; padding: 0 .7rem;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text-soft); font-weight: 650; font-size: .9rem;
+    text-decoration: none; transition: all var(--ui-t);
+}
+.ui-pagination a:hover, .pagination a:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+.ui-pagination .is-active, .pagination .active, .pagination .current {
+    background: var(--grad-brand, var(--primary)); color: #fff; border-color: transparent;
+    box-shadow: 0 8px 18px -10px rgba(6, 53, 102, .7);
+}
+.ui-pagination .is-disabled, .pagination .disabled { opacity: .45; pointer-events: none; }
+
+.ui-breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; font-size: .85rem; color: var(--muted); }
+.ui-breadcrumb a { color: inherit; text-decoration: none; }
+.ui-breadcrumb a:hover { color: var(--primary); text-decoration: underline; }
+.ui-breadcrumb li + li::before { content: "/"; margin-right: .4rem; opacity: .5; }
+.ui-breadcrumb ol, .ui-breadcrumb ul { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; list-style: none; margin: 0; padding: 0; }
+
+/* 10. ------------------------------------------------- MODAL · DROPDOWN · TOOLTIP */
+.ui-modal { border: 0; padding: 0; background: transparent; max-width: min(92vw, 560px); width: 100%; }
+.ui-modal::backdrop { background: rgba(6, 53, 102, .5); backdrop-filter: blur(4px); }
+.ui-modal__panel {
+    background: var(--surface); border-radius: var(--radius-lg, 20px);
+    box-shadow: var(--shadow-lg); overflow: hidden; border: 1px solid var(--border);
+    animation: ui-pop .25s cubic-bezier(.22, 1, .36, 1);
+}
+@keyframes ui-pop { from { opacity: 0; transform: translateY(12px) scale(.97); } to { opacity: 1; transform: none; } }
+.ui-modal__head { display: flex; align-items: center; gap: .7rem; padding: 1.1rem 1.3rem; border-bottom: 1px solid var(--border); }
+.ui-modal__head h3 { margin: 0; font-size: 1.08rem; font-weight: 800; }
+.ui-modal__body { padding: 1.3rem; }
+.ui-modal__foot { display: flex; gap: .5rem; justify-content: flex-end; padding: 1rem 1.3rem; border-top: 1px solid var(--border); background: var(--surface-2); }
+
+.ui-dropdown { position: relative; display: inline-block; }
+.ui-dropdown__menu {
+    position: absolute; top: calc(100% + .4rem); right: 0; z-index: 60; min-width: 190px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius, 14px);
+    box-shadow: var(--shadow-lg); padding: .35rem; opacity: 0; visibility: hidden;
+    transform: translateY(-6px); transition: opacity var(--ui-t), transform var(--ui-t), visibility var(--ui-t);
+}
+.ui-dropdown.is-open .ui-dropdown__menu,
+.ui-dropdown__menu[data-open] { opacity: 1; visibility: visible; transform: none; }
+.ui-dropdown__item { display: flex; align-items: center; gap: .55rem; padding: .55rem .7rem; border-radius: var(--radius-sm); color: var(--text-soft); text-decoration: none; font-size: .9rem; }
+.ui-dropdown__item:hover { background: var(--surface-2); color: var(--text); }
+
+.ui-tip { position: relative; }
+.ui-tip::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0;
+    background: var(--primary); color: #fff; font-size: .74rem; font-weight: 600; white-space: nowrap;
+    padding: .35rem .6rem; border-radius: 7px; opacity: 0; pointer-events: none;
+    transition: opacity var(--ui-t); box-shadow: var(--shadow);
+}
+.ui-tip:hover::after, .ui-tip:focus-visible::after { opacity: 1; }
+
+/* 11. --------------------------------------------------- EMPTY / LOADING STATES */
+.ui-empty { text-align: center; padding: clamp(2.5rem, 6vw, 4rem) 1.5rem; color: var(--muted); }
+.ui-empty__icon {
+    width: 68px; height: 68px; margin: 0 auto 1.1rem; display: grid; place-items: center;
+    border-radius: var(--radius-lg); color: var(--primary);
+    background: color-mix(in srgb, var(--primary, #063566) 10%, transparent);
+}
+.ui-empty__icon svg { width: 30px; height: 30px; }
+.ui-empty h3 { margin: 0 0 .35rem; color: var(--text); font-size: 1.1rem; }
+
+.ui-skeleton { position: relative; overflow: hidden; background: var(--surface-2); border-radius: var(--radius-sm); }
+.ui-skeleton::after {
+    content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface) 70%, transparent), transparent);
+    animation: ui-shimmer 1.3s infinite;
+}
+@keyframes ui-shimmer { 100% { transform: translateX(100%); } }
+.ui-skeleton--text { height: .8rem; margin-bottom: .5rem; }
+.ui-skeleton--title { height: 1.3rem; width: 60%; margin-bottom: .8rem; }
+.ui-skeleton--media { aspect-ratio: 16 / 10; border-radius: var(--radius); }
+
+/* 12. -------------------------------------------------------------- UTILITIES / FIXES
+   Global guards against the overflow + layout-shift issues found in the audit. */
+/* Contain stray wide children WITHOUT breaking position:sticky.
+   `overflow-x:hidden` on html/body silently disables sticky descendants in
+   Chrome/Safari — `clip` does not, so it is the correct guard here. */
+html { overflow-x: clip; }
+@supports not (overflow: clip) {                   /* older Safari/Firefox fallback */
+    body { overflow-x: hidden; }
+}
+img, svg, video, iframe, canvas { max-width: 100%; }
+img[width][height] { height: auto; }               /* keep the aspect ratio while reserving space */
+/* long words / URLs must never widen a container */
+p, li, dd, dt, h1, h2, h3, h4, h5, h6, .ui-card__text, .ui-card__title { overflow-wrap: break-word; }
+/* any table that missed its wrapper still scrolls rather than breaking out */
+table { max-width: 100%; }
+/* consistent section rhythm */
+.ui-section { padding-block: clamp(3rem, 7vw, 5.5rem); }
+.ui-stack > * + * { margin-top: var(--ui-gap); }
+.ui-center { margin-inline: auto; }
+
+/* Print: drop chrome, keep content readable. */
+@media print {
+    .navbar, .site-header, .footer, .fab-stack, .back-to-top, .announcement-bar, .no-print { display: none !important; }
+    body { background: #fff; color: #000; }
+    .ui-card, .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+}
+
+/* =============================================================================
+   13. ACCESSIBILITY REMEDIATION  (from the WCAG AA audit)
+   Each rule below fixes a specific measured failure; ratios were computed with
+   theme_contrast() and are noted inline.
+   ============================================================================= */
+
+/* 13.1 CRITICAL — the off-canvas drawer was hidden with transform alone, so it
+   stayed in the tab order and the accessibility tree on every page. Hiding it
+   with `visibility` removes it from both, and the slide animation still plays
+   because visibility is transitioned alongside transform. */
+.nav-drawer { transition: transform .35s cubic-bezier(.4,0,.2,1), visibility .35s linear; }
+.nav-drawer:not(.is-open) { visibility: hidden; }
+.nav-drawer.is-open { visibility: visible; }
+
+/* 13.2 HIGH — the focus ring was a 35%-alpha wash (~1.9:1 on white).
+   A solid 3px brand outline gives a clearly visible, AA-compliant indicator. */
+:where(a, button, input, select, textarea, summary, [tabindex], .btn, .nav-link):focus-visible {
+    outline: 3px solid var(--secondary, #084881);
+    outline-offset: 2px;
+}
+/* On dark/branded surfaces the navy ring would disappear — use white there. */
+.section-brand :focus-visible, .footer :focus-visible, .hx :focus-visible,
+.nav-drawer :focus-visible, .pcard-strip :focus-visible {
+    outline-color: #fff;
+}
+
+/* 13.3 HIGH — white text on the brand orange (2.91:1) and green (3.10:1) failed
+   AA. Solid CTA fills use the AA-passing deeper shades; the lighter brand hues
+   stay for decorative fills (gradients, badges' backgrounds, icons). */
+.btn-donate, .btn-cta, .ui-btn--donate {
+    --btn-bg: linear-gradient(135deg, #A85410 0%, #C2610F 100%);   /* 5.33:1 / 4.25:1 */
+}
+.btn-success, .ui-btn--success { --btn-bg: #308629; }              /* 4.60:1 */
+.btn-warning { --btn-bg: #A85410; }                                /* 5.33:1 */
+.btn-accent  { background: #A85410 !important; }                   /* overrides legacy .btn-accent */
+
+/* 13.4 HIGH — badge label colours on their own tinted backgrounds were 1.9:1
+   and 3.0:1. These pairs are 5.05:1 and 5.88:1. */
+.badge-accent,  .ui-badge--warning { background: rgba(230,123,29,.16); color: #8A4A11; }
+.badge-success, .ui-badge--success { background: rgba(88,164,47,.16);  color: #2A6B1F; }
+.alert-success { color: #2A6B1F; }
+
+/* 13.5 MEDIUM — decorative icons must not be announced. Anything that is purely
+   ornamental is hidden; icons that carry meaning keep an adjacent text label. */
+.btn > svg, .ui-btn > svg, .pcard-badge > svg, .ui-badge > svg,
+.footer-trust svg, .social-links svg { pointer-events: none; }
+
+/* 13.6 MEDIUM — reduced motion must actually STOP infinite animations, not just
+   run them at 0.01ms forever (which still burns a compositor frame budget). */
+@media (prefers-reduced-motion: reduce) {
+    .hx-blob, .hx-img, .marquee-track, .pulse, .footer-aurora,
+    [class*="float"], [class*="shimmer"], .ui-skeleton::after {
+        animation: none !important;
+    }
+    html { scroll-behavior: auto !important; }
+}
+
+/* 13.7 HIGH (responsive) — the OTP row overflowed every phone. Let the inputs
+   shrink and wrap instead of forcing a fixed track. */
+.otp-inputs { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; }
+.otp-inputs input { width: clamp(2.4rem, 12vw, 3.25rem); min-width: 0; flex: 0 1 auto; }
+
+/* 13.8 HIGH (responsive) — between 769px and 992px the desktop nav had no
+   hamburger and overflowed. Show the drawer toggle across that band too. */
+@media (max-width: 992px) {
+    .nav-menu { display: none; }
+    .nav-toggle { display: inline-flex; }
+}
+
+/* 13.9 MEDIUM — reserve space for icons so they cannot cause layout shift while
+   the icon script boots (previously zero-size <i> placeholders). */
+[data-lucide] { display: inline-block; width: 1.05em; height: 1.05em; vertical-align: -.18em; }
+
+/* 13.10 MEDIUM — the fixed flash stack overlapped the sticky navbar. */
+.flash-stack { top: calc(var(--header-h, 74px) + 1.25rem); }
+@media (max-width: 640px) { .flash-stack { left: .75rem; right: .75rem; width: auto; } }
+
+/* =============================================================================
+   14. FOOTER REFINEMENT  (matches the approved reference design)
+   Design-only: no markup changes, so every link/route keeps working.
+   ============================================================================= */
+
+/* 14.1 Persistent chevron bullet on every sitemap link. This is ONE static
+   marker — the earlier bug was two markers appearing together on hover. */
+.footer-premium .footer-col ul li { position: relative; }
+.footer-premium .footer-col ul a {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .2rem 0; color: #B7CCE2; font-weight: 500; line-height: 1.5;
+    transition: color .22s ease, text-shadow .22s ease, transform .22s ease;
+}
+.footer-premium .footer-col ul a::before {
+    content: ""; flex: 0 0 auto; width: .42rem; height: .42rem;
+    border-right: 2px solid var(--orange, #E67B1D);
+    border-bottom: 2px solid var(--orange, #E67B1D);
+    transform: rotate(-45deg); transition: border-color .22s ease, transform .22s ease;
+}
+.footer-premium .footer-col ul a::after { content: none !important; }  /* kill the legacy 2nd marker */
+.footer-premium .footer-col ul a:hover,
+.footer-premium .footer-col ul a:focus-visible {
+    color: #fff; font-weight: 700; transform: translateX(2px);
+    text-shadow: 0 0 10px rgba(255,255,255,.5), 0 0 20px rgba(230,123,29,.35);
+}
+.footer-premium .footer-col ul a:hover::before { border-color: #fff; }
+
+/* 14.2 Column headings — orange underline accent as in the reference. */
+.footer-premium .footer-col h4 {
+    color: #fff; font-size: .98rem; font-weight: 800; letter-spacing: .01em;
+    position: relative; padding-bottom: .55rem; margin-bottom: .9rem;
+}
+.footer-premium .footer-col h4::after {
+    content: ""; position: absolute; left: 0; bottom: 0; width: 34px; height: 3px;
+    border-radius: 3px; background: var(--orange, #E67B1D);
+}
+
+/* 14.3 Newsletter block: full-bleed card with the orange CTA. */
+.footer-newsletter {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+    border-radius: var(--radius-lg, 20px); padding: clamp(1.2rem, 3vw, 1.8rem);
+    backdrop-filter: blur(10px);
+}
+.footer-newsletter h3 { color: #fff; font-size: clamp(1.15rem, 2.4vw, 1.5rem); font-weight: 800; margin-bottom: .35rem; }
+.footer-newsletter .newsletter-form { display: flex; gap: 0; margin-top: 1rem; flex-wrap: wrap; }
+.footer-newsletter .newsletter-form input {
+    flex: 1 1 200px; min-width: 0; border-radius: 999px 0 0 999px;
+    border: 1px solid rgba(255,255,255,.2); border-right: 0;
+    background: rgba(255,255,255,.08); color: #fff; padding: .85rem 1.2rem;
+}
+.footer-newsletter .newsletter-form input::placeholder { color: #93A9C2; }
+.footer-newsletter .newsletter-form .btn {
+    border-radius: 0 999px 999px 0; padding-inline: 1.5rem;
+    background: var(--grad-donate, linear-gradient(135deg,#E67B1D,#F59E0B)); color: #fff; border: 0;
+}
+@media (max-width: 520px) {
+    .footer-newsletter .newsletter-form input { border-radius: 999px; border-right: 1px solid rgba(255,255,255,.2); }
+    .footer-newsletter .newsletter-form .btn { border-radius: 999px; width: 100%; margin-top: .5rem; }
+}
+
+/* 14.4 Brand column: orange rule under the logo lockup, like the reference. */
+.footer-brand-col .nav-brand { padding-bottom: 1rem; position: relative; }
+.footer-brand-col .nav-brand::after {
+    content: ""; position: absolute; left: 0; bottom: 0; width: 56px; height: 3px;
+    border-radius: 3px; background: var(--orange, #E67B1D);
+}
+
+/* 14.5 Trust strip: boxed icons, evenly divided, wraps cleanly on mobile. */
+.footer-trust {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+    gap: .4rem 1rem; margin-top: 2rem; padding: 1.1rem 1.3rem;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+    border-radius: var(--radius, 14px);
+}
+.footer-trust span {
+    display: inline-flex; align-items: center; gap: .7rem;
+    font-size: .88rem; font-weight: 600; color: #C7D9EC; line-height: 1.35;
+}
+.footer-trust span + span { border-left: 1px solid rgba(255,255,255,.12); padding-left: 1rem; }
+.footer-trust svg {
+    width: 2.1rem; height: 2.1rem; flex: 0 0 auto; padding: .45rem; border-radius: 10px;
+    color: var(--orange, #E67B1D); background: rgba(230,123,29,.14);
+}
+@media (max-width: 700px) {
+    .footer-trust span + span { border-left: 0; padding-left: 0; }
+}
+
+/* 14.6 Social pills */
+.footer-premium .social-links a {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); color: #D6E4F2;
+}
+.footer-premium .social-links a:hover {
+    background: var(--grad-donate, linear-gradient(135deg,#E67B1D,#F59E0B));
+    border-color: transparent; color: #fff; transform: translateY(-3px);
+    box-shadow: 0 10px 22px -8px rgba(230,123,29,.6);
+}
+
+/* =============================================================================
+   15. PREMIUM ANNOUNCEMENT BAR
+   Animated brand-gradient background, gradient-shimmer text, floating CSS
+   particles and a pill CTA. Everything animates transform/opacity or
+   background-position only (compositor-friendly), and the whole thing goes
+   static under prefers-reduced-motion.
+   ============================================================================= */
+.announcement-bar.ann-premium {
+    --ann-fg: #fff;
+    position: relative; isolation: isolate; overflow: hidden;
+    display: flex; align-items: center; gap: .75rem;
+    padding: .62rem clamp(2.6rem, 5vw, 3.2rem) .62rem clamp(.9rem, 3vw, 1.4rem);
+    color: var(--ann-fg); text-align: left;
+    /* moving 4-stop brand gradient */
+    background: linear-gradient(110deg,
+        var(--primary,  #063566) 0%,
+        var(--secondary,#084881) 26%,
+        var(--green,    #58A42F) 52%,
+        var(--orange,   #E67B1D) 74%,
+        var(--primary,  #063566) 100%);
+    background-size: 300% 100%;
+    animation: ann-pan 18s linear infinite;
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,.14);
+}
+/* admin picked a custom colour → honour it, drop the animation */
+.announcement-bar.ann-premium.ann-solid { background: var(--ann-bg); animation: none; }
+@keyframes ann-pan { to { background-position: -300% 0; } }
+
+/* soft light sweep across the bar */
+.announcement-bar.ann-premium::after {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
+    background-size: 220% 100%;
+    animation: ann-sheen 7s ease-in-out infinite;
+}
+@keyframes ann-sheen { 0%,100% { background-position: 160% 0; } 55% { background-position: -60% 0; } }
+
+/* floating particles */
+.ann-particles { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.ann-particles i {
+    position: absolute; bottom: -6px; width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,.55); filter: blur(.3px);
+    animation: ann-float linear infinite;
+}
+.ann-particles i:nth-child(1) { left:  6%; width: 5px;  height: 5px;  animation-duration: 11s; animation-delay: 0s;   }
+.ann-particles i:nth-child(2) { left: 19%; width: 3px;  height: 3px;  animation-duration: 14s; animation-delay: 1.6s; }
+.ann-particles i:nth-child(3) { left: 33%; width: 7px;  height: 7px;  animation-duration:  9s; animation-delay: 3.1s; }
+.ann-particles i:nth-child(4) { left: 47%; width: 4px;  height: 4px;  animation-duration: 13s; animation-delay: .7s;  }
+.ann-particles i:nth-child(5) { left: 61%; width: 6px;  height: 6px;  animation-duration: 10s; animation-delay: 2.4s; }
+.ann-particles i:nth-child(6) { left: 74%; width: 3px;  height: 3px;  animation-duration: 15s; animation-delay: 4.2s; }
+.ann-particles i:nth-child(7) { left: 86%; width: 5px;  height: 5px;  animation-duration: 12s; animation-delay: 1.1s; }
+.ann-particles i:nth-child(8) { left: 94%; width: 4px;  height: 4px;  animation-duration:  8s; animation-delay: 5.3s; }
+@keyframes ann-float {
+    0%   { transform: translateY(0) scale(.7);        opacity: 0; }
+    12%  {                                            opacity: .85; }
+    80%  {                                            opacity: .5; }
+    100% { transform: translateY(-46px) scale(1.15);  opacity: 0; }
+}
+
+/* content sits above the effects */
+.announcement-bar.ann-premium .ann-inner {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center; gap: .7rem;
+    flex-wrap: wrap; width: 100%; margin-inline: auto; max-width: var(--container, 1200px);
+    font-size: .88rem; line-height: 1.4;
+}
+
+/* "News" pill */
+.ann-badge {
+    display: inline-flex; align-items: center; gap: .35rem; flex: 0 0 auto;
+    padding: .22rem .6rem; border-radius: 999px;
+    background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.32);
+    font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
+    backdrop-filter: blur(6px);
+}
+.ann-badge svg { width: .95em; height: .95em; }
+
+/* gradient shimmer text */
+.ann-text {
+    font-weight: 700; letter-spacing: .01em;
+    background: linear-gradient(100deg, #fff 20%, #FFE7C2 38%, #BFF0A3 52%, #CFE6FF 66%, #fff 84%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: ann-textshift 8s linear infinite;
+}
+@keyframes ann-textshift { to { background-position: -220% 0; } }
+/* a custom admin colour must stay readable — drop the gradient text there */
+.ann-solid .ann-text {
+    background: none; -webkit-text-fill-color: currentColor; color: var(--ann-fg); animation: none;
+}
+
+/* CTA pill */
+.ann-cta {
+    display: inline-flex; align-items: center; gap: .35rem; flex: 0 0 auto;
+    padding: .32rem .85rem; border-radius: 999px;
+    background: #fff; color: var(--primary, #063566) !important;   /* beats the generic footer/link colour */
+    font-size: .8rem; font-weight: 800; text-decoration: none;
+    box-shadow: 0 4px 14px -4px rgba(0,0,0,.35);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.ann-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -6px rgba(0,0,0,.45); background: #FFF7ED; }
+.ann-cta svg { width: 1em; height: 1em; }
+
+/* close button — absolutely placed but with reserved padding so it can never
+   sit on top of the message (the old bar overlapped on narrow screens) */
+.announcement-bar.ann-premium .ann-close {
+    position: absolute; z-index: 3; right: clamp(.5rem, 2vw, .9rem); top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px; display: grid; place-items: center;
+    border: 1px solid rgba(255,255,255,.3); border-radius: 50%;
+    background: rgba(255,255,255,.16); color: var(--ann-fg);
+    font-size: 1rem; line-height: 1; cursor: pointer; transition: background .2s ease, transform .2s ease;
+}
+.announcement-bar.ann-premium .ann-close:hover { background: rgba(255,255,255,.34); transform: translateY(-50%) rotate(90deg); }
+
+/* graceful dismiss */
+.announcement-bar.is-dismissed {
+    height: 0 !important; padding-block: 0; opacity: 0; overflow: hidden;
+    transition: height .3s ease, padding .3s ease, opacity .2s ease;
+}
+
+@media (max-width: 640px) {
+    .announcement-bar.ann-premium { padding-left: .75rem; }
+    .announcement-bar.ann-premium .ann-inner { justify-content: flex-start; gap: .5rem; font-size: .82rem; }
+    .ann-badge { display: none; }              /* keep the message + CTA readable */
+}
+@media (prefers-reduced-motion: reduce) {
+    .announcement-bar.ann-premium,
+    .announcement-bar.ann-premium::after,
+    .ann-particles i,
+    .ann-text { animation: none !important; }
+    .ann-text { background-position: 0 0; }
+    .ann-particles { display: none; }
+}
+
+/* =============================================================================
+   16. CAUSE CARDS  (causes.php "Choose A Cause Close To Your Heart")
+   Premium editorial treatment: soft patterned section, glass cards with a
+   per-cause accent, gradient icon tile and clear dual CTAs.
+   ============================================================================= */
+.cause-grid {
+    display: grid; gap: clamp(1.1rem, 2.4vw, 1.75rem);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+}
+.cause-card {
+    --cc: var(--primary, #063566);
+    position: relative; isolation: isolate; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: clamp(1.6rem, 3vw, 2.1rem) clamp(1.2rem, 2.5vw, 1.6rem) clamp(1.3rem, 2.5vw, 1.6rem);
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #E5E7EB);
+    border-radius: clamp(16px, 2vw, 22px);
+    box-shadow: 0 1px 2px rgba(6,53,102,.04), 0 20px 44px -30px rgba(6,53,102,.45);
+    transition: transform .28s cubic-bezier(.34,1.2,.64,1), box-shadow .28s ease, border-color .28s ease;
+}
+.cause-card:hover {
+    transform: translateY(-7px);
+    border-color: color-mix(in srgb, var(--cc) 45%, transparent);
+    box-shadow: 0 1px 2px rgba(6,53,102,.05), 0 34px 66px -30px color-mix(in srgb, var(--cc) 55%, transparent);
+}
+/* accent rule across the top */
+.cause-card .cc-rule { position: absolute; inset: 0 0 auto 0; height: 5px; background: var(--cc-grad, var(--cc)); z-index: 2; }
+/* soft radial glow that blooms on hover */
+.cause-card .cc-glow {
+    position: absolute; z-index: -1; top: -40%; left: 50%; translate: -50% 0;
+    width: 220px; height: 220px; border-radius: 50%; filter: blur(60px);
+    background: var(--cc); opacity: 0; transition: opacity .35s ease;
+}
+.cause-card:hover .cc-glow { opacity: .18; }
+/* gradient icon tile */
+.cause-card .cc-icon {
+    width: 62px; height: 62px; display: grid; place-items: center; margin-bottom: 1rem;
+    border-radius: 18px; color: #fff; background: var(--cc-grad, var(--cc));
+    box-shadow: 0 14px 28px -12px color-mix(in srgb, var(--cc) 75%, transparent);
+    transition: transform .3s cubic-bezier(.34,1.4,.64,1);
+}
+.cause-card .cc-icon svg { width: 27px; height: 27px; }
+.cause-card:hover .cc-icon { transform: translateY(-3px) rotate(-4deg) scale(1.06); }
+/* typography */
+.cause-card .cc-title {
+    font-size: 1.12rem; font-weight: 800; line-height: 1.3; letter-spacing: -.012em;
+    color: var(--primary, #063566); margin: 0 0 .45rem;
+}
+.cause-card:hover .cc-title { color: var(--cc); }
+.cause-card .cc-text {
+    font-size: .89rem; line-height: 1.65; color: var(--muted, #6B7280);
+    margin: 0 0 1.25rem; max-width: 34ch;
+}
+/* CTAs */
+.cause-card .cc-actions { margin-top: auto; display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; }
+.cause-card .cc-btn {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .5rem 1.05rem; border-radius: 999px;
+    font-size: .82rem; font-weight: 750; text-decoration: none; white-space: nowrap;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+}
+.cause-card .cc-btn svg { width: 1em; height: 1em; }
+.cause-card .cc-btn-ghost {
+    color: var(--cc); background: transparent;
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--cc) 40%, transparent);
+}
+.cause-card .cc-btn-ghost:hover { background: color-mix(in srgb, var(--cc) 10%, transparent); transform: translateY(-2px); }
+.cause-card .cc-btn-fill {
+    color: #fff; background: var(--cc-grad, var(--cc));
+    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--cc) 75%, transparent);
+}
+.cause-card .cc-btn-fill:hover { transform: translateY(-2px); box-shadow: 0 14px 26px -8px color-mix(in srgb, var(--cc) 85%, transparent); color: #fff; }
+
+/* Section backdrop: faint brand mesh + dot grid so the cards sit on texture
+   rather than flat white (no image request, so no extra page weight). */
+.section-causes {
+    position: relative; isolation: isolate;
+    background:
+        radial-gradient(60rem 30rem at 12% -10%, color-mix(in srgb, var(--primary,#063566) 7%, transparent), transparent 60%),
+        radial-gradient(50rem 28rem at 92% 8%,  color-mix(in srgb, var(--green,#58A42F) 7%, transparent), transparent 60%),
+        linear-gradient(180deg, var(--bg, #fff), var(--bg-alt, #F1F6FB));
+}
+.section-causes::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
+    background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--primary,#063566) 14%, transparent) 1px, transparent 0);
+    background-size: 26px 26px;
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
+}
+
+/* =============================================================================
+   17. COLLAPSING NAV SEARCH  (icon → mini bar → optional voice)
+   The always-open input was eating header width; it now starts as a single
+   icon and expands only when invoked.
+   ============================================================================= */
+.nav-search { position: relative; display: flex; align-items: center; }
+.nav-search-trigger {
+    width: 40px; height: 40px; display: grid; place-items: center;
+    border: 1px solid var(--border, #E5E7EB); border-radius: 50%;
+    background: var(--surface, #fff); color: var(--text-soft, #374151); cursor: pointer;
+    transition: color .2s ease, border-color .2s ease, background .2s ease, transform .2s ease;
+}
+.nav-search-trigger:hover { color: var(--primary, #063566); border-color: var(--primary, #063566); transform: translateY(-1px); }
+.nav-search-trigger svg { width: 18px; height: 18px; }
+
+.nav-search-box {
+    display: flex; align-items: center; gap: .4rem;
+    width: 0; opacity: 0; visibility: hidden; padding: 0; overflow: hidden;
+    border: 1px solid transparent; border-radius: 999px; background: var(--surface, #fff);
+    transition: width .32s cubic-bezier(.22,1,.36,1), opacity .22s ease,
+                visibility .32s linear, padding .32s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.nav-search.is-open .nav-search-box {
+    width: clamp(200px, 26vw, 320px); opacity: 1; visibility: visible;
+    padding: .3rem .45rem .3rem .8rem;
+    border-color: var(--border, #E5E7EB); box-shadow: var(--shadow-sm);
+}
+.nav-search.is-open .nav-search-trigger { display: none; }
+.nav-search-box:focus-within { border-color: var(--secondary, #084881); box-shadow: 0 0 0 4px var(--ring); }
+.nav-search-box .nsb-ico { display: inline-flex; color: var(--muted, #6B7280); flex: 0 0 auto; }
+.nav-search-box .nsb-ico svg { width: 16px; height: 16px; }
+.nav-search-box input {
+    flex: 1 1 auto; min-width: 0; border: 0; background: none; outline: none;
+    font: inherit; font-size: .9rem; color: var(--text, #063566); padding: .35rem 0;
+}
+.nav-search-box input::placeholder { color: var(--muted, #6B7280); }
+.nsb-mic, .nsb-clear {
+    flex: 0 0 auto; width: 30px; height: 30px; display: grid; place-items: center;
+    border: 0; border-radius: 50%; background: transparent; color: var(--muted, #6B7280); cursor: pointer;
+    transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+.nsb-mic:hover, .nsb-clear:hover { background: var(--surface-2, #F4F8FC); color: var(--primary, #063566); }
+.nsb-mic svg, .nsb-clear svg { width: 15px; height: 15px; }
+/* live mic state — pulsing ring while the browser is listening */
+.nsb-mic.is-listening { background: var(--orange, #E67B1D); color: #fff; animation: nsb-pulse 1.3s ease-in-out infinite; }
+@keyframes nsb-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(230,123,29,.55); }
+    50%      { box-shadow: 0 0 0 7px rgba(230,123,29,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .nav-search-box { transition: none; }
+    .nsb-mic.is-listening { animation: none; }
+}
+/* results panel */
+.nav-search-panel {
+    position: absolute; top: calc(100% + .5rem); right: 0; z-index: 80;
+    width: min(380px, 86vw); max-height: 60vh; overflow: auto;
+    background: var(--surface, #fff); border: 1px solid var(--border, #E5E7EB);
+    border-radius: var(--radius, 14px); box-shadow: var(--shadow-lg); padding: .4rem;
+}
+@media (max-width: 860px) {
+    .nav-search.is-open .nav-search-box { width: min(70vw, 260px); }
+}
+
+/* =============================================================================
+   18. COLOURFUL MEGA MENU
+   Each link gets a tinted icon tile; the palette cycles so a column reads as a
+   set of distinct, scannable items rather than a grey list.
+   ============================================================================= */
+.mega-menu { border-radius: var(--radius-lg, 20px); box-shadow: var(--shadow-lg); overflow: hidden; }
+.mega-link {
+    display: flex; align-items: flex-start; gap: .75rem;
+    padding: .62rem .7rem; border-radius: var(--radius-sm, 12px);
+    color: var(--text-soft, #374151); text-decoration: none; position: relative;
+    transition: background .2s ease, transform .2s ease, color .2s ease;
+}
+.mega-link:hover { background: var(--surface-2, #F4F8FC); transform: translateX(3px); }
+.mega-link .mi {
+    flex: 0 0 auto; width: 38px; height: 38px; display: grid; place-items: center;
+    border-radius: 11px; color: #fff; background: var(--mi-grad, var(--grad-brand));
+    box-shadow: 0 8px 16px -8px var(--mi-shadow, rgba(6,53,102,.6));
+    transition: transform .25s cubic-bezier(.34,1.4,.64,1);
+}
+.mega-link:hover .mi { transform: translateY(-2px) scale(1.07) rotate(-4deg); }
+.mega-link .mi svg { width: 18px; height: 18px; }
+.mega-link .mtxt { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+.mega-link .mtxt strong { font-size: .92rem; font-weight: 700; color: var(--primary, #063566); line-height: 1.3; }
+.mega-link:hover .mtxt strong { color: var(--mi-color, var(--secondary, #084881)); }
+.mega-link .mtxt small { font-size: .76rem; color: var(--muted, #6B7280); line-height: 1.45; }
+
+/* cycling accent palette — 6 brand-harmonious hues */
+.mega-col .mega-link:nth-child(6n+1) { --mi-grad: linear-gradient(135deg,#063566,#0A5AA0); --mi-color:#063566; --mi-shadow:rgba(6,53,102,.6); }
+.mega-col .mega-link:nth-child(6n+2) { --mi-grad: linear-gradient(135deg,#58A42F,#308629); --mi-color:#2A6B1F; --mi-shadow:rgba(88,164,47,.55); }
+.mega-col .mega-link:nth-child(6n+3) { --mi-grad: linear-gradient(135deg,#E67B1D,#F59E0B); --mi-color:#9A5313; --mi-shadow:rgba(230,123,29,.55); }
+.mega-col .mega-link:nth-child(6n+4) { --mi-grad: linear-gradient(135deg,#0891B2,#0E7490); --mi-color:#0E7490; --mi-shadow:rgba(8,145,178,.5); }
+.mega-col .mega-link:nth-child(6n+5) { --mi-grad: linear-gradient(135deg,#7C3AED,#5B21B6); --mi-color:#5B21B6; --mi-shadow:rgba(124,58,237,.5); }
+.mega-col .mega-link:nth-child(6n+6) { --mi-grad: linear-gradient(135deg,#DB2777,#9D174D); --mi-color:#9D174D; --mi-shadow:rgba(219,39,119,.5); }
+
+/* feature strip at the foot of the mega panel */
+.mega-feature {
+    display: flex; align-items: center; gap: .9rem; flex-wrap: wrap;
+    margin-top: .5rem; padding: 1rem 1.1rem;
+    background: var(--grad-brand); color: #fff;
+    border-radius: var(--radius, 14px);
+}
+.mega-feature img { border-radius: 10px; background: #fff; padding: 4px; flex: 0 0 auto; }
+.mega-feature .mf-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 200px; }
+.mega-feature .mf-text strong { font-size: .92rem; }
+.mega-feature .mf-text span { font-size: .8rem; opacity: .88; }
+
+/* =============================================================================
+   19. [hidden] BASELINE
+   Any component that sets an explicit `display` silently defeats the `hidden`
+   attribute (this shipped a preview modal that opened on load and could not be
+   closed). One guard makes `hidden` authoritative everywhere.
+   ============================================================================= */
+[hidden] { display: none !important; }
+
+/* =============================================================================
+   20. MAILBOX  (admin/email-mailbox.php)
+   Three-pane mail client: rail · list · reading pane. Premium surfaces, clear
+   unread hierarchy, smooth row/pane transitions, collapses cleanly to mobile.
+   ============================================================================= */
+.mbx-rail {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg, 18px); padding: .9rem; align-self: start;
+    position: sticky; top: 96px;
+}
+/* Compose — the primary action, given real presence */
+.mbx-compose {
+    background: var(--grad-brand) !important;         /* beats the generic .btn skin */
+    color: #fff !important; border: 0 !important;
+    border-radius: 999px !important; padding: .85rem 1.2rem !important;
+    font-size: .98rem !important; font-weight: 800 !important;
+    box-shadow: 0 12px 26px -12px rgba(6,53,102,.75) !important;
+    margin-bottom: 1rem;
+}
+.mbx-compose:hover { transform: translateY(-2px); box-shadow: 0 18px 34px -12px rgba(6,53,102,.85) !important; }
+
+.mbx-rail-sep {
+    font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); padding: .9rem .6rem .4rem;
+}
+.mbx-folders { display: flex; flex-direction: column; gap: .15rem; }
+.mbx-folder {
+    display: flex; align-items: center; gap: .7rem;
+    padding: .6rem .75rem; border-radius: 11px;
+    color: var(--text-soft); font-size: .92rem; font-weight: 600; text-decoration: none;
+    position: relative; transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+.mbx-folder:hover { background: var(--surface-2); color: var(--text); transform: translateX(2px); }
+.mbx-folder .mf-ic { display: inline-flex; color: var(--muted); transition: color .18s ease; }
+.mbx-folder .mf-ic svg { width: 18px; height: 18px; }
+.mbx-folder:hover .mf-ic { color: var(--primary); }
+.mbx-folder .mf-name { flex: 1; min-width: 0; }
+.mbx-folder .mf-count {
+    font-size: .72rem; font-weight: 800; padding: .1rem .45rem; border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary);
+}
+.mbx-folder.is-active {
+    background: var(--grad-brand); color: #fff;
+    box-shadow: 0 10px 20px -12px rgba(6,53,102,.8);
+}
+.mbx-folder.is-active .mf-ic { color: #fff; }
+.mbx-folder.is-active .mf-count { background: rgba(255,255,255,.24); color: #fff; }
+
+/* message list */
+.mbx-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg, 18px); overflow: hidden; }
+
+/* reading pane */
+/* sender card */
+@keyframes ui-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* responsive: stack the three panes */
+@media (max-width: 1100px) {
+    .mbx-rail { position: static; }
+}
+@media (max-width: 860px) {
+}
+
+/* =============================================================================
+   21. FIXES: mega-menu icon tiles + mailbox (corrected to the REAL class names)
+   ============================================================================= */
+
+/* 21.1 premium.css:581 sets `.mega-link .mi { background:none !important }`,
+   which killed the gradient tile while my white icon colour still applied —
+   white glyph on no background = invisible. Restore the tile with matching
+   !important, and size it explicitly since that rule also set width/height auto. */
+.mega-link .mi {
+    width: 40px !important; height: 40px !important;
+    border-radius: 11px !important;
+    background: var(--mi-grad, var(--grad-brand)) !important;
+    color: #fff !important;
+    display: grid !important; place-items: center;
+    box-shadow: 0 8px 16px -8px var(--mi-shadow, rgba(6,53,102,.55));
+}
+.mega-link .mi svg { width: 19px !important; height: 19px !important; stroke-width: 2.1; }
+.mega-link:hover .mi { background: var(--mi-grad, var(--grad-brand)) !important; filter: brightness(1.08); }
+
+/* 21.2 Mailbox — these are the class names the template actually renders
+   (.mbx-item / .mbx-who / .mbx-subj / .mbx-prev / .mbx-when …). */
+.mbx-toolbar {
+    display: flex; align-items: center; gap: .7rem; flex-wrap: wrap;
+    padding: .85rem 1rem; border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--surface-2), transparent);
+}
+.mbx-view-title { display: inline-flex; align-items: center; gap: .5rem; font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0; }
+.mbx-view-title svg { color: var(--primary); }
+.mbx-count {
+    font-size: .72rem; font-weight: 800; padding: .12rem .5rem; border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary);
+}
+.mbx-search { position: relative; }
+.mbx-search input {
+    border: 1px solid var(--border); border-radius: 999px; padding: .55rem .9rem .55rem 2.3rem;
+    background: var(--surface); font-size: .88rem; min-width: 0; width: 100%;
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+.mbx-search input:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 4px var(--ring); }
+.mbx-search-ic { position: absolute; left: .8rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.mbx-search-ic svg { width: 16px; height: 16px; }
+
+/* message rows */
+.mbx-item {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .75rem 1rem; border-bottom: 1px solid var(--border-soft);
+    transition: background .16s ease, box-shadow .16s ease;
+}
+.mbx-item:hover { background: color-mix(in srgb, var(--primary) 4%, transparent); }
+.mbx-item.is-open { background: color-mix(in srgb, var(--primary) 8%, transparent); box-shadow: inset 3px 0 0 var(--primary); }
+.mbx-item.is-unread { background: color-mix(in srgb, var(--secondary) 5%, transparent); }
+.mbx-item.is-unread .mbx-who, .mbx-item.is-unread .mbx-subj { font-weight: 800; color: var(--primary); }
+.mbx-item-main { display: flex; align-items: center; gap: .7rem; flex: 1; min-width: 0; text-decoration: none; color: inherit; }
+.mbx-who  { font-size: .9rem; font-weight: 600; color: var(--text); flex: 0 0 auto; min-width: 0; max-width: 34%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mbx-subj { font-size: .9rem; color: var(--text-soft); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mbx-prev { font-size: .86rem; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mbx-when { margin-left: auto; font-size: .78rem; color: var(--muted); white-space: nowrap; flex: 0 0 auto; }
+/* priority accent stripes */
+.mbx-item.pr-high   { box-shadow: inset 3px 0 0 var(--orange, #E67B1D); }
+.mbx-item.pr-urgent { box-shadow: inset 3px 0 0 var(--danger, #DC2626); }
+/* star / important toggles */
+.mbx-star, .mbx-imp { background: none; border: 0; cursor: pointer; color: var(--muted); display: inline-flex; padding: .15rem; border-radius: 6px; transition: color .18s ease, transform .18s ease; }
+.mbx-star:hover, .mbx-imp:hover { transform: scale(1.15); }
+.mbx-star.is-on, .mbx-star.on { color: var(--orange, #E67B1D); }
+.mbx-star.is-on svg, .mbx-star.on svg { fill: currentColor; }
+.mbx-imp.is-on, .mbx-imp.on { color: var(--orange, #E67B1D); }
+
+/* panes */
+.mbx-list, .mbx-list-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg, 18px); overflow: hidden; }
+.mbx-bulkbar { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; padding: .6rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+@media (max-width: 860px) { .mbx-prev { display: none; } }
+
+/* =============================================================================
+   22. COLOURFUL CURSOR  (desktop / fine-pointer only)
+   A crisp brand dot, a lagging halo, and a colour-cycling particle trail.
+   Everything is transform/opacity on its own layer, and the whole effect is
+   disabled for touch, coarse pointers and reduced-motion users.
+   ============================================================================= */
+.cursor-dot, .cursor-ring, .cursor-spark {
+    position: fixed; top: 0; left: 0; z-index: 9999;
+    pointer-events: none;                 /* never intercepts clicks */
+    will-change: transform, opacity;
+    contain: layout style paint;
+}
+.cursor-dot {
+    width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%;
+    background: var(--orange, #E67B1D);
+    box-shadow: 0 0 10px 2px color-mix(in srgb, var(--orange, #E67B1D) 65%, transparent);
+    transition: width .18s ease, height .18s ease, margin .18s ease, background .25s ease;
+}
+.cursor-ring {
+    width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--primary, #063566) 55%, transparent);
+    background: radial-gradient(circle, color-mix(in srgb, var(--secondary,#084881) 12%, transparent), transparent 70%);
+    backdrop-filter: blur(1px);
+    transition: width .25s cubic-bezier(.34,1.4,.64,1), height .25s cubic-bezier(.34,1.4,.64,1),
+                margin .25s cubic-bezier(.34,1.4,.64,1), border-color .25s ease, opacity .25s ease;
+}
+/* interactive targets: ring blooms, dot shrinks */
+body.cursor-hot .cursor-ring {
+    width: 62px; height: 62px; margin: -31px 0 0 -31px;
+    border-color: color-mix(in srgb, var(--green, #58A42F) 75%, transparent);
+    background: radial-gradient(circle, color-mix(in srgb, var(--green,#58A42F) 16%, transparent), transparent 70%);
+}
+body.cursor-hot .cursor-dot { width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; background: var(--green, #58A42F); }
+/* click pulse */
+body.cursor-press .cursor-ring { width: 26px; height: 26px; margin: -13px 0 0 -13px; border-color: var(--orange, #E67B1D); }
+
+/* trail sparks — hue set inline by JS from the brand palette */
+.cursor-spark {
+    width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+    background: var(--spark, #E67B1D);
+    box-shadow: 0 0 8px 1px var(--spark, #E67B1D);
+    animation: cursor-fade .75s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes cursor-fade {
+    0%   { opacity: .9; transform: translate3d(var(--x,0), var(--y,0), 0) scale(1); }
+    100% { opacity: 0;  transform: translate3d(var(--x,0), calc(var(--y,0) + 26px), 0) scale(.2); }
+}
+
+/* Only ever active on a real mouse, and never when motion is reduced. */
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+    .cursor-dot, .cursor-ring, .cursor-spark { display: none !important; }
+}
+
+/* =============================================================================
+   23. PARTNERS & SPONSORS  — 3D glass cards on an infinite marquee
+   Works with or without uploaded logos: when a logo is missing we render a
+   colourful gradient monogram so the section still looks designed.
+   ============================================================================= */
+/* overflow-x only: `overflow:hidden` would also clip the tooltip vertically */
+.section-partners { position: relative; isolation: isolate; overflow-x: clip; overflow-y: visible; }
+.section-partners .section-subtitle { max-width: 56ch; margin-inline: auto; }
+/* ambient gradient blobs */
+.pn-blob { position: absolute; z-index: -1; border-radius: 50%; filter: blur(80px); opacity: .5; pointer-events: none; }
+.pn-b1 { width: 420px; height: 420px; top: -160px; left: -120px;
+         background: radial-gradient(circle, color-mix(in srgb, var(--primary,#063566) 55%, transparent), transparent 70%); }
+.pn-b2 { width: 360px; height: 360px; bottom: -150px; right: -90px;
+         background: radial-gradient(circle, color-mix(in srgb, var(--green,#58A42F) 50%, transparent), transparent 70%); }
+
+/* ---- infinite marquee ---- */
+.pn-marquee {
+    position: relative; margin-top: 2.5rem;
+    /* Generous top padding so a hovered card's tooltip has physical room to sit
+       inside this box (it is positioned ~44px above the card). */
+    padding: 3.5rem 0 1.5rem;
+}
+/* Edge fade is painted as OVERLAYS rather than `mask-image`: a mask clips to its
+   box, which erased the tooltip whenever it extended past the marquee. */
+.pn-marquee::before, .pn-marquee::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: clamp(40px, 8%, 120px);
+    z-index: 4; pointer-events: none;
+}
+.pn-marquee::before { left: 0;  background: linear-gradient(90deg, var(--bg, #fff), transparent); }
+.pn-marquee::after  { right: 0; background: linear-gradient(270deg, var(--bg, #fff), transparent); }
+.pn-track {
+    display: flex; gap: clamp(.9rem, 2vw, 1.5rem); width: max-content;
+    animation: pn-scroll 42s linear infinite;
+    perspective: 1000px;                       /* enables the 3D card tilt */
+}
+.pn-marquee:hover .pn-track,
+.pn-marquee:focus-within .pn-track { animation-play-state: paused; }
+@keyframes pn-scroll { to { transform: translateX(-50%); } }   /* list is duplicated, so -50% loops seamlessly */
+
+/* ---- glass card ---- */
+.pn-card {
+    --pn-a: var(--primary, #063566);
+    --pn-b: var(--secondary, #084881);
+    position: relative; flex: 0 0 auto;
+    display: grid; place-items: center;
+    width: clamp(160px, 20vw, 210px); min-height: 116px; padding: 1.1rem 1.2rem;
+    border-radius: 20px; text-decoration: none;
+    background: color-mix(in srgb, var(--surface, #fff) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--pn-a) 18%, var(--border, #E5E7EB));
+    box-shadow: 0 1px 2px rgba(6,53,102,.05), 0 18px 40px -30px rgba(6,53,102,.45);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    transform-style: preserve-3d;
+    transition: transform .38s cubic-bezier(.22,1,.36,1), box-shadow .38s ease, border-color .3s ease;
+    animation: pn-float 7s ease-in-out infinite;
+    animation-delay: calc(var(--pn-i, 0) * -1.1s);
+}
+/* colourful gradient wash per card (cycles through the brand palette) */
+.pn-card::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; opacity: .1;
+    background: linear-gradient(135deg, var(--pn-a), var(--pn-b));
+    transition: opacity .35s ease;
+}
+.pn-card:nth-child(6n+1) { --pn-a:#063566; --pn-b:#0A5AA0; }
+.pn-card:nth-child(6n+2) { --pn-a:#58A42F; --pn-b:#308629; }
+.pn-card:nth-child(6n+3) { --pn-a:#E67B1D; --pn-b:#F59E0B; }
+.pn-card:nth-child(6n+4) { --pn-a:#0891B2; --pn-b:#0E7490; }
+.pn-card:nth-child(6n+5) { --pn-a:#7C3AED; --pn-b:#5B21B6; }
+.pn-card:nth-child(6n+6) { --pn-a:#DB2777; --pn-b:#9D174D; }
+
+/* 3D hover — lift, tilt, scale, glow */
+.pn-card:hover, .pn-card:focus-visible {
+    transform: translateY(-10px) scale(1.05) rotateX(7deg) rotateY(-7deg);
+    border-color: color-mix(in srgb, var(--pn-a) 55%, transparent);
+    box-shadow: 0 1px 2px rgba(6,53,102,.06),
+                0 28px 56px -22px color-mix(in srgb, var(--pn-a) 60%, transparent),
+                0 0 0 1px color-mix(in srgb, var(--pn-a) 22%, transparent);
+    z-index: 3;
+}
+.pn-card:hover::before, .pn-card:focus-visible::before { opacity: .22; }
+.pn-inner { display: grid; place-items: center; gap: .5rem; transform: translateZ(26px); }
+
+/* logo + monogram */
+.pn-logo { max-height: 56px; width: auto; object-fit: contain; filter: grayscale(1); opacity: .8; transition: filter .35s ease, opacity .35s ease; }
+.pn-card:hover .pn-logo { filter: none; opacity: 1; }
+.pn-mono {
+    width: 52px; height: 52px; display: grid; place-items: center; border-radius: 15px;
+    background: linear-gradient(135deg, var(--pn-a), var(--pn-b)); color: #fff;
+    font-size: 1.15rem; font-weight: 800; letter-spacing: .02em;
+    box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--pn-a) 80%, transparent);
+    transition: transform .35s cubic-bezier(.34,1.4,.64,1);
+}
+.pn-card:hover .pn-mono { transform: rotate(-6deg) scale(1.08); }
+.pn-name {
+    font-size: .84rem; font-weight: 700; line-height: 1.3; text-align: center;
+    color: var(--text-soft, #374151); max-width: 15ch;
+}
+.pn-card:hover .pn-name { color: var(--pn-a); }
+
+/* colourful tooltip with arrow */
+.pn-tip {
+    position: absolute; bottom: calc(100% + 12px); left: 50%; translate: -50% 0;
+    /* The card is `transform-style: preserve-3d`, so this child lives in its 3D
+       space. Without its own Z it renders BEHIND the card face (which sits at
+       translateZ(26px)); lifting it to 60px puts it clearly in front. */
+    transform: translateZ(60px) translateY(6px) scale(.94);
+    padding: .38rem .8rem; border-radius: 10px; white-space: nowrap;
+    background: linear-gradient(135deg, var(--pn-a), var(--pn-b)); color: #fff;
+    font-size: .78rem; font-weight: 700; letter-spacing: .01em;
+    box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--pn-a) 70%, transparent);
+    opacity: 0; visibility: hidden; transform: translateY(6px) scale(.94);
+    transition: opacity .25s ease, transform .25s cubic-bezier(.34,1.4,.64,1), visibility .25s;
+    pointer-events: none; z-index: 5;
+}
+.pn-tip::after {                                  /* the little arrow */
+    content: ""; position: absolute; top: 100%; left: 50%; translate: -50% -50%;
+    width: 9px; height: 9px; rotate: 45deg;
+    background: var(--pn-b);
+}
+.pn-card:hover .pn-tip, .pn-card:focus-visible .pn-tip {
+    opacity: 1; visibility: visible;
+    transform: translateZ(60px) translateY(0) scale(1);   /* keep the Z-lift */
+}
+
+/* gentle float */
+@keyframes pn-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+
+@media (max-width: 640px) {
+    .pn-card { width: clamp(140px, 44vw, 170px); min-height: 104px; }
+    .pn-track { animation-duration: 30s; }
+}
+/* Motion-safe: stop the marquee and the float, keep the layout scrollable. */
+@media (prefers-reduced-motion: reduce) {
+    .pn-track { animation: none; flex-wrap: wrap; width: auto; justify-content: center; }
+    .pn-card { animation: none; }
+    .pn-marquee { overflow-x: auto; }
+    .pn-card:hover, .pn-card:focus-visible { transform: translateY(-4px); }
+}
+/* =============================================================================
+   PREMIUM FOOTER — visual layer only
+   -----------------------------------------------------------------------------
+   Enhances background, colour, lighting and motion ONLY. No layout, spacing,
+   sizing or structural property is touched, so the footer keeps its exact
+   composition (logo, newsletter, 5 columns, social row, legal bar).
+
+   Every animation is transform/opacity/background-position (GPU-composited),
+   the decorative layers are pointer-events:none, and the whole system stops
+   under prefers-reduced-motion.
+
+   Palette: navy #071B3A · royal #0D47A1 · indigo #1E3A8A · purple #6D28D9
+            cyan #06B6D4 · orange #FF8A00 · pink #EC4899
+   ============================================================================= */
+
+.footer.footer-premium {
+    --f-navy:   #071B3A;
+    --f-royal:  #0D47A1;
+    --f-indigo: #1E3A8A;
+    --f-purple: #6D28D9;
+    --f-cyan:   #06B6D4;
+    --f-orange: #FF8A00;
+    --f-pink:   #EC4899;
+
+    position: relative;
+    isolation: isolate;
+    /* Layer 1 — slow-moving mesh gradient */
+    background:
+        radial-gradient(60rem 40rem at 10% 0%,   color-mix(in srgb, var(--f-royal) 55%, transparent), transparent 60%),
+        radial-gradient(50rem 34rem at 90% 12%,  color-mix(in srgb, var(--f-purple) 42%, transparent), transparent 62%),
+        radial-gradient(46rem 30rem at 74% 96%,  color-mix(in srgb, var(--f-cyan) 30%, transparent), transparent 60%),
+        radial-gradient(40rem 28rem at 22% 100%, color-mix(in srgb, var(--f-orange) 22%, transparent), transparent 60%),
+        linear-gradient(165deg, var(--f-indigo) 0%, var(--f-navy) 55%, #04122A 100%);
+    background-size: 200% 200%, 190% 190%, 210% 210%, 180% 180%, 100% 100%;
+    animation: f-mesh 24s ease-in-out infinite alternate;
+}
+@keyframes f-mesh {
+    0%   { background-position: 0% 0%,   100% 0%,  50% 100%, 0% 100%, 0 0; }
+    50%  { background-position: 30% 20%,  70% 25%, 25% 75%,  35% 70%, 0 0; }
+    100% { background-position: 10% 40%,  90% 10%, 65% 85%,  10% 90%, 0 0; }
+}
+
+/* ---- Layer 2: noise texture (inline SVG, ~0.3 KB, no request) ---- */
+.footer.footer-premium > .footer-topline + * ,
+.footer.footer-premium::after {
+    /* keeps the existing ::before hairline intact */
+}
+.footer.footer-premium::after {
+    content: "";
+    position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    opacity: .16; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* ---- Layer 3: animated top hairline (replaces the static rule) ---- */
+.footer.footer-premium::before {
+    background: linear-gradient(90deg,
+        var(--f-cyan), var(--f-royal), var(--f-purple), var(--f-pink), var(--f-orange), var(--f-cyan));
+    background-size: 300% 100%;
+    animation: f-hairline 14s linear infinite;
+    box-shadow: 0 0 18px color-mix(in srgb, var(--f-cyan) 55%, transparent);
+}
+@keyframes f-hairline { to { background-position: -300% 0; } }
+
+/* =============================================================================
+   AURORA + BLOBS  — reuses the existing .footer-aurora > span elements
+   ============================================================================= */
+.footer-premium .footer-aurora {
+    position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+}
+.footer-premium .footer-aurora span {
+    position: absolute; display: block; border-radius: 50%;
+    filter: blur(70px); opacity: .45;
+    will-change: transform;
+    animation: f-drift 22s ease-in-out infinite;
+}
+.footer-premium .footer-aurora span:nth-child(1) {
+    width: 46vw; height: 46vw; max-width: 620px; max-height: 620px; top: -18%; left: -8%;
+    background: radial-gradient(circle, var(--f-royal), transparent 68%);
+}
+.footer-premium .footer-aurora span:nth-child(2) {
+    width: 38vw; height: 38vw; max-width: 520px; max-height: 520px; top: 8%; right: -10%;
+    background: radial-gradient(circle, var(--f-purple), transparent 68%);
+    animation-duration: 26s; animation-delay: -7s;
+}
+.footer-premium .footer-aurora span:nth-child(3) {
+    width: 34vw; height: 34vw; max-width: 460px; max-height: 460px; bottom: -14%; left: 26%;
+    background: radial-gradient(circle, var(--f-cyan), transparent 68%);
+    animation-duration: 19s; animation-delay: -12s; opacity: .32;
+}
+.footer-premium .footer-aurora span:nth-child(4) {
+    width: 30vw; height: 30vw; max-width: 400px; max-height: 400px; bottom: 2%; right: 18%;
+    background: radial-gradient(circle, var(--f-orange), transparent 70%);
+    animation-duration: 30s; animation-delay: -4s; opacity: .26;
+}
+@keyframes f-drift {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    33%      { transform: translate3d(3.5vw, -2.5vw, 0) scale(1.12); }
+    66%      { transform: translate3d(-2.5vw, 2vw, 0) scale(.92); }
+}
+
+/* ---- Aurora ribbons + twinkling stars (pure CSS, zero extra DOM) ---- */
+.footer-premium .footer-aurora::before {
+    content: ""; position: absolute; inset: -25% -10%;
+    background:
+        conic-gradient(from 200deg at 50% 50%,
+            transparent 0deg,
+            color-mix(in srgb, var(--f-cyan) 26%, transparent) 40deg,
+            transparent 90deg,
+            color-mix(in srgb, var(--f-pink) 20%, transparent) 150deg,
+            transparent 220deg,
+            color-mix(in srgb, var(--f-purple) 24%, transparent) 290deg,
+            transparent 360deg);
+    filter: blur(60px); opacity: .5;
+    animation: f-aurora 28s linear infinite;
+    will-change: transform;
+}
+@keyframes f-aurora { to { transform: rotate(360deg); } }
+
+/* tiny glowing stars — one element, many box-shadows */
+.footer-premium .footer-aurora::after {
+    content: ""; position: absolute; inset: 0;
+    background-image:
+        radial-gradient(1.5px 1.5px at 12% 22%, #fff, transparent),
+        radial-gradient(1px 1px   at 28% 64%, color-mix(in srgb, var(--f-cyan) 90%, #fff), transparent),
+        radial-gradient(1.5px 1.5px at 44% 16%, #fff, transparent),
+        radial-gradient(1px 1px   at 58% 78%, color-mix(in srgb, var(--f-pink) 85%, #fff), transparent),
+        radial-gradient(1.5px 1.5px at 71% 34%, #fff, transparent),
+        radial-gradient(1px 1px   at 83% 60%, color-mix(in srgb, var(--f-orange) 85%, #fff), transparent),
+        radial-gradient(1.5px 1.5px at 92% 18%, #fff, transparent),
+        radial-gradient(1px 1px   at 8%  82%, #fff, transparent),
+        radial-gradient(1px 1px   at 36% 92%, color-mix(in srgb, var(--f-cyan) 80%, #fff), transparent),
+        radial-gradient(1.5px 1.5px at 64% 8%, #fff, transparent);
+    opacity: .55;
+    animation: f-twinkle 6s ease-in-out infinite;
+}
+@keyframes f-twinkle { 0%, 100% { opacity: .25; } 50% { opacity: .7; } }
+
+/* ---- Moving light sweep across the whole footer ---- */
+.footer-premium .container:first-of-type::before {
+    content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 34%;
+    z-index: -1; pointer-events: none;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.055), transparent);
+    animation: f-sweep 11s ease-in-out infinite;
+    will-change: transform;
+}
+@keyframes f-sweep { 0% { transform: translateX(0); } 60%, 100% { transform: translateX(420%); } }
+
+/* =============================================================================
+   NEWSLETTER CARD — glass + animated gradient border + glow
+   ============================================================================= */
+.footer-premium .footer-newsletter {
+    position: relative; isolation: isolate;
+    background: rgba(255, 255, 255, .06);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border-color: transparent;
+    box-shadow:
+        0 20px 50px -24px rgba(0, 0, 0, .65),
+        inset 0 1px 0 rgba(255, 255, 255, .14);
+    transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s ease;
+}
+.footer-premium .footer-newsletter::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    border-radius: inherit; padding: 1.5px;
+    background: linear-gradient(130deg, var(--f-cyan), var(--f-royal), var(--f-purple), var(--f-orange), var(--f-cyan));
+    background-size: 300% 300%;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: f-border 10s linear infinite;
+}
+@keyframes f-border { to { background-position: 300% 50%; } }
+.footer-premium .footer-newsletter:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 30px 66px -26px rgba(0, 0, 0, .75),
+        0 0 40px -12px color-mix(in srgb, var(--f-cyan) 45%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+/* glow accents behind the card */
+.footer-premium .footer-newsletter::after {
+    content: ""; position: absolute; z-index: -2; inset: 10% -6% -10% -6%;
+    background:
+        radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--f-orange) 34%, transparent), transparent 60%),
+        radial-gradient(circle at 82% 80%, color-mix(in srgb, var(--f-cyan) 34%, transparent), transparent 60%);
+    filter: blur(42px); opacity: .55; pointer-events: none;
+}
+
+/* =============================================================================
+   INPUT — frosted glass, animated border, gradient focus glow
+   ============================================================================= */
+.footer-premium .newsletter-form input {
+    background: rgba(255, 255, 255, .08);
+    border-color: rgba(255, 255, 255, .18);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+    transition: border-color .28s ease, box-shadow .28s ease, background .28s ease;
+}
+.footer-premium .newsletter-form input::placeholder {
+    color: rgba(199, 217, 236, .7); transition: opacity .3s ease, transform .3s ease;
+}
+.footer-premium .newsletter-form input:focus {
+    background: rgba(255, 255, 255, .13);
+    border-color: color-mix(in srgb, var(--f-cyan) 70%, transparent);
+    box-shadow:
+        0 0 0 4px color-mix(in srgb, var(--f-cyan) 22%, transparent),
+        0 0 26px -6px color-mix(in srgb, var(--f-cyan) 60%, transparent);
+}
+.footer-premium .newsletter-form input:focus::placeholder { opacity: .45; transform: translateX(4px); }
+
+/* =============================================================================
+   BUTTONS — gradient, glow, shine sweep, pulse (size/position untouched)
+   ============================================================================= */
+.footer-premium .newsletter-form .btn,
+.footer-premium .footer-newsletter .btn-glow {
+    position: relative; overflow: hidden; border: 0; color: #fff;
+    background: linear-gradient(120deg, var(--f-orange), var(--f-pink) 55%, var(--f-purple));
+    background-size: 200% 100%;
+    box-shadow:
+        0 10px 26px -10px color-mix(in srgb, var(--f-orange) 70%, transparent),
+        0 0 0 1px rgba(255, 255, 255, .12) inset;
+    transition: background-position .55s ease, transform .25s cubic-bezier(.34,1.4,.64,1), box-shadow .3s ease;
+}
+.footer-premium .newsletter-form .btn:hover,
+.footer-premium .footer-newsletter .btn-glow:hover {
+    background-position: 100% 0; transform: translateY(-2px) scale(1.02);
+    box-shadow:
+        0 18px 38px -12px color-mix(in srgb, var(--f-pink) 75%, transparent),
+        0 0 30px -6px color-mix(in srgb, var(--f-orange) 60%, transparent);
+}
+/* shine sweep */
+.footer-premium .newsletter-form .btn::after,
+.footer-premium .footer-newsletter .btn-glow::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.45) 50%, transparent 65%);
+    background-size: 250% 100%; background-position: 200% 0;
+    transition: background-position .75s ease; pointer-events: none;
+}
+.footer-premium .newsletter-form .btn:hover::after,
+.footer-premium .footer-newsletter .btn-glow:hover::after { background-position: -60% 0; }
+/* soft idle pulse on the donate CTA */
+.footer-premium .footer-newsletter .btn-glow { animation: f-pulse 3.4s ease-in-out infinite; }
+@keyframes f-pulse {
+    0%, 100% { box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--f-orange) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--f-orange) 42%, transparent); }
+    50%      { box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--f-orange) 70%, transparent), 0 0 0 12px transparent; }
+}
+
+/* =============================================================================
+   COLUMN HEADINGS — animated gradient text + light-sweep underline
+   ============================================================================= */
+.footer-premium h4 {
+    background: linear-gradient(100deg, #fff 15%, var(--f-cyan) 40%, #fff 60%, var(--f-orange) 85%, #fff);
+    background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: f-headpan 9s linear infinite;
+}
+@keyframes f-headpan { to { background-position: -250% 0; } }
+.footer-premium h4::after {
+    background: linear-gradient(90deg, var(--f-cyan), var(--f-orange), var(--f-pink));
+    background-size: 200% 100%;
+    box-shadow: 0 0 12px color-mix(in srgb, var(--f-cyan) 60%, transparent);
+    animation: f-headpan 6s linear infinite;
+}
+
+/* =============================================================================
+   LINKS — gradient hover, animated underline, slide + glow
+   ============================================================================= */
+.footer-premium .footer-col ul a {
+    position: relative; transition: color .28s ease, transform .28s ease, text-shadow .28s ease;
+}
+.footer-premium .footer-col ul a:hover {
+    color: #fff; transform: translateX(4px);
+    text-shadow: 0 0 14px color-mix(in srgb, var(--f-cyan) 65%, transparent);
+}
+.footer-premium .footer-col ul a::before {
+    background: linear-gradient(90deg, var(--f-cyan), var(--f-orange));
+    box-shadow: 0 0 8px color-mix(in srgb, var(--f-cyan) 70%, transparent);
+}
+
+/* =============================================================================
+   CONTACT ICONS — gradient glass circles with pulse
+   ============================================================================= */
+.footer-premium .footer-contact .fc-ico {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--f-royal) 85%, transparent), color-mix(in srgb, var(--f-cyan) 70%, transparent));
+    border: 1px solid rgba(255, 255, 255, .18);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--f-cyan) 60%, transparent);
+    color: #fff;
+    transition: transform .3s cubic-bezier(.34,1.4,.64,1), box-shadow .3s ease;
+    animation: f-bob 5.5s ease-in-out infinite;
+}
+.footer-premium .footer-contact li:nth-child(2) .fc-ico {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--f-purple) 85%, transparent), color-mix(in srgb, var(--f-pink) 70%, transparent));
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--f-pink) 60%, transparent);
+    animation-delay: -1.8s;
+}
+.footer-premium .footer-contact li:nth-child(3) .fc-ico {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--f-orange) 88%, transparent), #FFB454);
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--f-orange) 60%, transparent);
+    animation-delay: -3.4s;
+}
+.footer-premium .footer-contact li:hover .fc-ico { transform: translateY(-3px) scale(1.1); }
+@keyframes f-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+/* =============================================================================
+   SOCIAL ICONS — glass circles, unique colour each, neon hover + rotate
+   ============================================================================= */
+.footer-premium .social-links a {
+    position: relative; overflow: hidden;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .16);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    color: #E6F0FA;
+    transition: transform .32s cubic-bezier(.34,1.4,.64,1), box-shadow .32s ease, background .32s ease, color .32s ease;
+    animation: f-bob 6s ease-in-out infinite;
+}
+.footer-premium .social-links a:nth-child(1) { --s: #1877F2; animation-delay: -0s;   }  /* facebook  */
+.footer-premium .social-links a:nth-child(2) { --s: #0EA5E9; animation-delay: -1.2s; }  /* x/twitter */
+.footer-premium .social-links a:nth-child(3) { --s: #EC4899; animation-delay: -2.4s; }  /* instagram */
+.footer-premium .social-links a:nth-child(4) { --s: #FF0000; animation-delay: -3.6s; }  /* youtube   */
+.footer-premium .social-links a:nth-child(5) { --s: #0A66C2; animation-delay: -4.8s; }  /* linkedin  */
+.footer-premium .social-links a:nth-child(6) { --s: #25D366; animation-delay: -6s;   }  /* whatsapp  */
+.footer-premium .social-links a:hover {
+    color: #fff;
+    background: linear-gradient(135deg, var(--s, var(--f-cyan)), color-mix(in srgb, var(--s, var(--f-cyan)) 55%, #000));
+    border-color: transparent;
+    transform: translateY(-4px) scale(1.1) rotate(4deg);
+    box-shadow:
+        0 12px 26px -8px color-mix(in srgb, var(--s, var(--f-cyan)) 75%, transparent),
+        0 0 26px -4px color-mix(in srgb, var(--s, var(--f-cyan)) 65%, transparent);
+}
+/* ripple on hover */
+.footer-premium .social-links a::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    background: radial-gradient(circle, rgba(255,255,255,.5), transparent 60%);
+    opacity: 0; transform: scale(.4); transition: opacity .45s ease, transform .45s ease;
+    pointer-events: none;
+}
+.footer-premium .social-links a:hover::after { opacity: .32; transform: scale(1.4); }
+
+/* =============================================================================
+   DIVIDERS — animated gradient lines with a travelling light
+   ============================================================================= */
+.footer-premium .footer-top,
+.footer-premium .footer-trust,
+.footer-premium .footer-bottom {
+    position: relative; border-color: transparent !important;   /* replaces the flat 1px rule */
+}
+.footer-premium .footer-top::after,
+.footer-premium .footer-trust::before,
+.footer-premium .footer-bottom::before {
+    content: ""; position: absolute; left: 0; right: 0; height: 1px; pointer-events: none;
+    background: linear-gradient(90deg,
+        transparent, color-mix(in srgb, var(--f-cyan) 55%, transparent) 20%,
+        color-mix(in srgb, var(--f-purple) 60%, transparent) 50%,
+        color-mix(in srgb, var(--f-orange) 55%, transparent) 80%, transparent);
+    background-size: 200% 100%;
+    animation: f-lineflow 12s linear infinite;
+}
+.footer-premium .footer-top::after   { bottom: 0; }
+.footer-premium .footer-trust::before { top: 0; }
+.footer-premium .footer-bottom::before { top: 0; }
+@keyframes f-lineflow { to { background-position: -200% 0; } }
+
+/* trust strip icons pick up the accent */
+.footer-premium .footer-trust svg { color: var(--f-cyan); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--f-cyan) 60%, transparent)); }
+.footer-premium .footer-heart { color: var(--f-pink); filter: drop-shadow(0 0 8px color-mix(in srgb, var(--f-pink) 70%, transparent)); }
+.footer-premium .footer-bottom a:hover { color: var(--f-orange); }
+
+/* brand logo gets a soft halo */
+.footer-premium .footer-brand-col .brand-logo {
+    box-shadow: 0 0 26px -6px color-mix(in srgb, var(--f-cyan) 55%, transparent);
+    border-radius: 12px;
+}
+
+/* =============================================================================
+   PERFORMANCE + MOTION SAFETY
+   ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+    .footer.footer-premium,
+    .footer.footer-premium::before,
+    .footer-premium .footer-aurora span,
+    .footer-premium .footer-aurora::before,
+    .footer-premium .footer-aurora::after,
+    .footer-premium .container:first-of-type::before,
+    .footer-premium .footer-newsletter::before,
+    .footer-premium h4, .footer-premium h4::after,
+    .footer-premium .footer-contact .fc-ico,
+    .footer-premium .social-links a,
+    .footer-premium .footer-newsletter .btn-glow,
+    .footer-premium .footer-top::after,
+    .footer-premium .footer-trust::before,
+    .footer-premium .footer-bottom::before {
+        animation: none !important;
+    }
+    .footer-premium h4 { -webkit-text-fill-color: #fff; color: #fff; }
+}
+/* Small screens: fewer blur layers so paint stays cheap on mobile GPUs. */
+@media (max-width: 640px) {
+    .footer-premium .footer-aurora span:nth-child(3),
+    .footer-premium .footer-aurora span:nth-child(4) { display: none; }
+    .footer-premium .footer-aurora::before { filter: blur(40px); opacity: .35; }
+    .footer.footer-premium::after { opacity: .1; }
+}
+
+/* =============================================================================
+   FOOTER SITEMAP — automatic column count
+   premium.css hardcoded 5 → 3 → 2 → 1 columns at fixed breakpoints, so any
+   phone under 440px collapsed to a single very long list. `auto-fit` lets the
+   grid choose the count from the space available, and the `min(100%, …)` guard
+   means a track can never be wider than the container (no overflow).
+     ≈360px content → 2 cols · ≈540px → 3 · ≈720px → 4 · ≥900px → 5
+   ============================================================================= */
+.footer-links-5 {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 158px), 1fr));
+    align-items: start;
+}
+/* Override premium.css's fixed-count media queries (same specificity, later file). */
+@media (max-width: 1100px) { .footer-links-5 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 158px), 1fr)); } }
+@media (max-width: 760px)  { .footer-links-5 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); } }
+@media (max-width: 440px)  { .footer-links-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1rem; } }
+/* Keep the long link lists readable when two columns get narrow. */
+@media (max-width: 440px) {
+    .footer-links-5 .footer-col ul a { font-size: .86rem; line-height: 1.45; }
+    .footer-links-5 .footer-col h4 { font-size: .88rem; }
+}
+
+/* -----------------------------------------------------------------------------
+   Footer sitemap: fill the gap left by a lone final column.
+   With 5 columns in a 2-up grid the 5th lands alone on the last row, leaving the
+   cell beside it empty. When that happens (last child in an ODD position) let it
+   span the full width and flow its links into two sub-columns instead.
+   `columns` has no effect on a flex container, so the list becomes `block` and
+   the flex `gap` is replaced with per-item margin.
+   -------------------------------------------------------------------------- */
+@media (max-width: 760px) {
+    .footer-links-5 .footer-col:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .footer-links-5 .footer-col:last-child:nth-child(odd) > ul {
+        display: block;
+        columns: 2;
+        column-gap: clamp(1rem, 5vw, 2rem);
+    }
+    .footer-links-5 .footer-col:last-child:nth-child(odd) > ul > li {
+        break-inside: avoid;          /* never split a link across columns */
+        -webkit-column-break-inside: avoid;
+        margin-bottom: .5rem;         /* replaces the flex row-gap */
+    }
+}
