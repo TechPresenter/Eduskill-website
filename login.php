@@ -296,6 +296,58 @@ $fieldErr = ($error !== '' && $unverifiedEmail === '');
         <span class="orb orb-3"></span>
     </div>
 
+    <?php
+    /* ---------------------------- ROLE SIDEBAR ----------------------------
+       forgot-password.php and reset-password.php already shipped .auth-aside;
+       login.php, the page every visitor actually starts from, did not — so the
+       two-column treatment appeared only on the recovery pages and sign-in
+       looked like a different product.
+       The copy is role-aware: /login/{role} sets $portalCtx (auth_role_context),
+       so a volunteer sees what a volunteer portal offers rather than generic
+       marketing. Falls back to the member wording on a bare /login.
+       premium.css owns .auth-shell:has(.auth-aside), so simply rendering this
+       switches the page to the two-column layout with no extra CSS. */
+    $asidePoints = [
+        'student'   => ['Your courses, lessons and progress', 'Assignments and exam results', 'Certificates you can verify online'],
+        'volunteer' => ['Opportunities matched to your skills', 'Log the hours you contribute', 'Recognition and certificates'],
+        'donor'     => ['Every donation in one place', '80G receipts ready to download', 'See the work your giving funded'],
+        'member'    => ['Your digital membership card', 'Renewals and member benefits', 'Receipts and giving history'],
+        'staff'     => ['Your assigned modules and queues', 'Only what your role may access', 'Every action is logged'],
+        'school'    => ['Students, batches and attendance', 'Fees and receipts', 'Results and marksheets'],
+        'teacher'   => ['Your courses and live sessions', 'Assignments and exam marking', 'Student progress at a glance'],
+    ];
+    $pSlug   = (string) ($portalCtx['slug'] ?? '');
+    $points  = $asidePoints[$pSlug] ?? $asidePoints['member'];
+    $pTitle  = (string) ($portalCtx['title'] ?? 'Welcome back');
+    $pBlurb  = (string) ($portalCtx['blurb'] ?? 'Sign in to continue to your EduSkill India portal.');
+    ?>
+    <aside class="auth-aside">
+        <span class="blob b1" style="top:-70px;left:-60px;"></span>
+        <span class="blob b2" style="bottom:-80px;right:-50px;"></span>
+        <div class="floating-shapes" aria-hidden="true">
+            <span class="shape" style="top:18%;left:14%;"></span>
+            <span class="shape" style="top:66%;left:78%;"></span>
+            <span class="shape" style="top:46%;left:54%;"></span>
+        </div>
+
+        <div class="aside-inner">
+            <a class="aside-brand" href="<?= e(url('')) ?>">
+                <span class="icon-badge"><?= lucide((string) ($portalCtx['icon'] ?? 'log-in')) ?></span>
+                <strong><?= e($siteName) ?></strong>
+            </a>
+
+            <h2><?= e($pTitle) ?></h2>
+            <p class="aside-tagline"><?= e(get_setting('site_tagline', 'Empowering Communities • Spreading Hope • Creating Change')) ?></p>
+            <p><?= e($pBlurb) ?></p>
+
+            <ul class="aside-points">
+                <?php foreach ($points as $pt): ?>
+                    <li><?= lucide('check') ?><span><?= e($pt) ?></span></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    </aside>
+
     <!-- ============================== LOGIN FORM ============================== -->
     <main class="auth-main">
         <div class="auth-box">

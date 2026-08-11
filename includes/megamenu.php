@@ -52,6 +52,7 @@ function mega_nav_tree(): array
                 ['icon' => 'megaphone',      'label' => 'Campaigns',         'url' => 'campaigns',         'desc' => 'Active appeals you can support'],
                 ['icon' => 'scroll',         'label' => 'Schemes',           'url' => 'schemes',           'desc' => 'Government-linked initiatives'],
                 ['icon' => 'book-open',      'label' => 'Courses',           'url' => 'courses',           'desc' => 'Free training you can enrol in today.'],
+                ['icon' => 'file-pen',       'label' => 'Admissions',        'url' => 'admission-apply',   'desc' => 'Apply online for a place on a programme.'],
                 ['icon' => 'graduation-cap', 'label' => 'Scholarships',      'url' => 'scholarship',       'desc' => 'Support for students'],
                 ['icon' => 'wrench',         'label' => 'Skill Development', 'url' => 'skill-development', 'desc' => 'Vocational training'],
             ],

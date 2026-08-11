@@ -177,6 +177,20 @@ include __DIR__ . '/includes/header.php';
                 <?= lucide('heart') ?> My giving &amp; receipts
             </a>
 
+            <?php /* Member pages that existed but nothing linked to. A crawl from
+                     the homepage reached 62 URLs and none of these were among
+                     them, so they worked only if you typed the address. Kept as a
+                     compact list rather than more full-width buttons, which would
+                     have pushed the log-out control below the fold. */ ?>
+            <nav class="acct-links mt-3" aria-label="My pages">
+                <a href="<?= e(url('my-learning')) ?>"><?= lucide('book-open') ?><span>My learning</span></a>
+                <a href="<?= e(url('my-assignments')) ?>"><?= lucide('clipboard-list') ?><span>My assignments</span></a>
+                <a href="<?= e(url('my-awards')) ?>"><?= lucide('award') ?><span>My awards</span></a>
+                <a href="<?= e(url('my-payments')) ?>"><?= lucide('receipt') ?><span>My payments</span></a>
+                <a href="<?= e(url('certificates')) ?>"><?= lucide('file-badge') ?><span>My certificates</span></a>
+                <a href="<?= e(url('membership-renew')) ?>"><?= lucide('refresh-cw') ?><span>Renew membership</span></a>
+            </nav>
+
             <form method="post" action="<?= e(url('logout')) ?>" class="mt-3">
                 <?= csrf_field() ?>
                 <button type="submit" class="btn btn-outline btn-block"><?= lucide('log-out') ?> Log Out</button>

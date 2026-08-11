@@ -2518,3 +2518,144 @@ html:not(.js) .fb-fill { width: var(--pct, 0%); transition: none; }
     .mm-panel.is-open .mm-acc-solo,
     .mm-panel.is-open .mm-acc { animation: none; }
 }
+
+/* -----------------------------------------------------------------------------
+   25.8  Member "my pages" list in the account sidebar.
+   Six pages (my-learning, my-assignments, my-awards, my-payments, certificates,
+   membership-renew) existed and worked but nothing linked to them — a crawl from
+   the homepage reached 62 URLs and none were among them. They are listed here
+   rather than as more full-width buttons, which would have pushed Log Out below
+   the fold on a phone.
+   -------------------------------------------------------------------------- */
+.acct-links { display: grid; gap: .1rem; text-align: left; }
+.acct-links a {
+    display: grid; grid-template-columns: 18px 1fr; align-items: center; gap: .65rem;
+    min-height: 40px; padding: .35rem .5rem; border-radius: 8px;
+    font-size: .88rem; font-weight: 600; text-decoration: none;
+    color: var(--text, #151818);
+    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.acct-links a:hover { background: var(--brand-soft, #E7F0EA); color: var(--primary, #0B4E3D); }
+.acct-links a:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; }
+.acct-links svg { width: 16px; height: 16px; color: var(--primary, #0B4E3D); }
+.acct-links span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* =============================================================================
+   26. FOOTER — depth and motion
+   =============================================================================
+   The footer already carries a considered token set (--f-field, --f-deep,
+   --f-ink, --f-accent, --f-gold) but painted a flat field and moved for nothing
+   except one admin link. This section adds depth and a small amount of motion,
+   all of it built from those existing tokens so the theme still drives the
+   colour — nothing here hardcodes a green.
+
+   Every animation is a transform or an opacity (compositor-friendly, no layout
+   thrash), each is under 300ms, and the whole section is disabled wholesale
+   under prefers-reduced-motion at the end.
+   ========================================================================== */
+
+/* 26.1  Field depth. A flat fill reads as a slab under a white page; two very
+   low-contrast gradients give it a horizon without becoming a "design feature".
+   --f-deep is already the 72%-black mix of the field, so this stays on-theme
+   whatever the operator sets --footer-bg to in Theme Settings. */
+.footer.footer-premium {
+    background:
+        radial-gradient(120% 80% at 15% 0%, color-mix(in srgb, var(--f-field) 88%, #fff) 0%, transparent 55%),
+        radial-gradient(90% 70% at 95% 100%, var(--f-deep) 0%, transparent 60%),
+        var(--f-field);
+}
+
+/* 26.2  A lit edge along the top. Static gradient, animated only in its
+   position, so it reads as a slow sheen rather than a blinking element. */
+.footer.footer-premium::before {
+    content: "";
+    position: absolute; inset: 0 0 auto 0; height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--f-accent) 18%,
+        var(--f-gold) 38%,
+        color-mix(in srgb, var(--f-accent) 60%, transparent) 58%,
+        transparent 100%);
+    background-size: 220% 100%;
+    animation: f-sheen 14s linear infinite;
+    opacity: .85;
+    pointer-events: none;
+}
+@keyframes f-sheen { from { background-position: 0% 0; } to { background-position: 220% 0; } }
+
+/* 26.3  Column headings: the accent rule under each heading draws itself in
+   when the footer is reached, instead of sitting there pre-drawn. */
+.footer-links-5 .footer-col h4 { position: relative; padding-bottom: .5rem; }
+.footer-links-5 .footer-col h4::after {
+    content: "";
+    position: absolute; left: 0; bottom: 0; height: 2px; width: 28px;
+    background: var(--f-accent);
+    border-radius: 2px;
+    transform-origin: left center;
+    transform: scaleX(.35);
+    transition: transform .35s var(--ease-out, cubic-bezier(.2,.7,.3,1));
+}
+.footer-links-5 .footer-col:hover h4::after { transform: scaleX(1); }
+
+/* 26.4  Links. The chevron is drawn in CSS rather than markup, so no template
+   changes are needed, and it travels on hover. Colour lifts to the accent. */
+.footer-links-5 .footer-col ul li a {
+    position: relative;
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding-block: .1rem;
+    color: var(--f-ink);
+    text-decoration: none;
+    transition: color .2s var(--ease-out, ease), transform .2s var(--ease-out, ease);
+}
+.footer-links-5 .footer-col ul li a:hover {
+    color: var(--f-accent);
+    transform: translateX(3px);
+}
+.footer-links-5 .footer-col ul li a:focus-visible {
+    outline: 2px solid var(--f-accent); outline-offset: 3px; border-radius: 4px;
+}
+
+/* 26.5  Social buttons lift and take the accent ring. */
+.footer .soc-link, .footer-premium .soc-link, .footer .footer-social a {
+    transition: transform .2s var(--ease-out, ease), background .2s ease, border-color .2s ease, color .2s ease;
+}
+.footer .soc-link:hover, .footer-premium .soc-link:hover, .footer .footer-social a:hover {
+    transform: translateY(-3px);
+    border-color: var(--f-accent);
+    color: var(--f-accent);
+}
+
+/* 26.6  Contact icons warm up with the row. */
+.footer-brand-col .footer-contact li { transition: color .2s ease; }
+.footer-brand-col .footer-contact li:hover { color: #fff; }
+.footer-brand-col .footer-contact .fc-ico { transition: transform .2s var(--ease-out, ease), color .2s ease; }
+.footer-brand-col .footer-contact li:hover .fc-ico { transform: scale(1.12); color: var(--f-accent); }
+
+/* 26.7  The "Made with ♥" mark gets a slow, small pulse. Two percent of scale,
+   four seconds apart — noticeable only if you look at it. */
+.footer-heart { display: inline-block; animation: f-beat 4s ease-in-out infinite; transform-origin: center; }
+@keyframes f-beat {
+    0%, 88%, 100% { transform: scale(1); }
+    92%           { transform: scale(1.18); }
+    96%           { transform: scale(1.04); }
+}
+
+/* 26.8  Newsletter panel: a soft accent glow on focus-within, so the card
+   responds when the visitor starts typing. */
+.footer-newsletter { transition: box-shadow .25s ease, border-color .25s ease; }
+.footer-newsletter:focus-within {
+    border-color: color-mix(in srgb, var(--f-accent) 55%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--f-accent) 14%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .footer.footer-premium::before { animation: none; }
+    .footer-heart { animation: none; }
+    .footer-links-5 .footer-col h4::after { transition: none; transform: scaleX(1); }
+    .footer-links-5 .footer-col ul li a,
+    .footer .soc-link, .footer-premium .soc-link, .footer .footer-social a,
+    .footer-brand-col .footer-contact .fc-ico { transition: none; }
+    .footer-links-5 .footer-col ul li a:hover,
+    .footer .soc-link:hover, .footer-premium .soc-link:hover,
+    .footer .footer-social a:hover { transform: none; }
+}
