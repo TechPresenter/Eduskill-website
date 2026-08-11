@@ -2659,3 +2659,72 @@ html:not(.js) .fb-fill { width: var(--pct, 0%); transition: none; }
     .footer .soc-link:hover, .footer-premium .soc-link:hover,
     .footer .footer-social a:hover { transform: none; }
 }
+
+/* =============================================================================
+   27. "ON THIS PAGE" TABLE OF CONTENTS
+   =============================================================================
+   The four policy pages built this list from .list-check, whose li carries
+   padding-left: 1.9rem to clear an absolutely positioned "✓" drawn by ::before.
+   The TOC cancelled that padding inline, so the tick stayed at left:0 and sat on
+   top of the first letter of every entry — "General Information" rendered with a
+   check mark over the G.
+   A contents list is not a checklist, so it gets its own treatment: a small rule
+   that grows on hover instead of a tick, and real space between marker and text.
+   ========================================================================== */
+.toc-list {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: grid; gap: .15rem;
+    font-size: .92rem;
+}
+.toc-list li { margin: 0; padding: 0; }
+.toc-list a {
+    display: grid;
+    grid-template-columns: 14px 1fr;   /* marker column, then text — never overlapping */
+    align-items: center; gap: .6rem;
+    min-height: 40px;                  /* comfortable touch target */
+    padding: .25rem .35rem;
+    border-radius: 8px;
+    color: var(--text, #151818);
+    text-decoration: none;
+    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.toc-list a::before {
+    content: "";
+    width: 10px; height: 2px; border-radius: 2px;
+    background: var(--border, #C1CCB3);
+    transition: width var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.toc-list a:hover {
+    background: var(--brand-soft, #E7F0EA);
+    color: var(--primary, #0B4E3D);
+}
+.toc-list a:hover::before { width: 14px; background: var(--primary, #0B4E3D); }
+.toc-list a:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; }
+
+/* The anchor the link jumps to sits under a sticky header, so leave room. */
+.policy-body [id] { scroll-margin-top: calc(var(--header-h, 74px) + 1rem); }
+
+@media (prefers-reduced-motion: reduce) {
+    .toc-list a, .toc-list a::before { transition: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   27.1  Membership plan grid — do not clip the "Most Popular" badge.
+   The featured card places its badge at top:-12px so it straddles the card's
+   edge, but .card-3d sets overflow:hidden (tailwind.css:246) for its hover
+   sheen, which sliced the badge in half — the star and the top of the lettering
+   were simply cut away.
+   Headroom on the grid, overflow released on these cards only. Scoped to
+   .plan-grid so every other .card-3d on the site keeps clipping as designed.
+   -------------------------------------------------------------------------- */
+.plan-grid { padding-top: 1.25rem; align-items: stretch; }
+.plan-grid > .card-3d { overflow: visible; }
+
+/* The badge itself: give it a solid ground and a little lift so it reads as a
+   label ON the card rather than a fragment floating behind it. */
+.plan-grid > .card-3d > .badge {
+    z-index: 2;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px -6px rgba(20, 33, 28, .45);
+}

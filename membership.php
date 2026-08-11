@@ -119,7 +119,14 @@ include __DIR__ . '/includes/header.php';
             <h2 class="section-title">Membership Plans</h2>
             <p class="section-subtitle">Every tier fuels our work. Pick the one that feels right for you — you can always upgrade later.</p>
         </div>
-        <div class="grid grid-3">
+        <?php /* plan-grid, not a bare .grid-3: the featured card carries a
+                 "Most Popular" badge at top:-12px, and .card-3d sets
+                 overflow:hidden (tailwind.css:246) so the badge was sliced in
+                 half by the card's own top edge. The grid needs headroom and
+                 that one card must not clip. Scoped to this grid so the ~40
+                 other .card-3d uses across the site keep their clipping —
+                 become-partner.php solved the same thing the same way. */ ?>
+        <div class="grid grid-3 plan-grid">
             <?php foreach ($plans as $i => $plan):
                 $benefits = preg_split('/\r\n|\r|\n/', trim((string) ($plan['benefits'] ?? '')));
                 $benefits = array_values(array_filter(array_map('trim', $benefits), 'strlen'));

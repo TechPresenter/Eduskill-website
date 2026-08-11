@@ -337,9 +337,9 @@ include __DIR__ . '/includes/header.php';
                     <?php if (!$hasContent): ?>
                         <hr class="divider">
                         <strong style="display:block;margin-bottom:.6rem;">On This Page</strong>
-                        <ul class="list-check" style="font-size:.92rem;">
+                        <ul class="toc-list">
                             <?php foreach ($toc as $anchor => $label): ?>
-                                <li style="padding-left:0;">
+                                <li>
                                     <a href="#<?= e($anchor) ?>"><?= e($label) ?></a>
                                 </li>
                             <?php endforeach; ?>

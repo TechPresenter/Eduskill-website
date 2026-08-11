@@ -1,10 +1,10 @@
 {
-    "asset_version": "5.8.7",
+    "asset_version": "5.9.0",
     "built_files": 450,
     "files": {
         "assets/css/design-system.css": {
-            "md5": "a708f1ce1f250dbb417572a69cac9354",
-            "bytes": 132790
+            "md5": "1fb45ecaa08be6abd17505328e2cdeb2",
+            "bytes": 135990
         },
         "assets/css/admin-pro.css": {
             "md5": "9be22b72aaadf175560844d118e4a32b",

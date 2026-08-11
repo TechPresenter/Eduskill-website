@@ -118,9 +118,26 @@ try {
                     'Leadership Team' => 'leadership-team', 'Management Body' => 'management-body',
                     'Our Team' => 'team', 'NGO Details' => 'ngo-details', 'Achievements' => 'achievements',
                     'Certificates' => 'certificates',
+                    /* The verification pages sit beside Certificates because that
+                       is what they are for: someone holding a document we issued,
+                       checking it is genuine. Each has its own lookup form and
+                       works standalone — they were previously reachable only by
+                       scanning the QR printed on the document, so anyone typing
+                       the number by hand had nowhere to go.
+                       verify-employee is deliberately NOT here: it renders no
+                       lookup form without a code and is an internal HR check. */
+                    'Verify Membership' => 'verify-member',
+                    'Verify Document'   => 'verify-document',
+                    'Verify Student ID' => 'verify-student',
+                    'Verify Marksheet'  => 'verify-award',
                 ],
                 'What We Do' => [
                     'Our Programs' => 'programs', 'Causes We Support' => 'causes', 'Schemes & Initiatives' => 'schemes',
+                    /* Courses and Admissions are live, working pages that nothing
+                       linked to — a crawl from the homepage never reached either.
+                       The catalogue lists three published courses; the admission
+                       form is a real public application. */
+                    'Courses' => 'courses', 'Admissions' => 'admission-apply',
                     'Scholarships' => 'scholarship', 'Skill Development' => 'skill-development',
                     'Campaigns' => 'campaigns', 'Verify Certificate' => 'verify-certificate',
                 ],
@@ -139,6 +156,13 @@ try {
                 'Company' => [
                     'Contact Us' => 'contact', 'Search' => 'search', 'Sitemap' => 'sitemap-page',
                     'Sign In' => 'portals', 'Sign Up' => 'signup', 'My Account' => 'account',
+                    /* Member pages that existed with no route in. They sit beside
+                       "My Account" because they belong to the same journey; each
+                       requires a session and sends a signed-out visitor to the
+                       login page, which is the correct behaviour for a footer
+                       link rather than an error. */
+                    'My Learning' => 'my-learning', 'My Payments' => 'my-payments',
+                    'Renew Membership' => 'membership-renew',
                     'Privacy Policy' => 'privacy-policy', 'Terms & Conditions' => 'terms',
                     'Refund Policy' => 'refund-policy', 'Disclaimer' => 'disclaimer', 'Cookie Policy' => 'cookie-policy',
                 ],
