@@ -42,7 +42,17 @@ backup*.sql
 # Combined production dump: carries real site content and the admin bcrypt hash.
 # Built locally with the generator, transferred to the host by phpMyAdmin/SFTP —
 # never through a public repo.
-/database/eduskill.sql
+# database/eduskill.sql is COMMITTED. It is the only schema the project has
+# since the 34-file migration chain was consolidated into it, so ignoring it
+# left the repository with no way to install. Verified before committing:
+#   * every API / payment / SMTP secret ships EMPTY
+#   * members, donations, contact_messages and the token tables ship with
+#     no rows at all
+#   * the seeded admin row carries must_change_password = 1, so the bcrypt
+#     hash of the documented default cannot be used to take an install over
+# What remains is the public website content, which is already visible on
+# the live site.
+# /database/eduskill.sql
 
 # ── Deployment artefacts ─────────────────────────────────────────────────────
 # Build-output archives uploaded straight to the host; not source.
