@@ -270,7 +270,7 @@ include __DIR__ . '/includes/footer.php';
 
             <!-- Sidebar -->
             <aside class="reveal delay-1">
-                <div class="card-3d" style="position:sticky;top:90px;">
+                <div class="card-3d sticky-aside" style="position:sticky;top:90px;">
                     <h3 class="mb-2">Event Details</h3>
                     <ul style="list-style:none;padding:0;margin:0;display:grid;gap:.85rem;">
                         <li style="display:flex;gap:.6rem;align-items:flex-start;"><?= lucide('calendar-days') ?> <span><strong>When</strong><br><span class="text-muted"><?= e($whenLabel) ?></span></span></li>
@@ -305,10 +305,10 @@ include __DIR__ . '/includes/footer.php';
                         $shareTitleEnc = rawurlencode($ev['title']);
                     ?>
                     <div class="flex gap-2 flex-wrap">
-                        <a class="btn btn-outline btn-sm" href="https://www.facebook.com/sharer/sharer.php?u=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on Facebook"><?= social_fa('facebook') ?></a>
-                        <a class="btn btn-outline btn-sm" href="https://twitter.com/intent/tweet?url=<?= e($shareUrlEnc) ?>&amp;text=<?= e($shareTitleEnc) ?>" target="_blank" rel="noopener" aria-label="Share on X"><?= social_fa('x') ?></a>
-                        <a class="btn btn-outline btn-sm" href="https://www.linkedin.com/sharing/share-offsite/?url=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><?= social_fa('linkedin') ?></a>
-                        <a class="btn btn-outline btn-sm" href="https://wa.me/?text=<?= e($shareTitleEnc) ?>%20<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><?= social_fa('whatsapp') ?></a>
+                        <a class="btn btn-outline btn-sm" href="https://www.facebook.com/sharer/sharer.php?u=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on Facebook"><?= social_svg('facebook') ?></a>
+                        <a class="btn btn-outline btn-sm" href="https://twitter.com/intent/tweet?url=<?= e($shareUrlEnc) ?>&amp;text=<?= e($shareTitleEnc) ?>" target="_blank" rel="noopener" aria-label="Share on X"><?= social_svg('x') ?></a>
+                        <a class="btn btn-outline btn-sm" href="https://www.linkedin.com/sharing/share-offsite/?url=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><?= social_svg('linkedin') ?></a>
+                        <a class="btn btn-outline btn-sm" href="https://wa.me/?text=<?= e($shareTitleEnc) ?>%20<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><?= social_svg('whatsapp') ?></a>
                         <a class="btn btn-outline btn-sm" href="mailto:?subject=<?= e($shareTitleEnc) ?>&amp;body=<?= e($shareUrlEnc) ?>" aria-label="Share by email"><?= lucide('mail') ?></a>
                     </div>
 

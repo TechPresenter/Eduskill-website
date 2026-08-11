@@ -93,11 +93,17 @@ if ($action === 'create' || $action === 'edit') {
     include __DIR__ . '/partials/head.php';
     ?>
     <div class="admin-page-head">
-        <div><h1><?= e($page_title) ?></h1><span class="muted">Documents / <?= $action === 'edit' ? 'Edit' : 'Create' ?></span></div>
+        <div><h1><?= lucide('file-text') ?> <?= e($page_title) ?></h1><span class="muted">Documents / <?= $action === 'edit' ? 'Edit' : 'Create' ?></span></div>
         <a class="btn btn-secondary" href="<?= e(admin_url('documents')) ?>">← Back to list</a>
     </div>
 
     <div class="panel">
+        <div class="panel-head">
+            <h2 class="panel-title"><?= lucide('file-up') ?> Document details</h2>
+            <?php if ($action === 'edit'): ?>
+                <span class="pill <?= !empty($row['status']) ? 'pill-green' : 'pill-gray' ?>"><?= !empty($row['status']) ? 'Active' : 'Inactive' ?></span>
+            <?php endif; ?>
+        </div>
         <form class="admin-form panel-body" method="post" enctype="multipart/form-data" action="<?= e(admin_url('documents')) ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="_do" value="save">
@@ -116,7 +122,7 @@ if ($action === 'create' || $action === 'edit') {
 
             <div class="form-group">
                 <label class="form-label">Description</label>
-                <textarea class="form-textarea" name="description" style="min-height:120px;"><?= e($row['description'] ?? '') ?></textarea>
+                <textarea class="form-textarea" name="description" rows="4"><?= e($row['description'] ?? '') ?></textarea>
             </div>
 
             <div class="grid-2">
@@ -165,22 +171,29 @@ $p = paginate("SELECT * FROM $table WHERE $where ORDER BY id DESC", $params, 12)
 include __DIR__ . '/partials/head.php';
 ?>
 <div class="admin-page-head">
-    <div><h1>Documents / Downloads</h1><span class="muted"><?= (int) $p['total'] ?> total</span></div>
-    <a class="btn btn-primary" href="<?= e(admin_url('documents?action=create')) ?>">+ Add Document</a>
+    <div><h1><?= lucide('file-text') ?> Documents / Downloads</h1><span class="muted"><?= (int) $p['total'] ?> total</span></div>
+    <a class="btn btn-primary" href="<?= e(admin_url('documents?action=create')) ?>"><?= lucide('plus') ?> Add Document</a>
 </div>
 
 <div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title"><?= lucide('folder-down') ?> Downloadable files</h2>
+        <span class="pill pill-tag"><?= (int) $p['total'] ?> files</span>
+    </div>
     <div class="panel-body">
         <div class="data-toolbar">
             <form class="search" method="get" action="<?= e(admin_url('documents')) ?>">
                 <input class="form-control" type="search" name="q" value="<?= e($search) ?>" placeholder="Search documents…">
             </form>
+            <?php if ($search !== ''): ?>
+                <a class="btn btn-ghost btn-sm" href="<?= e(admin_url('documents')) ?>">Clear search</a>
+            <?php endif; ?>
         </div>
 
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Size</th><th>Downloads</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Size</th><th>Downloads</th><th>Status</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
@@ -188,8 +201,8 @@ include __DIR__ . '/partials/head.php';
                             <strong><?= e($r['title']) ?></strong><br>
                             <small class="text-muted"><?= e(excerpt($r['description'] ?? '', 12)) ?></small>
                         </td>
-                        <td><span class="pill pill-blue"><?= e($r['category']) ?></span></td>
-                        <td><?= !empty($r['file_type']) ? '<span class="pill pill-gray">' . e(strtoupper((string) $r['file_type'])) . '</span>' : '—' ?></td>
+                        <td><span class="pill pill-tag"><?= e($r['category']) ?></span></td>
+                        <td><?= !empty($r['file_type']) ? '<span class="pill pill-tag">' . e(strtoupper((string) $r['file_type'])) . '</span>' : '—' ?></td>
                         <td><?= e(human_filesize((int) ($r['file_size'] ?? 0))) ?></td>
                         <td><?= (int) $r['downloads'] ?></td>
                         <td><span class="pill <?= !empty($r['status']) ? 'pill-green' : 'pill-gray' ?>"><?= !empty($r['status']) ? 'Active' : 'Inactive' ?></span></td>
@@ -199,7 +212,7 @@ include __DIR__ . '/partials/head.php';
                                     <a class="icon-btn" href="<?= e(secure_upload_url($r['file_path'])) ?>" target="_blank" rel="noopener" title="Download"><?= lucide('download') ?></a>
                                 <?php endif; ?>
                                 <a class="icon-btn" href="<?= e(admin_url('documents?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pen-line') ?></a>
-                                <form method="post" action="<?= e(admin_url('documents')) ?>" data-confirm="Delete this document permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('documents')) ?>" data-confirm="Delete this document permanently?">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -214,7 +227,24 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('file-text') ?></div>No documents yet. <a href="<?= e(admin_url('documents?action=create')) ?>">Add your first document</a>.</div>
+            <?php /* Shared .empty-state shape — swap for the admin_ui.php helper once it ships. */ ?>
+            <div class="empty-state">
+                <div class="icon"><?= lucide('file-text') ?></div>
+                <?php if ($search !== ''): ?>
+                    <p class="es-title">No documents match &ldquo;<?= e($search) ?>&rdquo;</p>
+                    <p class="es-text">Nothing here has that title or category. Clear the search to see every file.</p>
+                    <div class="es-actions">
+                        <a class="btn btn-secondary" href="<?= e(admin_url('documents')) ?>">Clear search</a>
+                        <a class="btn btn-primary" href="<?= e(admin_url('documents?action=create')) ?>"><?= lucide('plus') ?> Add Document</a>
+                    </div>
+                <?php else: ?>
+                    <p class="es-title">No documents yet</p>
+                    <p class="es-text">Upload the PDFs, forms and reports you want visitors to be able to download. Each one gets a slug, a category and a download counter.</p>
+                    <div class="es-actions">
+                        <a class="btn btn-primary" href="<?= e(admin_url('documents?action=create')) ?>"><?= lucide('plus') ?> Add your first document</a>
+                    </div>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
     </div>
 </div>

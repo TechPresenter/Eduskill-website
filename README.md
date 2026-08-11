@@ -80,7 +80,7 @@ api/v1/                     REST endpoints (blogs, events, gallery, team,
 admin/                      Custom admin panel (login, dashboard, ~50 modules)
   partials/head.php foot.php   Admin layout
 
-database/                   schema.sql, schema_v2.sql, schema_v3.sql, sample_data.sql
+database/                   eduskill.sql (the single schema + seed file)
 docs/                       DEV_CONTRACT.md, DEV_CONTRACT_V2.md (developer reference)
 uploads/                    User uploads (script execution disabled)
 logs/                       PHP error log
@@ -90,13 +90,13 @@ logs/                       PHP error log
 
 1. Place this folder at `C:\xampp\htdocs\pwf` (already there).
 2. Start **Apache** and **MySQL** in the XAMPP Control Panel.
-3. Create the database and import (phpMyAdmin, or shell):
+3. Create the database and import the single SQL file (phpMyAdmin, or shell):
    ```
-   C:\xampp\mysql\bin\mysql.exe -u root < database\schema.sql
-   C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v2.sql
-   C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v3.sql
-   C:\xampp\mysql\bin\mysql.exe -u root pwf < database\sample_data.sql
+   C:\xampp\mysql\bin\mysql.exe -u root -e "CREATE DATABASE pwf CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+   C:\xampp\mysql\bin\mysql.exe -u root pwf < database\eduskill.sql
    ```
+   On a database that already has real data, run **Section 2 only** — see the
+   banner inside the file.
 4. Visit **http://localhost/pwf/**
 5. Admin: **http://localhost/pwf/admin/login**
    - Email: `admin@eduskillindia.org`

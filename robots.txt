@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /login/admin
 Disallow: /includes/
 Disallow: /api/
 Disallow: /uploads/tmp/

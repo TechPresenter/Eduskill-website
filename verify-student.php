@@ -17,7 +17,9 @@ $hasQuery = $token !== '' || array_key_exists('code', $_GET);
 $student   = null;
 $throttled = false;
 if ($token !== '' || $code !== '') {
-    if (!pwf_throttle('verify-lookup', 10, 300)) {
+    /* Own bucket — see the note in verify-award.php. The five public verifiers
+       shared one 'verify-lookup' key, so they spent each other's budget. */
+    if (!pwf_throttle('verify-student', 10, 300)) {
         $throttled = true;
     } elseif ($token !== '') {
         $student = db_row('SELECT * FROM school_students WHERE qr_token = :t LIMIT 1', [':t' => $token]);
@@ -68,8 +70,8 @@ include __DIR__ . '/includes/header.php';
                 <div class="alert alert-warning reveal"><strong>No matching student found.</strong> Check the ID for typos, or the card may not have been issued by us.</div>
             <?php else:
                 [$c1, $c2, $icon, $title] = $active
-                    ? ['#308629', '#58A42F', 'check', 'Verified Student']
-                    : ['#b45309', '#E67B1D', 'user', 'Former / Inactive Student'];
+                    ? ['#1F5C48', '#2F8065', 'check', 'Verified Student']
+                    : ['#b45309', '#F15A24', 'user', 'Former / Inactive Student'];
             ?>
                 <div class="card-3d reveal" style="padding:0;overflow:hidden;">
                     <div style="background:linear-gradient(135deg,<?= $c1 ?>,<?= $c2 ?>);color:#fff;padding:1.5rem 1.7rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">

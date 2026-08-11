@@ -104,7 +104,7 @@ include __DIR__ . '/includes/header.php';
                     <a class="card reveal"
                        href="<?= e($p['slug'] ? url('programs?slug=' . $p['slug']) : url('programs')) ?>"
                        style="padding:1.1rem;color:inherit;">
-                        <div class="icon-badge" style="margin-inline:auto;background:linear-gradient(135deg,<?= e($p['color'] ?: '#063566') ?>,#084881);">
+                        <div class="icon-badge" style="margin-inline:auto;background:linear-gradient(135deg,<?= e($p['color'] ?: '#0B4E3D') ?>,#174D3D);">
                             <?= lucide($p['icon'] ?: 'star') ?>
                         </div>
                         <strong class="mt-2" style="display:block;"><?= e($p['title']) ?></strong>

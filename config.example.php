@@ -98,7 +98,7 @@ define('ASSET_URI',     BASE_URI . '/assets');    // web path to assets
  | Asset cache-busting version. Bump this when you change CSS/JS so shared
  | hosting caches don't serve stale files (used as assets/main.js?v=ASSET_VERSION).
  | -------------------------------------------------------------------------- */
-define('ASSET_VERSION', '5.3.3');
+define('ASSET_VERSION', '5.8.4');
 
 /* -----------------------------------------------------------------------------
  | Uploads
@@ -212,7 +212,7 @@ set_exception_handler(static function (Throwable $e): void {
             . '<div style="font-family:system-ui,sans-serif;max-width:520px;margin:12vh auto;text-align:center;">'
             . '<h1 style="font-size:1.6rem;">Something went wrong</h1>'
             . '<p style="color:#6b7280;">We hit an unexpected error. Please try again in a moment.</p>'
-            . '<a href="' . htmlspecialchars(BASE_URI ?: '/', ENT_QUOTES) . '/" style="color:#063566;font-weight:700;">Back to home</a></div>';
+            . '<a href="' . htmlspecialchars(BASE_URI ?: '/', ENT_QUOTES) . '/" style="color:#0B4E3D;font-weight:700;">Back to home</a></div>';
     }
     exit;
 });

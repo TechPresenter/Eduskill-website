@@ -145,6 +145,16 @@ $page_title  = 'Student Performance';
 $load_charts = !empty($chartData); // Chart.js only when there is a bar chart to draw.
 include __DIR__ . '/partials/head.php';
 ?>
+<style>
+    /* Layout only — this screen is built entirely from shared components. */
+    .sp-actions { gap: var(--sp-2); }
+    .sp-pickform { gap: var(--sp-3); flex-wrap: wrap; }
+    .sp-pick { min-width: 280px; }
+    .sp-note { font-size: .85rem; }
+    .sp-w-label { width: 180px; }
+    .sp-w-rank { width: 48px; }
+</style>
+
 <div class="admin-page-head">
     <div>
         <h1>Student Performance</h1>
@@ -156,7 +166,7 @@ include __DIR__ . '/partials/head.php';
             <?php endif; ?>
         </span>
     </div>
-    <div class="flex" style="gap:.5rem;">
+    <div class="flex sp-actions">
         <?php if ($student): ?>
             <a class="btn btn-outline" href="<?= e(admin_url('school-students?action=edit&id=' . $studentId)) ?>"><?= lucide('user') ?> Profile</a>
             <a class="btn btn-secondary" href="<?= e(admin_url('student-performance')) ?>">← Choose another</a>
@@ -168,9 +178,9 @@ include __DIR__ . '/partials/head.php';
 
 <!-- Student picker -->
 <div class="panel"><div class="panel-body">
-    <form class="flex items-center" method="get" action="<?= e(admin_url('student-performance')) ?>" style="gap:.75rem;flex-wrap:wrap;">
+    <form class="flex items-center sp-pickform" method="get" action="<?= e(admin_url('student-performance')) ?>">
         <label class="form-label mb-0" for="studentPick">Student</label>
-        <select class="form-select" id="studentPick" name="student" onchange="this.form.submit()" style="min-width:280px;">
+        <select class="form-select sp-pick" id="studentPick" name="student" onchange="this.form.submit()">
             <option value="">— Select a student —</option>
             <?php foreach ($pickList as $s): ?>
                 <option value="<?= (int) $s['id'] ?>" <?= $studentId === (int) $s['id'] ? 'selected' : '' ?>>
@@ -218,11 +228,11 @@ include __DIR__ . '/partials/head.php';
         </div>
     </div>
 
-    <div class="grid-2" style="align-items:start;gap:1.25rem;">
+    <div class="grid-2 cols-top">
         <div>
             <!-- Exam score chart -->
             <div class="panel"><div class="panel-body">
-                <h3 class="mb-2">Exam scores</h3>
+                <h2 class="panel-title mb-2">Exam scores</h2>
                 <?php if ($chartData): ?>
                     <canvas id="examChart" height="200"></canvas>
                 <?php else: ?>
@@ -232,7 +242,7 @@ include __DIR__ . '/partials/head.php';
 
             <!-- Exam attempt log -->
             <div class="panel"><div class="panel-body">
-                <h3 class="mb-2">Exam attempts</h3>
+                <h2 class="panel-title mb-2">Exam attempts</h2>
                 <?php if ($attempts): ?>
                 <div class="table-wrap"><table class="admin-table">
                     <thead><tr><th>Exam</th><th>Score</th><th>Result</th><th>Submitted</th></tr></thead>
@@ -259,7 +269,7 @@ include __DIR__ . '/partials/head.php';
         <div>
             <!-- Latest marksheets -->
             <div class="panel"><div class="panel-body">
-                <h3 class="mb-2">Latest marksheets</h3>
+                <h2 class="panel-title mb-2">Latest marksheets</h2>
                 <?php if ($marksheets): ?>
                 <div class="table-wrap"><table class="admin-table">
                     <thead><tr><th>Marksheet</th><th>%</th><th>Grade</th><th>Result</th></tr></thead>
@@ -282,9 +292,9 @@ include __DIR__ . '/partials/head.php';
 
             <!-- Assignment + attendance detail -->
             <div class="panel"><div class="panel-body">
-                <h3 class="mb-2">Assignments &amp; attendance</h3>
+                <h2 class="panel-title mb-2">Assignments &amp; attendance</h2>
                 <div class="table-wrap"><table class="admin-table"><tbody>
-                    <tr><th style="width:180px;">Submissions</th><td><?= (int) $asgSubs ?></td></tr>
+                    <tr><th class="sp-w-label">Submissions</th><td><?= (int) $asgSubs ?></td></tr>
                     <tr><th>Graded</th><td><?= (int) $asgGraded ?><?= $asgSubs ? ' of ' . (int) $asgSubs : '' ?></td></tr>
                     <tr><th>Average marks</th><td><?= $asgAvg === null ? '<span class="text-muted">—</span>' : e($asgAvg) ?></td></tr>
                     <tr><th>Attendance (30d)</th><td><?= $attRate === null ? '<span class="text-muted">No records</span>' : e($attRate) . '% <small class="text-muted">(' . (int) ($att['present'] ?? 0) . ' of ' . (int) $attTotal . ' sessions)</small>' ?></td></tr>
@@ -302,12 +312,12 @@ include __DIR__ . '/partials/head.php';
 
     <div class="panel"><div class="panel-body">
         <div class="flex items-center justify-between mb-2">
-            <h3 class="mb-0">Leaderboard</h3>
-            <span class="text-muted" style="font-size:.85rem;">Top 10 by latest marksheet %</span>
+            <h2 class="panel-title mb-0">Leaderboard</h2>
+            <span class="text-muted sp-note">Top 10 by latest marksheet %</span>
         </div>
         <?php if ($leaders): ?>
         <div class="table-wrap"><table class="admin-table">
-            <thead><tr><th style="width:48px;">#</th><th>Student</th><th>School</th><th>Latest %</th><th>Grade</th><th>Result</th><th style="text-align:right;">View</th></tr></thead>
+            <thead><tr><th class="sp-w-rank">#</th><th>Student</th><th>School</th><th>Latest %</th><th>Grade</th><th>Result</th><th class="num">View</th></tr></thead>
             <tbody>
             <?php foreach ($leaders as $i => $l): ?>
                 <tr>
@@ -320,7 +330,7 @@ include __DIR__ . '/partials/head.php';
                     <td><?= e($l['percentage']) ?>%</td>
                     <td><?= $l['grade'] ? e($l['grade']) : '—' ?></td>
                     <td><span class="pill <?= e($resultPill((string) $l['result'])) ?>"><?= e(ucfirst((string) $l['result'])) ?></span></td>
-                    <td style="text-align:right;"><a class="btn btn-outline btn-sm" href="<?= e(admin_url('student-performance?student=' . (int) $l['id'])) ?>">Open</a></td>
+                    <td class="num"><a class="btn btn-outline btn-sm" href="<?= e(admin_url('student-performance?student=' . (int) $l['id'])) ?>">Open</a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody></table></div>
@@ -344,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Score %',
                 data: <?= json_encode($chartData, $jsonFlags) ?>,
-                backgroundColor: '#084881',
+                backgroundColor: '#174D3D',
                 borderRadius: 6,
                 maxBarThickness: 48
             }]

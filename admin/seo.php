@@ -121,12 +121,23 @@ if ($action === 'create' || $action === 'edit') {
     $page_title = $action === 'edit' ? 'Edit SEO Entry' : 'Add SEO Entry';
     include __DIR__ . '/partials/head.php';
     ?>
+    <?php /* No page-local CSS. `.code-editor` is declared once in
+             assets/css/admin-pro.css — this screen, admin/robots.php and
+             admin/custom-code.php each carried their own drifting copy. */ ?>
     <div class="admin-page-head">
-        <div><h1><?= e($page_title) ?></h1><span class="muted">SEO Manager / <?= $action === 'edit' ? 'Edit' : 'Create' ?></span></div>
+        <div><h1><?= lucide('search') ?> <?= e($page_title) ?></h1><span class="muted">SEO Manager / <?= $action === 'edit' ? 'Edit' : 'Create' ?></span></div>
         <a class="btn btn-secondary" href="<?= e(admin_url('seo')) ?>">← Back to list</a>
     </div>
 
     <div class="panel">
+        <div class="panel-head">
+            <?php /* h2: first sub-level under the page <h1>. */ ?>
+            <h2 class="panel-title"><?= lucide('file-cog') ?> Page meta</h2>
+            <?php /* pill-tag, not pill-blue: a page key is an identifier, not a status.
+                     admin-ds.css hangs an info-circle glyph off every colour variant,
+                     so pill-blue was drawing "information" in front of a slug. */ ?>
+            <?php if ($action === 'edit'): ?><span class="pill pill-tag"><?= e($row['page_key'] ?? '') ?></span><?php endif; ?>
+        </div>
         <form class="admin-form panel-body" method="post" enctype="multipart/form-data" action="<?= e(admin_url('seo')) ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="_do" value="save">
@@ -146,7 +157,7 @@ if ($action === 'create' || $action === 'edit') {
 
             <div class="form-group">
                 <label class="form-label">Meta Description</label>
-                <textarea class="form-textarea" name="meta_description" maxlength="320" style="min-height:90px;"><?= e($row['meta_description'] ?? '') ?></textarea>
+                <textarea class="form-textarea" name="meta_description" maxlength="320" rows="3"><?= e($row['meta_description'] ?? '') ?></textarea>
                 <span class="form-hint">Ideally 150–160 characters.</span>
             </div>
 
@@ -168,7 +179,7 @@ if ($action === 'create' || $action === 'edit') {
 
             <div class="form-group">
                 <label class="form-label">OG Description</label>
-                <textarea class="form-textarea" name="og_description" maxlength="320" style="min-height:80px;"><?= e($row['og_description'] ?? '') ?></textarea>
+                <textarea class="form-textarea" name="og_description" maxlength="320" rows="3"><?= e($row['og_description'] ?? '') ?></textarea>
             </div>
 
             <div class="form-group">
@@ -179,12 +190,12 @@ if ($action === 'create' || $action === 'edit') {
             <div class="form-group">
                 <label class="form-label">OG Image</label>
                 <input class="form-control" type="file" name="og_image" accept="image/*" data-preview="#imgPreview">
-                <img id="imgPreview" class="img-preview" src="<?= e(!empty($row['og_image']) ? upload_url($row['og_image']) : asset('images/placeholder.svg')) ?>" alt="preview" style="<?= empty($row['og_image']) ? 'display:none;' : '' ?>">
+                <img id="imgPreview" class="img-preview" src="<?= e(!empty($row['og_image']) ? upload_url($row['og_image']) : asset('images/placeholder.svg')) ?>" alt="preview" style="<?= empty($row['og_image']) ? 'display:none;' : '' ?>"><?php /* Left inline: assets/js/admin.js sets style.display='block' on change, and ui.css declares [hidden]{display:none!important} — the attribute form would defeat the preview. */ ?>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Schema JSON (JSON-LD)</label>
-                <textarea class="form-textarea" name="schema_json" style="min-height:160px;font-family:monospace;" placeholder='{"@context":"https://schema.org", ...}'><?= e($row['schema_json'] ?? '') ?></textarea>
+                <textarea class="form-textarea code-editor" name="schema_json" rows="8" spellcheck="false" placeholder='{"@context":"https://schema.org", ...}'><?= e($row['schema_json'] ?? '') ?></textarea>
                 <span class="form-hint">Optional structured data. Must be valid JSON if provided.</span>
             </div>
 
@@ -213,22 +224,33 @@ $p = paginate("SELECT * FROM $table WHERE $where ORDER BY page_key ASC, id DESC"
 include __DIR__ . '/partials/head.php';
 ?>
 <div class="admin-page-head">
-    <div><h1>SEO Manager</h1><span class="muted"><?= (int) $p['total'] ?> total</span></div>
-    <a class="btn btn-primary" href="<?= e(admin_url('seo?action=create')) ?>">+ Add SEO Entry</a>
+    <div><h1><?= lucide('search') ?> SEO Manager</h1><span class="muted"><?= (int) $p['total'] ?> total</span></div>
+    <div class="flex flex-wrap gap-1">
+        <a class="btn btn-secondary" href="<?= e(admin_url('sitemap')) ?>"><?= lucide('map') ?> Sitemap</a>
+        <a class="btn btn-secondary" href="<?= e(admin_url('robots')) ?>"><?= lucide('bot') ?> Robots.txt</a>
+        <a class="btn btn-primary" href="<?= e(admin_url('seo?action=create')) ?>"><?= lucide('plus') ?> Add SEO Entry</a>
+    </div>
 </div>
 
 <div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title"><?= lucide('list') ?> Per-page overrides</h2>
+        <span class="pill pill-tag"><?= (int) $p['total'] ?> entries</span>
+    </div>
     <div class="panel-body">
         <div class="data-toolbar">
             <form class="search" method="get" action="<?= e(admin_url('seo')) ?>">
                 <input class="form-control" type="search" name="q" value="<?= e($search) ?>" placeholder="Search by page key or title…">
             </form>
+            <?php if ($search !== ''): ?>
+                <a class="btn btn-ghost btn-sm" href="<?= e(admin_url('seo')) ?>">Clear search</a>
+            <?php endif; ?>
         </div>
 
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>OG Image</th><th>Page Key</th><th>Meta Title</th><th>Robots</th><th>Schema</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>OG Image</th><th>Page Key</th><th>Meta Title</th><th>Robots</th><th>Schema</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
@@ -239,11 +261,11 @@ include __DIR__ . '/partials/head.php';
                             <small class="text-muted"><?= e(excerpt($r['meta_description'] ?? '', 12)) ?></small>
                         </td>
                         <td><span class="pill <?= (stripos((string) $r['robots'], 'noindex') !== false) ? 'pill-amber' : 'pill-green' ?>"><?= e($r['robots'] ?: 'index,follow') ?></span></td>
-                        <td><?= !empty($r['schema_json']) ? '<span class="pill pill-blue">JSON-LD</span>' : '—' ?></td>
+                        <td><?= !empty($r['schema_json']) ? '<span class="pill pill-tag">JSON-LD</span>' : '—' ?></td>
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('seo?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('seo')) ?>" data-confirm="Delete this SEO entry permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('seo')) ?>" data-confirm="Delete this SEO entry permanently?">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -258,7 +280,24 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('search') ?></div>No SEO entries yet. <a href="<?= e(admin_url('seo?action=create')) ?>">Add your first SEO entry</a>.</div>
+            <?php /* Shared .empty-state shape — swap for the admin_ui.php helper once it ships. */ ?>
+            <div class="empty-state">
+                <div class="icon"><?= lucide('search') ?></div>
+                <?php if ($search !== ''): ?>
+                    <p class="es-title">No entries match &ldquo;<?= e($search) ?>&rdquo;</p>
+                    <p class="es-text">Nothing here has that page key or meta title. Try a shorter term, or clear the search to see every override.</p>
+                    <div class="es-actions">
+                        <a class="btn btn-secondary" href="<?= e(admin_url('seo')) ?>">Clear search</a>
+                        <a class="btn btn-primary" href="<?= e(admin_url('seo?action=create')) ?>"><?= lucide('plus') ?> Add SEO Entry</a>
+                    </div>
+                <?php else: ?>
+                    <p class="es-title">No SEO entries yet</p>
+                    <p class="es-text">Pages fall back to the site-wide defaults until you add an override here. Add one per page you want to control — <code>home</code>, <code>about</code>, <code>blog:my-slug</code>.</p>
+                    <div class="es-actions">
+                        <a class="btn btn-primary" href="<?= e(admin_url('seo?action=create')) ?>"><?= lucide('plus') ?> Add your first SEO entry</a>
+                    </div>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
     </div>
 </div>

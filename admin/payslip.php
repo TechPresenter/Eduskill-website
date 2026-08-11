@@ -25,8 +25,8 @@ $page_title = 'Payslip — ' . $emp['name'];
 include __DIR__ . '/partials/head.php';
 ?>
 <style>
-    .psl { max-width: 760px; margin: 0 auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; color: #111827; font-family: 'Roboto', system-ui, sans-serif; box-shadow: 0 16px 40px -20px rgba(6,53,102,.35); }
-    .psl-head { background: linear-gradient(135deg,#063566,#084881); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .psl { max-width: 760px; margin: 0 auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; color: #111827; font-family: 'Roboto', system-ui, sans-serif; box-shadow: 0 16px 40px -20px rgba(11,78,61,.35); }
+    .psl-head { background: linear-gradient(135deg,#0B4E3D,#174D3D); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
     .psl-head h2 { margin: 0; font-size: 1.2rem; }
     .psl-head .p { font-size: .78rem; opacity: .92; }
     .psl-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 18px; padding: 18px 24px; border-bottom: 1px solid #e2e8f0; font-size: .85rem; }
@@ -35,11 +35,11 @@ include __DIR__ . '/partials/head.php';
     .psl-cols { display: grid; grid-template-columns: 1fr 1fr; }
     .psl-col { padding: 16px 24px; }
     .psl-col + .psl-col { border-left: 1px solid #e2e8f0; }
-    .psl-col h4 { margin: 0 0 10px; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: #063566; }
+    .psl-col h4 { margin: 0 0 10px; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: #0B4E3D; }
     .psl-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: .88rem; border-bottom: 1px dashed #eef2f7; }
     .psl-row.total { border-top: 2px solid #cbd5e1; border-bottom: none; margin-top: 6px; padding-top: 8px; font-weight: 800; }
     .psl-net { background: #ecfdf5; border-top: 1px solid #d1fae5; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
-    .psl-net .amt { font-size: 1.5rem; font-weight: 800; color: #308629; }
+    .psl-net .amt { font-size: 1.5rem; font-weight: 800; color: #1F5C48; }
     .psl-foot { padding: 12px 24px; font-size: .72rem; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; }
     @media print {
         .admin-sidebar, .admin-topbar, .admin-overlay, .admin-page-head, .psl-actions, .no-print { display: none !important; }

@@ -134,7 +134,7 @@ include __DIR__ . '/includes/header.php';
 
 <style>
 /* ======================= SCOPED GALLERY STYLES (.gal-*) ======================= */
-.gal-wrap { --gal-brand:#063566; --gal-teal:#084881; --gal-gold:#E67B1D; }
+.gal-wrap { --gal-brand:#0B4E3D; --gal-teal:#174D3D; --gal-gold:#F15A24; }
 
 /* ---- Ambient hero glow beneath the shared page-hero ---- */
 .gal-intro { position:relative; }
@@ -238,7 +238,7 @@ include __DIR__ . '/includes/header.php';
 
 /* ---- CTA band ---- */
 .gal-cta { position:relative; overflow:hidden; border-radius:var(--radius-lg); padding:clamp(2.25rem,5vw,3.5rem); text-align:center; color:#fff; background:linear-gradient(135deg,var(--gal-brand) 0%,var(--gal-teal) 55%,#0b7d73 100%); box-shadow:var(--shadow-lg); }
-.gal-cta::before { content:""; position:absolute; width:420px; height:420px; border-radius:50%; top:-200px; right:-120px; background:radial-gradient(circle,rgba(230,123,29,.4),transparent 70%); }
+.gal-cta::before { content:""; position:absolute; width:420px; height:420px; border-radius:50%; top:-200px; right:-120px; background:radial-gradient(circle,rgba(241,90,36,.4),transparent 70%); }
 .gal-cta::after  { content:""; position:absolute; width:360px; height:360px; border-radius:50%; bottom:-200px; left:-100px; background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%); }
 .gal-cta > * { position:relative; z-index:1; }
 .gal-cta h2 { color:#fff; font-size:clamp(1.5rem,3vw,2.1rem); }

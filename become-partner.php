@@ -582,7 +582,7 @@ include __DIR__ . '/includes/header.php';
     top: -13px; right: 1.25rem; z-index: 3;
     padding: .34rem .8rem; border-radius: 999px;
     font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-    box-shadow: 0 6px 16px -6px rgba(230,123,29,.7);
+    box-shadow: 0 6px 16px -6px rgba(241,90,36,.7);
     white-space: nowrap;
 }
 

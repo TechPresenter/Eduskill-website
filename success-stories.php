@@ -135,7 +135,7 @@ include __DIR__ . '/includes/header.php';
                                     <?php if (!empty($s['author_name'])): ?><?= lucide('pen-line') ?> <?= e($s['author_name']) ?> · <?php endif; ?>
                                     <?= e(format_date($storyDate, 'd M Y')) ?>
                                 </small>
-                                <a href="<?= e($storyUrl) ?>" style="color:var(--brand-600,#063566);font-weight:700;">Read Story <?= lucide('arrow-right') ?></a>
+                                <a class="link-action" href="<?= e($storyUrl) ?>" style="color:var(--brand-600,#0B4E3D);font-weight:700;">Read Story <?= lucide('arrow-right') ?></a>
                             </div>
                         </div>
                     </article>

@@ -64,28 +64,33 @@ $qrSvg      = PWF_QR::encode(certificate_verify_url($cert), 'M')->svg(2, 3);
     <meta name="robots" content="noindex,nofollow">
     <title>Certificate · <?= e($student ?: $serial) ?></title>
     <style>
+        /* Standalone by design — no app stylesheets, so print output carries no
+           panel chrome. Colours below are the brand palette written out by hand;
+           the geometry (sizes, flex, @page) is untouched. */
         *{box-sizing:border-box;}
         @page{size:A4 landscape;margin:0;}
-        body{margin:0;min-height:100vh;background:#e9edf3;color:#1f2937;
+        body{margin:0;min-height:100vh;background:#F8FCF8;color:#151818;
              font-family:system-ui,Segoe UI,Roboto,sans-serif;
              display:flex;flex-direction:column;align-items:center;gap:22px;padding:28px;}
 
         /* -------- Toolbar (screen only) -------- */
         .toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
-        .btn{border:0;border-radius:9px;padding:10px 18px;font-weight:700;cursor:pointer;text-decoration:none;
+        .btn{border:0;border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer;text-decoration:none;
              font-size:.92rem;display:inline-flex;align-items:center;gap:6px;}
-        .btn-p{background:#063566;color:#fff;}
-        .btn-o{background:#fff;color:#1f2937;border:1px solid #cbd5e1;}
+        .btn-p{background:#0B4E3D;color:#fff;}
+        .btn-o{background:#fff;color:#151818;border:1px solid #C1CCB3;}
 
         /* -------- Certificate shell -------- */
+        /* Elevation is screen-only (print clears it) and stays inside the subtle
+           band the brand allows — the old 50px/.18 drop was a heavy shadow. */
         .cert{width:1040px;max-width:100%;min-height:735px;background:var(--paper);
-              display:flex;box-shadow:0 18px 50px rgba(6,53,102,.18);position:relative;}
+              display:flex;box-shadow:0 4px 12px -2px rgba(21,24,24,.10);position:relative;}
         .frame{flex:1;display:flex;margin:22px;}
         .inner{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;
                margin:8px;padding:46px 62px 40px;}
 
         .org{font-size:1.55rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--accent);}
-        .rule{width:70px;height:3px;background:var(--accent);margin:14px 0 4px;border-radius:2px;opacity:.85;}
+        .rule{width:70px;height:3px;background:var(--accent);margin:14px 0 4px;border-radius:999px;opacity:.85;}
         .heading{margin-top:20px;font-size:1.02rem;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:var(--ink);opacity:.85;}
         .present{margin-top:26px;font-size:.98rem;font-style:italic;color:var(--muted);letter-spacing:.4px;}
         .name{margin-top:12px;font-size:3.1rem;line-height:1.05;font-weight:800;color:var(--accent);
@@ -96,7 +101,7 @@ $qrSvg      = PWF_QR::encode(certificate_verify_url($cert), 'M')->svg(2, 3);
         .foot{margin-top:auto;padding-top:30px;width:100%;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;}
         .foot-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:170px;}
         .foot-col.qr{gap:8px;}
-        .qr svg{display:block;border:1px solid var(--soft);border-radius:8px;background:#fff;padding:5px;}
+        .qr svg{display:block;border:1px solid var(--soft);border-radius:6px;background:#fff;padding:5px;}
         .verify{font-size:.68rem;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;}
         .lbl{font-size:.72rem;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);}
         .val{font-size:1.02rem;font-weight:700;color:var(--ink);}
@@ -104,14 +109,19 @@ $qrSvg      = PWF_QR::encode(certificate_verify_url($cert), 'M')->svg(2, 3);
         .sig-img{max-height:52px;max-width:190px;object-fit:contain;margin-bottom:2px;}
         .serial{margin-top:22px;font-size:.74rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
 
-        /* ===== Template: classic (navy double border + serif) ===== */
-        .cert.classic{--paper:#ffffff;--accent:#14224e;--ink:#14224e;--muted:#5b6a86;--soft:#c7d0e3;
+        /* ===== Template: classic (double border + serif) =====================
+           Was navy: #14224e ink/accent, #5b6a86 muted, #c7d0e3 rules — four
+           colours from outside the palette. Re-pointed onto primary-dark ink so
+           the three templates differ by typography and border treatment (serif +
+           double rule here, left bar in `modern`, gold frame in `elegant`)
+           instead of by importing extra hues. */
+        .cert.classic{--paper:#ffffff;--accent:#0F4537;--ink:#151818;--muted:#4B6754;--soft:#C1CCB3;
                       font-family:Georgia,'Times New Roman','Palatino Linotype',serif;}
         .cert.classic .frame{border:3px solid var(--accent);}
         .cert.classic .inner{border:1px solid var(--accent);}
 
         /* ===== Template: modern (left accent bar, minimal, sans) ===== */
-        .cert.modern{--paper:#ffffff;--accent:#063566;--ink:#0f172a;--muted:#64748b;--soft:#dbe4f5;
+        .cert.modern{--paper:#ffffff;--accent:#0B4E3D;--ink:#151818;--muted:#4B6754;--soft:#C1CCB3;
                      font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;}
         .cert.modern .frame{margin:0;border:0;}
         .cert.modern .inner{margin:0;border:0;border-left:14px solid var(--accent);
@@ -121,11 +131,18 @@ $qrSvg      = PWF_QR::encode(certificate_verify_url($cert), 'M')->svg(2, 3);
         .cert.modern .desc{max-width:88%;}
         .cert.modern .foot{justify-content:space-between;}
 
-        /* ===== Template: elegant (gold border, serif, cream) ===== */
-        .cert.elegant{--paper:#fffdf5;--accent:#b7912f;--ink:#5b4a1f;--muted:#8a7846;--soft:#e6d7a8;
+        /* ===== Template: elegant (gold border, serif, ivory) =================
+           Keeps its gold-on-cream character with palette colours: ivory paper
+           (#FEFEF1) and brand gold (#E8C52E) on every rule and border. The gold
+           moved to --soft, NOT --accent, because --accent also paints the org line
+           and the recipient's 3.1rem name — gold text on ivory is barely legible,
+           so the ink sits on the warm text colour (#372C22) instead and the gold
+           stays decorative. Was #fffdf5 / #b7912f / #5b4a1f / #8a7846 / #e6d7a8,
+           five colours from outside the palette. */
+        .cert.elegant{--paper:#FEFEF1;--accent:#372C22;--ink:#372C22;--muted:#4B6754;--soft:#E8C52E;
                       font-family:Georgia,'Palatino Linotype','Book Antiqua',serif;}
-        .cert.elegant .frame{border:6px double var(--accent);}
-        .cert.elegant .inner{border:1px solid var(--accent);box-shadow:inset 0 0 0 5px rgba(183,145,47,.12);}
+        .cert.elegant .frame{border:6px double var(--soft);}
+        .cert.elegant .inner{border:1px solid var(--soft);box-shadow:inset 0 0 0 5px rgba(232,197,46,.16);}
         .cert.elegant .org{letter-spacing:4px;}
 
         @media print{

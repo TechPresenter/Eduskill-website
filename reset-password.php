@@ -67,6 +67,108 @@ $tagline  = get_setting('site_tagline', SITE_TAGLINE);
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset('css/tailwind.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('css/premium.css')) ?>">
+<?php /* Same link order as includes/header.php. ui.css and the design system
+         were both missing here, so this screen rendered none of the redesign.
+         The design system loads LAST of the stylesheets so its scales win; the
+         Theme Engine block follows because it only emits the custom properties
+         the design system reads. */ ?>
+<link rel="stylesheet" href="<?= e(asset('css/ui.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset('css/design-system.css')) ?>">
+<?php echo function_exists('theme_style_tag') ? theme_style_tag('site') : ''; ?>
+<style>
+/* =========================================================================
+   Reset Password — page-scoped layer ON TOP of design-system.css.
+   ========================================================================= */
+
+/* premium.css now ramps the aside #0F4537 → #0B4E3D → #174D3D, all three in
+   palette, so this is no longer a colour correction — it is the brand rule that
+   a brand field is ONE flat colour, not a gradient (the same call .cta-band and
+   .page-hero make). Flat brand field; white ink is 9.67:1 on it. */
+.auth-aside{ background: var(--primary, #0B4E3D); }
+/* The decorative blobs inherited --grad-ocean / --grad-purple; the second ends
+   in #a855f7. Re-pointed onto the brand tokens. */
+.auth-aside .blob.b1{ background: color-mix(in srgb, #fff 22%, transparent); }
+.auth-aside .blob.b2{ background: color-mix(in srgb, var(--yellow, #FFE987) 42%, transparent); }
+.auth-aside .aside-points li svg{ background: rgba(255,255,255,.22); }
+
+/* ---------------------------------------------------------------- FORM */
+.auth-main{ padding: clamp(1.25rem, 4vw, 3rem) clamp(.85rem, 3vw, 1.5rem); }
+.auth-box{ max-width: 468px; }
+.auth-box .card{
+    position: relative; overflow: hidden;
+    padding: clamp(1.5rem, 3.4vw, 2.5rem);
+    border-radius: var(--r-xl); box-shadow: var(--elev-4);
+}
+.auth-box .card::before{
+    content: ""; position: absolute; inset: 0 0 auto; height: 5px;
+    background: var(--yellow, #FFE987);
+}
+.auth-box .card:hover{ transform: none; box-shadow: var(--elev-4); border-color: var(--border, #C1CCB3); }
+
+/* Success badge: flat highlight yellow with brand-green ink (7.95:1); it was
+   var(--grad-accent). The aside's own badge keeps its inline treatment. */
+.auth-box .icon-badge{
+    width: 64px; height: 64px; margin: 0 auto 1rem; border-radius: var(--r-md);
+    background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D); box-shadow: none;
+}
+.auth-box .icon-badge svg.lucide{ width: 28px; height: 28px; }
+/* Invalid-link state: the danger token (4.83:1 on white) instead of #ef4444,
+   which is 3.76:1 and was carrying a glyph. */
+.auth-box .icon-badge.is-danger{
+    background: color-mix(in srgb, var(--danger, #DC2626) 12%, transparent);
+    color: var(--danger, #DC2626); font-size: 1.8rem; font-weight: 800;
+}
+.auth-box .section-head{ margin-bottom: 1.4rem; }
+.auth-box .section-title{ font-size: clamp(1.55rem, 5.4vw, 1.95rem); line-height: 1.15; }
+.auth-box .section-subtitle{ font-size: .96rem; line-height: 1.6; }
+.auth-box .section-subtitle strong{ color: var(--text, #151818); }
+
+/* Fields: 16px text (smaller makes iOS zoom on focus) + token focus ring. */
+.field-float input{ font-size: 1rem; border-radius: var(--r-sm); }
+.field-float input:focus{
+    border-color: var(--primary, #0B4E3D);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #0B4E3D) 16%, transparent);
+}
+.field-float input:focus ~ label,
+.field-float input:not(:placeholder-shown) ~ label{ color: var(--primary, #0B4E3D); }
+
+/* Password show/hide: 20px mark inside a 44px touch target. */
+#password, #confirm_password{ padding-right: 3.25rem; }
+.field-float .toggle-pass{
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; min-width: 44px;
+    right: .35rem; top: 50%; transform: translateY(-50%);
+    border-radius: var(--r-sm); color: var(--muted, #4B6754);
+    transition: color var(--dur, .3s) var(--ease-out, ease),
+                background-color var(--dur, .3s) var(--ease-out, ease);
+}
+.field-float .toggle-pass:hover{
+    color: var(--primary, #0B4E3D);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 9%, transparent);
+}
+.field-float .toggle-pass svg.lucide{ width: 20px; height: 20px; }
+
+.pw-strength{ border-radius: var(--r-pill); }
+/* --warning resolves to the CTA orange (3.37:1 on white); --accent-ink is the
+   same orange one step deeper at 4.60:1, so the medium bar matches the label
+   colour used on the signup screen. */
+.pw-strength.medium span{ background: var(--accent-ink, #CA4C1E); }
+
+.auth-box a{ font-weight: 700; }
+.alert{ border-radius: var(--r-sm); }
+.auth-back{
+    display: inline-flex; align-items: center; gap: .4rem; min-height: 44px;
+    font-size: .9rem; font-weight: 600; color: var(--muted, #4B6754);
+}
+.auth-back:hover{ color: var(--primary, #0B4E3D); }
+.auth-back svg.lucide{ width: 15px; height: 15px; }
+
+@media (max-width: 540px){ .auth-box{ max-width: 100%; } }
+@media (max-width: 380px){
+    .auth-main{ padding: 1rem .7rem; }
+    .auth-box .card{ padding: 1.3rem 1.05rem; }
+}
+</style>
 </head>
 <body>
 <div class="auth-shell">
@@ -94,23 +196,19 @@ $tagline  = get_setting('site_tagline', SITE_TAGLINE);
                 <li><?= lucide('check') ?> Add a number and a symbol</li>
                 <li><?= lucide('check') ?> Avoid reusing an old password</li>
             </ul>
-            <div class="flex gap-4 mt-4">
-                <div>
-                    <div style="font-size:1.8rem;font-weight:800;line-height:1;"><span data-counter="25000">0</span>+</div>
-                    <small style="color:rgba(255,255,255,.85);">Lives impacted</small>
-                </div>
-                <div>
-                    <div style="font-size:1.8rem;font-weight:800;line-height:1;"><span data-counter="800">0</span>+</div>
-                    <small style="color:rgba(255,255,255,.85);">Volunteers</small>
-                </div>
-            </div>
+            <?php /* The "25,000+ lives impacted / 800+ volunteers" counters that
+                     sat here are removed: neither figure is sourced anywhere in
+                     the project, and an auth screen is the last place to assert
+                     an unverified number. forgot-password.php's aside was
+                     restored without them for the same reason, so the two
+                     screens match. */ ?>
         </div>
     </aside>
 
     <!-- ============================== RESET FORM ============================== -->
     <main class="auth-main">
         <div class="auth-box">
-            <div class="glass-card">
+            <div class="card">
 
                 <?php // Pending flashes (redirects that land on /reset-password). ?>
                 <?php foreach (get_flashes() as $fType => $fMsgs):
@@ -122,36 +220,38 @@ $tagline  = get_setting('site_tagline', SITE_TAGLINE);
                 <?php if ($success): ?>
                     <!-- ------------------------ SUCCESS STATE ------------------------ -->
                     <div class="text-center">
-                        <span class="icon-badge accent" style="width:64px;height:64px;font-size:1.8rem;margin:0 auto 1rem;"><?= lucide('check') ?></span>
-                        <h2 class="mb-1" style="font-size:1.9rem;">Password updated</h2>
-                        <p class="text-muted"><?= e($successMsg) ?></p>
-                        <a href="<?= e(url('login')) ?>" class="btn btn-3d btn-block btn-lg mt-3">Continue to Sign In</a>
+                        <div class="section-head is-centered">
+                            <span class="icon-badge"><?= lucide('check') ?></span>
+                            <h2 class="section-title">Password updated</h2>
+                            <p class="section-subtitle"><?= e($successMsg) ?></p>
+                        </div>
+                        <a href="<?= e(url('login')) ?>" class="btn btn-secondary btn-block btn-lg">Continue to Sign In</a>
                         <p class="text-center mt-3" style="margin-bottom:0;">
-                            <a href="<?= e(url('')) ?>" class="text-muted" style="font-size:.9rem;"><?= lucide('arrow-left') ?> Back to homepage</a>
+                            <a href="<?= e(url('')) ?>" class="auth-back"><?= lucide('arrow-left') ?> Back to homepage</a>
                         </p>
                     </div>
 
                 <?php elseif (!$linkOk): ?>
                     <!-- ------------------------ INVALID LINK STATE ------------------------ -->
-                    <div class="text-center mb-3">
-                        <span class="icon-badge" style="width:64px;height:64px;font-size:1.8rem;margin:0 auto 1rem;background:rgba(239,68,68,.12);color:#ef4444;">!</span>
-                        <h2 class="mb-1" style="font-size:1.9rem;">Link not valid</h2>
-                        <p class="text-muted">This password-reset link is missing or has expired. Please request a fresh link and try again.</p>
+                    <div class="section-head is-centered">
+                        <span class="icon-badge is-danger">!</span>
+                        <h2 class="section-title">Link not valid</h2>
+                        <p class="section-subtitle">This password-reset link is missing or has expired. Please request a fresh link and try again.</p>
                     </div>
                     <?php if ($error): ?>
                         <div class="alert alert-error"><?= e($error) ?></div>
                     <?php endif; ?>
-                    <a href="<?= e(url('forgot-password')) ?>" class="btn btn-3d btn-block btn-lg">Request a new link</a>
+                    <a href="<?= e(url('forgot-password')) ?>" class="btn btn-secondary btn-block btn-lg">Request a new link</a>
                     <p class="text-center mt-3" style="margin-bottom:0;">
-                        Remembered it? <a href="<?= e(url('login')) ?>" style="font-weight:700;">Sign in</a>
+                        Remembered it? <a class="link-underline" href="<?= e(url('login')) ?>">Sign in</a>
                     </p>
 
                 <?php else: ?>
                     <!-- ------------------------ RESET FORM ------------------------ -->
-                    <div class="text-center mb-3">
-                        <span class="eyebrow" style="justify-content:center;">Account Recovery</span>
-                        <h2 class="mb-0" style="font-size:1.9rem;">Reset Password</h2>
-                        <p class="text-muted mt-1" style="margin-bottom:0;">
+                    <div class="section-head is-centered">
+                        <span class="eyebrow">Account Recovery</span>
+                        <h2 class="section-title">Reset Password</h2>
+                        <p class="section-subtitle">
                             Create a new password for
                             <strong><?= e($email) ?></strong>.
                         </p>
@@ -182,18 +282,18 @@ $tagline  = get_setting('site_tagline', SITE_TAGLINE);
                             <label for="confirm_password">Confirm new password</label>
                         </div>
 
-                        <button class="btn btn-3d btn-block btn-lg mt-2" type="submit">Update Password</button>
+                        <button class="btn btn-secondary btn-block btn-lg mt-2" type="submit">Update Password</button>
                     </form>
 
                     <p class="text-center mt-3" style="margin-bottom:0;">
-                        Remembered it? <a href="<?= e(url('login')) ?>" style="font-weight:700;">Back to Sign In</a>
+                        Remembered it? <a class="link-underline" href="<?= e(url('login')) ?>">Back to Sign In</a>
                     </p>
                 <?php endif; ?>
             </div>
 
             <?php if (!$success): ?>
                 <p class="text-center mt-3">
-                    <a href="<?= e(url('')) ?>" class="text-muted" style="font-size:.9rem;"><?= lucide('arrow-left') ?> Back to homepage</a>
+                    <a href="<?= e(url('')) ?>" class="auth-back"><?= lucide('arrow-left') ?> Back to homepage</a>
                 </p>
             <?php endif; ?>
         </div>

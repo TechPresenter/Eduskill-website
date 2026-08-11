@@ -14,18 +14,18 @@
     opacity: .45; pointer-events: none; animation: ct-drift 16s ease-in-out infinite;
 }
 .ct-b1 { width: 400px; height: 400px; top: -150px; right: -110px;
-         background: radial-gradient(circle, color-mix(in srgb, var(--primary,#063566) 60%, transparent), transparent 70%); }
+         background: radial-gradient(circle, color-mix(in srgb, var(--primary,#0B4E3D) 60%, transparent), transparent 70%); }
 .ct-b2 { width: 320px; height: 320px; bottom: -130px; left: -90px; animation-delay: -6s;
-         background: radial-gradient(circle, color-mix(in srgb, var(--green,#58A42F) 55%, transparent), transparent 70%); }
+         background: radial-gradient(circle, color-mix(in srgb, var(--green,#2F8065) 55%, transparent), transparent 70%); }
 .ct-b3 { width: 380px; height: 380px; top: 10%; left: -140px; animation-delay: -3s;
-         background: radial-gradient(circle, color-mix(in srgb, var(--orange,#E67B1D) 45%, transparent), transparent 70%); }
+         background: radial-gradient(circle, color-mix(in srgb, var(--orange,#F15A24) 45%, transparent), transparent 70%); }
 @keyframes ct-drift { 0%, 100% { translate: 0 0; } 50% { translate: 26px -30px; } }
 
 /* ---- animated gradient headings with a growing underline ---- */
 .ct-methods .section-title, .ct-formsec .section-title {
     background: linear-gradient(100deg,
-        var(--primary,#063566), var(--secondary,#084881) 35%,
-        var(--green,#58A42F) 62%, var(--orange,#E67B1D) 88%, var(--primary,#063566));
+        var(--primary,#0B4E3D), var(--secondary,#174D3D) 35%,
+        var(--green,#2F8065) 62%, var(--orange,#F15A24) 88%, var(--primary,#0B4E3D));
     background-size: 250% 100%;
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent; color: transparent;
@@ -35,7 +35,7 @@
 .ct-methods .section-title::after, .ct-formsec .section-title::after {
     content: ""; position: absolute; bottom: 0; left: 50%; translate: -50% 0;
     height: 4px; width: 0; border-radius: 4px;
-    background: linear-gradient(90deg, var(--primary,#063566), var(--green,#58A42F), var(--orange,#E67B1D));
+    background: linear-gradient(90deg, var(--primary,#0B4E3D), var(--green,#2F8065), var(--orange,#F15A24));
     animation: ct-underline 1.1s cubic-bezier(.22,1,.36,1) .25s forwards;
 }
 .ct-formsec .section-title::after { left: 0; translate: 0 0; }
@@ -44,27 +44,27 @@
 
 /* ---- contact method cards ---- */
 .ct-card {
-    --ct-a: var(--primary, #063566);
-    --ct-b: var(--secondary, #084881);
+    --ct-a: var(--primary, #0B4E3D);
+    --ct-b: var(--secondary, #174D3D);
     position: relative; isolation: isolate; overflow: hidden;
     display: flex; flex-direction: column; align-items: center; text-align: center;
     padding: 1.75rem 1.25rem 1.4rem; border-radius: 20px;
     background: color-mix(in srgb, var(--surface, #fff) 82%, transparent);
     border: 1px solid var(--border, #E5E7EB);
     backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 1px 2px rgba(6,53,102,.05), 0 20px 44px -30px rgba(6,53,102,.45);
+    box-shadow: 0 1px 2px rgba(11,78,61,.05), 0 20px 44px -30px rgba(11,78,61,.45);
     transition: transform .32s cubic-bezier(.22,1,.36,1), box-shadow .32s ease, border-color .32s ease;
     animation: ct-float 7s ease-in-out infinite;
     animation-delay: calc(var(--ct-i, 0) * -1.3s);
 }
-.ct-card:nth-child(4n+1) { --ct-a:#063566; --ct-b:#0A5AA0; }
-.ct-card:nth-child(4n+2) { --ct-a:#58A42F; --ct-b:#308629; }
-.ct-card:nth-child(4n+3) { --ct-a:#E67B1D; --ct-b:#F59E0B; }
+.ct-card:nth-child(4n+1) { --ct-a:#0B4E3D; --ct-b:#0A5AA0; }
+.ct-card:nth-child(4n+2) { --ct-a:#2F8065; --ct-b:#1F5C48; }
+.ct-card:nth-child(4n+3) { --ct-a:#F15A24; --ct-b:#E8C52E; }
 .ct-card:nth-child(4n+4) { --ct-a:#7C3AED; --ct-b:#5B21B6; }
 .ct-card:hover, .ct-card:focus-within {
     transform: translateY(-9px);
     border-color: color-mix(in srgb, var(--ct-a) 50%, transparent);
-    box-shadow: 0 1px 2px rgba(6,53,102,.06),
+    box-shadow: 0 1px 2px rgba(11,78,61,.06),
                 0 30px 60px -26px color-mix(in srgb, var(--ct-a) 60%, transparent);
 }
 .ct-card-glow {
@@ -87,7 +87,7 @@
     transform: translateY(-4px) rotate(-7deg) scale(1.1);
     box-shadow: 0 20px 36px -12px color-mix(in srgb, var(--ct-a) 90%, transparent);
 }
-.ct-card-title { font-size: 1.02rem; font-weight: 800; color: var(--primary, #063566); margin: 0 0 .35rem; }
+.ct-card-title { font-size: 1.02rem; font-weight: 800; color: var(--primary, #0B4E3D); margin: 0 0 .35rem; }
 .ct-card:hover .ct-card-title { color: var(--ct-a); }
 .ct-card-text {
     font-size: .87rem; color: var(--muted, #6B7280); line-height: 1.55;
@@ -103,14 +103,14 @@
     background: color-mix(in srgb, var(--surface, #fff) 86%, transparent);
     border: 1px solid var(--border, #E5E7EB);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 1px 2px rgba(6,53,102,.05), 0 26px 56px -34px rgba(6,53,102,.5);
+    box-shadow: 0 1px 2px rgba(11,78,61,.05), 0 26px 56px -34px rgba(11,78,61,.5);
 }
 /* animated gradient border ring */
 .ct-formsec form::before {
     content: ""; position: absolute; inset: -1px; z-index: -1;
     border-radius: inherit; padding: 1px;
     background: linear-gradient(130deg,
-        var(--primary,#063566), var(--green,#58A42F), var(--orange,#E67B1D), var(--secondary,#084881));
+        var(--primary,#0B4E3D), var(--green,#2F8065), var(--orange,#F15A24), var(--secondary,#174D3D));
     background-size: 300% 300%;
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor; mask-composite: exclude;
@@ -124,9 +124,9 @@
     transition: border-color .22s ease, box-shadow .22s ease, transform .22s ease;
 }
 .ct-formsec .form-control:focus, .ct-formsec .form-select:focus, .ct-formsec .form-textarea:focus {
-    border-color: var(--secondary, #084881);
+    border-color: var(--secondary, #174D3D);
     box-shadow: 0 0 0 4px var(--ring),
-                0 0 22px -4px color-mix(in srgb, var(--secondary,#084881) 55%, transparent);
+                0 0 22px -4px color-mix(in srgb, var(--secondary,#174D3D) 55%, transparent);
     transform: translateY(-1px);
 }
 /* validation feedback */
@@ -134,19 +134,19 @@
     border-color: var(--danger, #DC2626) !important;
     box-shadow: 0 0 0 4px rgba(220,38,38,.14);
 }
-.ct-formsec .is-valid { border-color: var(--green, #58A42F) !important; }
+.ct-formsec .is-valid { border-color: var(--green, #2F8065) !important; }
 
 /* premium submit button — gradient sweep, glow, ripple, loading */
 .ct-formsec button[type="submit"] {
     position: relative; overflow: hidden; border: 0; color: #fff;
-    background: linear-gradient(120deg, var(--primary,#063566), var(--secondary,#084881) 55%, var(--green,#58A42F));
+    background: linear-gradient(120deg, var(--primary,#0B4E3D), var(--secondary,#174D3D) 55%, var(--green,#2F8065));
     background-size: 200% 100%;
-    box-shadow: 0 12px 26px -10px rgba(6,53,102,.65);
+    box-shadow: 0 12px 26px -10px rgba(11,78,61,.65);
     transition: background-position .5s ease, transform .22s ease, box-shadow .28s ease;
 }
 .ct-formsec button[type="submit"]:hover {
     background-position: 100% 0; transform: translateY(-3px);
-    box-shadow: 0 20px 40px -12px rgba(6,53,102,.75);
+    box-shadow: 0 20px 40px -12px rgba(11,78,61,.75);
 }
 .ct-formsec button[type="submit"]::after {
     content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity .3s ease;
@@ -157,12 +157,12 @@
 /* ---- map ---- */
 .map-embed {
     border-radius: 22px; overflow: hidden; border: 1px solid var(--border, #E5E7EB);
-    box-shadow: 0 1px 2px rgba(6,53,102,.05), 0 24px 52px -30px rgba(6,53,102,.5);
+    box-shadow: 0 1px 2px rgba(11,78,61,.05), 0 24px 52px -30px rgba(11,78,61,.5);
     transition: transform .35s ease, box-shadow .35s ease;
 }
 .map-embed:hover {
     transform: translateY(-4px);
-    box-shadow: 0 30px 64px -28px color-mix(in srgb, var(--primary,#063566) 55%, transparent);
+    box-shadow: 0 30px 64px -28px color-mix(in srgb, var(--primary,#0B4E3D) 55%, transparent);
 }
 .map-embed iframe { display: block; width: 100%; min-height: 320px; border: 0; }
 

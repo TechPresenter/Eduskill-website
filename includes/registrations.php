@@ -120,13 +120,13 @@ function render_registrations_grid(bool $withHeading = true): void
     <style>
     .reg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1.4rem}
     .reg-card{position:relative;background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:18px;padding:1.6rem;
-        box-shadow:0 1px 2px rgba(6,53,102,.04),0 18px 40px -30px rgba(6,53,102,.45);overflow:hidden;
+        box-shadow:0 1px 2px rgba(11,78,61,.04),0 18px 40px -30px rgba(11,78,61,.45);overflow:hidden;
         transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
-    .reg-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--rc,#063566)}
-    .reg-card:hover{transform:translateY(-5px);box-shadow:0 1px 2px rgba(6,53,102,.05),0 28px 56px -28px rgba(6,53,102,.55);border-color:var(--rc,#063566)}
-    .reg-blue{--rc:#063566;--rcs:rgba(6,53,102,.12)}
-    .reg-violet{--rc:#084881;--rcs:rgba(8,72,129,.12)}
-    .reg-green{--rc:#308629;--rcs:rgba(48,134,41,.12)}
+    .reg-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--rc,#0B4E3D)}
+    .reg-card:hover{transform:translateY(-5px);box-shadow:0 1px 2px rgba(11,78,61,.05),0 28px 56px -28px rgba(11,78,61,.55);border-color:var(--rc,#0B4E3D)}
+    .reg-blue{--rc:#0B4E3D;--rcs:rgba(11,78,61,.12)}
+    .reg-violet{--rc:#174D3D;--rcs:rgba(23,77,61,.12)}
+    .reg-green{--rc:#1F5C48;--rcs:rgba(31,92,72,.12)}
     .reg-card-top{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:1rem}
     .reg-ico{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:var(--rcs);color:var(--rc)}
     .reg-ico svg{width:25px;height:25px}
@@ -137,11 +137,11 @@ function render_registrations_grid(bool $withHeading = true): void
     .reg-lead{font-size:.88rem;color:var(--muted,#64748b);line-height:1.6;margin:0 0 1rem}
     .reg-facts{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
     .reg-facts li{display:flex;align-items:flex-start;gap:.55rem;font-size:.9rem;font-weight:600;color:var(--text-soft,#334155);line-height:1.45}
-    .reg-tick{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--rc,#063566);color:#fff;margin-top:1px}
+    .reg-tick{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--rc,#0B4E3D);color:#fff;margin-top:1px}
     .reg-tick svg{width:12px;height:12px;stroke-width:3.5}
     .reg-office{display:flex;gap:1rem;align-items:flex-start;margin-top:1.5rem;padding:1.2rem 1.4rem;border-radius:16px;
         background:var(--surface-2,#f8fafc);border:1px solid var(--border,#e2e8f0)}
-    .reg-office-ico{flex:0 0 auto;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgba(6,53,102,.12);color:#063566}
+    .reg-office-ico{flex:0 0 auto;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgba(11,78,61,.12);color:#0B4E3D}
     .reg-office strong{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted,#64748b);margin-bottom:.2rem}
     .reg-office p{margin:0;font-weight:650;color:var(--text,#0f172a);line-height:1.55}
     @media (max-width:640px){.reg-card{padding:1.3rem}.reg-card-top{flex-direction:column;align-items:flex-start}}
@@ -169,7 +169,7 @@ function render_registration_strip(): void
     .footer-gov{margin-top:1.4rem;padding:1.1rem 1.3rem;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
         display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem}
     .fg-head{display:flex;align-items:center;gap:.8rem}
-    .fg-ico{flex:0 0 auto;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(88,164,47,.18);color:#7BC94F}
+    .fg-ico{flex:0 0 auto;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(47,128,101,.18);color:#4CA383}
     .fg-ico svg{width:21px;height:21px}
     .fg-head strong{display:block;font-size:.95rem;font-weight:800;line-height:1.3}
     .fg-head span{font-size:.8rem;opacity:.82;line-height:1.5}

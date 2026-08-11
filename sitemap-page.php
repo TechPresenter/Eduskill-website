@@ -333,10 +333,10 @@ include __DIR__ . '/includes/header.php';
     color: var(--text, inherit); font-weight: 600; text-decoration: none;
     transition: background .2s ease, transform .2s ease, color .2s ease;
 }
-.sitemap-list a:hover { background: rgba(6,53,102, .09); transform: translateX(4px); color: var(--brand-600); }
+.sitemap-list a:hover { background: rgba(11,78,61, .09); transform: translateX(4px); color: var(--brand-600); }
 :root[data-theme="dark"] .sitemap-list a:hover { background: rgba(96, 165, 250, .14); }
 .sitemap-list-plain a { padding: .6rem .5rem; border-bottom: 1px solid var(--border, rgba(0,0,0,.08)); border-radius: 0; }
-.sitemap-list-plain a:hover { transform: none; background: rgba(6,53,102, .06); }
+.sitemap-list-plain a:hover { transform: none; background: rgba(11,78,61, .06); }
 </style>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

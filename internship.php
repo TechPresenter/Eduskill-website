@@ -58,11 +58,11 @@ $programs = db_all(
 );
 if (!$programs) {
     $programs = [
-        ['title' => 'Education & Teaching',        'icon' => 'book',          'short_description' => 'Support classes, learning kits and scholarship drives for underprivileged children.', 'color' => '#063566'],
-        ['title' => 'Healthcare & Camps',          'icon' => 'stethoscope',   'short_description' => 'Help organise medical camps, health awareness and community wellbeing drives.',        'color' => '#084881'],
-        ['title' => 'Women Empowerment',           'icon' => 'user',          'short_description' => 'Assist skill training, self-help groups and livelihood programmes for women.',         'color' => '#E67B1D'],
+        ['title' => 'Education & Teaching',        'icon' => 'book',          'short_description' => 'Support classes, learning kits and scholarship drives for underprivileged children.', 'color' => '#0B4E3D'],
+        ['title' => 'Healthcare & Camps',          'icon' => 'stethoscope',   'short_description' => 'Help organise medical camps, health awareness and community wellbeing drives.',        'color' => '#174D3D'],
+        ['title' => 'Women Empowerment',           'icon' => 'user',          'short_description' => 'Assist skill training, self-help groups and livelihood programmes for women.',         'color' => '#F15A24'],
         ['title' => 'Communications & Content',    'icon' => 'pen-line',      'short_description' => 'Create stories, social media, photography and reports that amplify our impact.',       'color' => '#8b5cf6'],
-        ['title' => 'Research & Documentation',    'icon' => 'search',        'short_description' => 'Field surveys, impact assessment and data that sharpen our programmes.',              'color' => '#58A42F'],
+        ['title' => 'Research & Documentation',    'icon' => 'search',        'short_description' => 'Field surveys, impact assessment and data that sharpen our programmes.',              'color' => '#2F8065'],
         ['title' => 'Fundraising & Events',        'icon' => 'party-popper',  'short_description' => 'Plan campaigns, donor outreach and events that fuel the mission.',                    'color' => '#dc2626'],
     ];
 }
@@ -83,10 +83,10 @@ $interestOptions[] = 'Other';
 
 /* ---- How it works (application steps) ---------------------------------- */
 $steps = $list_setting('internship_process', [
-    ['title' => 'Apply Online',       'text' => 'Fill in the application form below and attach your résumé. It takes just a few minutes.',              'color' => '#063566'],
-    ['title' => 'Screening Call',     'text' => 'Shortlisted candidates have a short conversation with our team to match interests and availability.', 'color' => '#084881'],
-    ['title' => 'Onboarding',         'text' => 'Join an orientation, meet your mentor and get set up with your project and goals.',                    'color' => '#E67B1D'],
-    ['title' => 'Learn & Contribute', 'text' => 'Work on real assignments, submit your report and receive your certificate on completion.',             'color' => '#58A42F'],
+    ['title' => 'Apply Online',       'text' => 'Fill in the application form below and attach your résumé. It takes just a few minutes.',              'color' => '#0B4E3D'],
+    ['title' => 'Screening Call',     'text' => 'Shortlisted candidates have a short conversation with our team to match interests and availability.', 'color' => '#174D3D'],
+    ['title' => 'Onboarding',         'text' => 'Join an orientation, meet your mentor and get set up with your project and goals.',                    'color' => '#F15A24'],
+    ['title' => 'Learn & Contribute', 'text' => 'Work on real assignments, submit your report and receive your certificate on completion.',             'color' => '#2F8065'],
 ]);
 
 /* ---- Impact counters --------------------------------------------------- */
@@ -180,9 +180,9 @@ include __DIR__ . '/includes/header.php';
         <div class="perk-grid">
             <?php
             $perkGrads = [
-                'linear-gradient(135deg,#063566,#084881)',
-                'linear-gradient(135deg,#084881,#22c197)',
-                'linear-gradient(135deg,#308629,#4ca832)',
+                'linear-gradient(135deg,#0B4E3D,#174D3D)',
+                'linear-gradient(135deg,#174D3D,#22c197)',
+                'linear-gradient(135deg,#1F5C48,#4ca832)',
                 'linear-gradient(135deg,#c99416,#f4cd6a)',
             ];
             foreach ($perks as $i => $perk): ?>
@@ -200,11 +200,11 @@ include __DIR__ . '/includes/header.php';
 /* Internship perks — premium green cards */
 .perks-section .perk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
 .perk-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2rem 1.5rem 1.75rem; overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s, border-color .35s; }
-.perk-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg,#063566,#084881,#E67B1D); transform: scaleX(0); transform-origin: left; transition: transform .45s cubic-bezier(.16,1,.3,1); }
+.perk-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg,#0B4E3D,#174D3D,#F15A24); transform: scaleX(0); transform-origin: left; transition: transform .45s cubic-bezier(.16,1,.3,1); }
 .perk-card:hover { transform: translateY(-8px); box-shadow: 0 26px 50px -20px rgba(6,78,59,.38); border-color: transparent; }
 .perk-card:hover::before { transform: scaleX(1); }
-.perk-num { position: absolute; top: 1rem; right: 1.3rem; font-family: var(--font-display,'Outfit'); font-size: 2.4rem; font-weight: 800; line-height: 1; color: rgba(6,53,102,.08); }
-.perk-icon { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; color: #fff; margin-bottom: 1.15rem; box-shadow: 0 12px 24px rgba(8,72,129,.28); transition: transform .35s cubic-bezier(.16,1,.3,1); }
+.perk-num { position: absolute; top: 1rem; right: 1.3rem; font-family: var(--font-display,'Outfit'); font-size: 2.4rem; font-weight: 800; line-height: 1; color: rgba(11,78,61,.08); }
+.perk-icon { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; color: #fff; margin-bottom: 1.15rem; box-shadow: 0 12px 24px rgba(23,77,61,.28); transition: transform .35s cubic-bezier(.16,1,.3,1); }
 .perk-icon svg.lucide { width: 26px; height: 26px; }
 .perk-card:hover .perk-icon { transform: scale(1.08) rotate(-6deg); }
 .perk-title { font-size: 1.12rem; margin: 0 0 .5rem; }
@@ -252,7 +252,7 @@ include __DIR__ . '/includes/header.php';
         <div class="grid grid-3">
             <?php foreach ($programs as $i => $pr): ?>
                 <div class="card-3d reveal <?= 'delay-' . (($i % 3) + 1) ?>">
-                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($pr['color'] ?: '#063566') ?>,#084881);"><?= lucide($pr['icon'] ?: 'star') ?></div>
+                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($pr['color'] ?: '#0B4E3D') ?>,#174D3D);"><?= lucide($pr['icon'] ?: 'star') ?></div>
                     <h3 class="card-title"><?= e($pr['title']) ?></h3>
                     <p class="card-text"><?= e(excerpt($pr['short_description'] ?? '', 22)) ?></p>
                 </div>
@@ -272,7 +272,7 @@ include __DIR__ . '/includes/header.php';
         <div class="grid grid-4">
             <?php foreach ($steps as $i => $step): $num = $i + 1; ?>
                 <div class="card-3d reveal <?= 'delay-' . (($i % 4) + 1) ?>">
-                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($step['color'] ?? '#063566') ?>,#084881);font-weight:800;"><?= e(str_pad((string) $num, 2, '0', STR_PAD_LEFT)) ?></div>
+                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($step['color'] ?? '#0B4E3D') ?>,#174D3D);font-weight:800;"><?= e(str_pad((string) $num, 2, '0', STR_PAD_LEFT)) ?></div>
                     <h3 class="card-title"><?= e($step['title'] ?? '') ?></h3>
                     <p class="card-text"><?= e($step['text'] ?? '') ?></p>
                 </div>

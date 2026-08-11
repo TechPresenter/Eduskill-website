@@ -87,12 +87,12 @@ include __DIR__ . '/includes/header.php';
 
 /* ---- Unique hero treatment ---- */
 .page-hero {
-    background: linear-gradient(130deg, #0f4429 0%, #063566 46%, #0d8f82 118%);
+    background: linear-gradient(130deg, #0f4429 0%, #0B4E3D 46%, #0d8f82 118%);
 }
 .page-hero::before {
     content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
     background:
-        radial-gradient(440px circle at 14% 130%, rgba(230,123,29,.24), transparent 62%),
+        radial-gradient(440px circle at 14% 130%, rgba(241,90,36,.24), transparent 62%),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='42'%3E%3Ccircle cx='2' cy='2' r='1.4' fill='%23ffffff' fill-opacity='0.09'/%3E%3C/svg%3E");
     background-size: auto, 42px 42px;
 }
@@ -105,16 +105,16 @@ include __DIR__ . '/includes/header.php';
 .lt-herometa-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
     background: var(--surface, #fff);
-    border: 1px solid var(--border, rgba(6,53,102,.08));
+    border: 1px solid var(--border, rgba(11,78,61,.08));
     border-radius: 20px; padding: 1.4rem 1.6rem;
     box-shadow: 0 24px 60px -28px rgba(15,63,42,.4), 0 4px 14px rgba(15,63,42,.08);
 }
 :root[data-theme="dark"] .lt-herometa-grid { background: rgba(20,30,54,.85); }
 .lt-meta { display: flex; align-items: center; gap: .9rem; }
-.lt-meta + .lt-meta { border-left: 1px solid var(--border, rgba(6,53,102,.09)); padding-left: 1.2rem; }
+.lt-meta + .lt-meta { border-left: 1px solid var(--border, rgba(11,78,61,.09)); padding-left: 1.2rem; }
 .lt-meta-ico {
     width: 46px; height: 46px; flex: none; border-radius: 13px; display: grid; place-items: center;
-    color: #fff; background: linear-gradient(135deg, #063566, #084881); box-shadow: 0 10px 22px -8px rgba(8,72,129,.55);
+    color: #fff; background: linear-gradient(135deg, #0B4E3D, #174D3D); box-shadow: 0 10px 22px -8px rgba(23,77,61,.55);
 }
 .lt-meta-ico svg.lucide { width: 22px; height: 22px; }
 .lt-meta strong { display: block; font-size: .98rem; line-height: 1.2; color: var(--text, #0f172a); }
@@ -124,11 +124,11 @@ include __DIR__ . '/includes/header.php';
 .lt-page .section-head { max-width: 760px; }
 .lt-page .section-head::after {
     content: ""; display: block; width: 62px; height: 4px; border-radius: 999px;
-    margin: 1.1rem auto 0; background: linear-gradient(90deg, #063566, #084881 55%, #E67B1D);
+    margin: 1.1rem auto 0; background: linear-gradient(90deg, #0B4E3D, #174D3D 55%, #F15A24);
 }
 .lt-page .section-head.left { max-width: none; }
 .lt-page .section-head.left::after { margin-left: 0; }
-.lt-page .section-brand .section-head::after { background: linear-gradient(90deg, #E67B1D, #bfdbfe); }
+.lt-page .section-brand .section-head::after { background: linear-gradient(90deg, #F15A24, #bfdbfe); }
 .lt-page .eyebrow { letter-spacing: .14em; }
 
 /* ---- Governance intro card ---- */
@@ -137,7 +137,7 @@ include __DIR__ . '/includes/header.php';
 
 /* ---- Leadership (Board) cards ---- */
 .lt-page .lead-card {
-    border-radius: 20px; border: 1px solid var(--border, rgba(6,53,102,.08));
+    border-radius: 20px; border: 1px solid var(--border, rgba(11,78,61,.08));
     box-shadow: 0 18px 44px -26px rgba(15,63,42,.4);
     transition: transform .35s cubic-bezier(.2,.7,.3,1), box-shadow .35s;
 }
@@ -152,7 +152,7 @@ include __DIR__ . '/includes/header.php';
 .lt-page .lead-card .badge { z-index: 2; box-shadow: 0 6px 16px rgba(0,0,0,.22); }
 .lt-page .lead-role {
     display: inline-flex; align-items: center; gap: .4rem;
-    color: var(--brand-600, #063566); font-weight: 700; margin: .35rem 0 .55rem;
+    color: var(--brand-600, #0B4E3D); font-weight: 700; margin: .35rem 0 .55rem;
 }
 .lt-page .lead-role svg.lucide { width: 16px; height: 16px; }
 .lt-page .lead-card .social-links a svg.lucide { width: 18px; height: 18px; }
@@ -192,7 +192,7 @@ include __DIR__ . '/includes/header.php';
 /* ---- Responsive ---- */
 @media (max-width: 860px) {
     .lt-herometa-grid { grid-template-columns: 1fr; gap: .4rem; padding: 1.2rem 1.25rem; }
-    .lt-meta + .lt-meta { border-left: 0; border-top: 1px solid var(--border, rgba(6,53,102,.09)); padding-left: 0; padding-top: .9rem; margin-top: .1rem; }
+    .lt-meta + .lt-meta { border-left: 0; border-top: 1px solid var(--border, rgba(11,78,61,.09)); padding-left: 0; padding-top: .9rem; margin-top: .1rem; }
 }
 @media (max-width: 640px) {
     .lt-herometa { margin-top: -1.6rem; }
@@ -310,7 +310,7 @@ include __DIR__ . '/includes/header.php';
                             <?php foreach ($socials as $platform => $link): ?>
                                 <?php if (empty($link) || !is_string($link)) { continue; } ?>
                                 <a href="<?= e($link) ?>" target="_blank" rel="noopener"
-                                   aria-label="<?= e($m['name'] . ' on ' . (string) $platform) ?>"><?= social_fa((string) $platform) ?></a>
+                                   aria-label="<?= e($m['name'] . ' on ' . (string) $platform) ?>"><?= social_svg((string) $platform) ?></a>
                             <?php endforeach; ?>
                         </div>
                         <?php endif; ?>

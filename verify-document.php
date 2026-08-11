@@ -69,8 +69,8 @@ include __DIR__ . '/includes/header.php';
             <?php elseif ($issued && $issued['status'] === 'issued'):
                 $data = json_decode((string) $issued['data'], true) ?: [];
             ?>
-                <div class="card-3d reveal" style="padding:0;overflow:hidden;border:1px solid rgba(88,164,47,.35);">
-                    <div style="background:linear-gradient(135deg,#308629,#58A42F);color:#fff;padding:1.6rem 1.8rem;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;">
+                <div class="card-3d reveal" style="padding:0;overflow:hidden;border:1px solid rgba(47,128,101,.35);">
+                    <div style="background:linear-gradient(135deg,#1F5C48,#2F8065);color:#fff;padding:1.6rem 1.8rem;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;">
                         <div class="icon-badge" style="background:rgba(255,255,255,.22);font-size:1.9rem;flex:0 0 auto;box-shadow:none;"><?= lucide('check') ?></div>
                         <div style="flex:1 1 240px;">
                             <span class="badge" style="background:rgba(255,255,255,.22);color:#fff;">Verified Document</span>

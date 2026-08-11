@@ -245,7 +245,7 @@ include __DIR__ . '/partials/head.php';
                         </td>
                         <td style="min-width:180px;">
                             <div class="progress" style="height:8px;background:var(--surface-2,#e5e7eb);border-radius:999px;overflow:hidden;">
-                                <div class="progress-bar" style="width:<?= (int) $pct ?>%;height:100%;background:#58A42F;"></div>
+                                <div class="progress-bar" style="width:<?= (int) $pct ?>%;height:100%;background:#2F8065;"></div>
                             </div>
                             <small class="text-muted"><?= e(money($raised)) ?> / <?= e(money($goal)) ?> (<?= (int) $pct ?>%)</small>
                         </td>

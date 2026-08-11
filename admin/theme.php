@@ -116,11 +116,11 @@ $field = function (string $token, array $m) use ($vals, $fontChoices): void {
     $id  = 'tk_' . str_replace('.', '__', $token);
     $val = (string) ($vals[$token] ?? '');
     echo '<div class="tf" data-search="' . e(strtolower($m['label'] . ' ' . $token)) . '">';
-    echo '<label class="tf-label" for="' . e($id) . '">' . e($m['label']) . '</label>';
+    echo '<label class="form-label" for="' . e($id) . '">' . e($m['label']) . '</label>';
     switch ($m['type']) {
         case 'color':
             echo '<div class="tf-color"><input type="color" id="' . e($id) . '" name="' . e($id) . '" value="' . e($val ?: '#000000') . '">'
-               . '<input class="tf-hex" type="text" value="' . e(strtoupper($val)) . '" data-hex-for="' . e($id) . '" spellcheck="false"></div>';
+               . '<input class="form-control tf-hex" type="text" value="' . e(strtoupper($val)) . '" data-hex-for="' . e($id) . '" spellcheck="false"></div>';
             break;
         case 'font':
             echo '<select class="form-select" id="' . e($id) . '" name="' . e($id) . '">';
@@ -142,7 +142,7 @@ $field = function (string $token, array $m) use ($vals, $fontChoices): void {
             break;
         case 'number':
             echo '<div class="tf-range"><input type="range" min="' . e((string) ($m['min'] ?? 0)) . '" max="' . e((string) ($m['max'] ?? 100)) . '" step="' . e((string) ($m['step'] ?? 1)) . '" value="' . e($val) . '" data-range-for="' . e($id) . '">'
-               . '<input class="tf-num" type="number" id="' . e($id) . '" name="' . e($id) . '" value="' . e($val) . '" min="' . e((string) ($m['min'] ?? 0)) . '" max="' . e((string) ($m['max'] ?? 100)) . '" step="' . e((string) ($m['step'] ?? 1)) . '">'
+               . '<input class="form-control tf-num" type="number" id="' . e($id) . '" name="' . e($id) . '" value="' . e($val) . '" min="' . e((string) ($m['min'] ?? 0)) . '" max="' . e((string) ($m['max'] ?? 100)) . '" step="' . e((string) ($m['step'] ?? 1)) . '">'
                . '<span class="tf-unit">' . e((string) ($m['unit'] ?? '')) . '</span></div>';
             break;
         case 'image':
@@ -159,74 +159,96 @@ $field = function (string $token, array $m) use ($vals, $fontChoices): void {
         default:
             echo '<input class="form-control" type="text" id="' . e($id) . '" name="' . e($id) . '" value="' . e($val) . '">';
     }
-    if (!empty($m['hint'])) { echo '<span class="tf-hint">' . e($m['hint']) . '</span>'; }
+    if (!empty($m['hint'])) { echo '<span class="form-hint">' . e($m['hint']) . '</span>'; }
     echo '</div>';
 };
 
 include __DIR__ . '/partials/head.php';
 ?>
 <style>
+/* Theme console layout. Panels, buttons, pills, form controls and tables come
+   from the shared admin layers; what stays here is the three-column shell, the
+   token-editor grid, and the swatch / contrast previews (which legitimately
+   need inline colour, because they PREVIEW the value being edited). */
 .th-wrap{max-width:1500px}
-.th-bar{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:.9rem 1.15rem;border-radius:16px;margin-bottom:1.2rem;
-    background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-sm);position:sticky;top:74px;z-index:30}
-.th-bar h1{margin:0;font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:.5rem}
-.th-bar h1 svg{color:var(--brand-600)}
-.th-draft{display:inline-flex;align-items:center;gap:.35rem;padding:.28rem .7rem;border-radius:999px;font-size:.74rem;font-weight:800;
-    background:rgba(230,123,29,.14);color:#9A5313}
-.th-actions{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
-.th-grid{display:grid;grid-template-columns:212px 1fr 400px;gap:1.2rem;align-items:start}
-.th-rail{position:sticky;top:150px;display:flex;flex-direction:column;gap:.2rem;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:.5rem}
-.th-rail a{display:flex;align-items:center;gap:.55rem;padding:.55rem .7rem;border-radius:10px;color:var(--text-soft);font-size:.88rem;font-weight:650;text-decoration:none;transition:.15s}
+.th-bar{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-5);
+    border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--border);box-shadow:var(--elev-1);position:sticky;top:74px;z-index:30}
+.th-bar h1{margin:0;font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:var(--sp-2)}
+.th-bar h1 svg{color:var(--brand-600,#0B4E3D)}
+.th-actions{margin-left:auto;display:flex;gap:var(--sp-2);flex-wrap:wrap}
+.th-grid{display:grid;grid-template-columns:212px 1fr 400px;gap:var(--sp-5);align-items:start}
+
+/* Section rail */
+.th-rail{position:sticky;top:150px;display:flex;flex-direction:column;gap:2px;padding:var(--sp-2);
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg)}
+.th-rail a{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-3);border-radius:var(--r-sm);
+    color:var(--text-soft);font-size:.88rem;font-weight:650;text-decoration:none;
+    transition:background-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)}
 .th-rail a:hover{background:var(--surface-2);color:var(--text)}
-.th-rail a.on{background:var(--grad-brand);color:#fff;box-shadow:0 8px 18px -10px rgba(6,53,102,.7)}
+.th-rail a.on{background:var(--brand-600,#0B4E3D);color:#fff;box-shadow:var(--elev-1)}
 .th-rail a svg{width:1.05em;height:1.05em}
-.th-search input{width:100%;border:1px solid var(--border);border-radius:10px;padding:.5rem .7rem;font:inherit;font-size:.85rem;background:var(--surface-2);color:var(--text);margin-bottom:.4rem}
-.th-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.4rem;box-shadow:var(--shadow-sm)}
-.th-panel h2{font-size:1.05rem;font-weight:800;margin:0 0 .3rem;display:flex;align-items:center;gap:.5rem}
-.th-panel h2 svg{color:var(--brand-600)}
-.th-panel .sub{color:var(--muted);font-size:.86rem;margin:0 0 1.2rem}
-.tf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem 1.2rem}
-.tf{display:flex;flex-direction:column;gap:.35rem}
-.tf-label{font-size:.82rem;font-weight:650;color:var(--text-soft)}
-.tf-hint{font-size:.74rem;color:var(--muted)}
-.tf-color{display:flex;gap:.5rem;align-items:center}
-.tf-color input[type=color]{width:46px;height:38px;border:1px solid var(--border);border-radius:9px;padding:2px;background:var(--surface);cursor:pointer}
-.tf-hex{flex:1;min-width:0;border:1px solid var(--border);border-radius:9px;padding:.5rem .6rem;font-family:ui-monospace,monospace;font-size:.82rem;background:var(--surface);color:var(--text);text-transform:uppercase}
-.tf-range{display:flex;align-items:center;gap:.5rem}
-.tf-range input[type=range]{flex:1;accent-color:var(--brand-600)}
-.tf-num{width:74px;border:1px solid var(--border);border-radius:9px;padding:.45rem .5rem;font:inherit;font-size:.82rem;background:var(--surface);color:var(--text)}
+.th-search{margin-bottom:var(--sp-1)}
+.th-search .form-control{font-size:.85rem;padding:var(--sp-2) var(--sp-3);background:var(--surface-2)}
+
+/* Token editor */
+.th-sub{color:var(--muted);font-size:.86rem;margin:var(--sp-1) 0 var(--sp-5)}
+.th-stack{margin-top:var(--sp-5)}
+.th-inline-input{max-width:260px}
+.th-bare-actions{margin:0 0 var(--sp-4);padding:0;border:0}
+.tf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:var(--sp-4) var(--sp-5)}
+.tf{display:flex;flex-direction:column;gap:var(--sp-1)}
+.tf > .form-label{margin-bottom:0;font-size:.82rem}
+.tf > .form-hint{margin-top:0;font-size:.74rem}
+.tf-color{display:flex;gap:var(--sp-2);align-items:center}
+/* The colour input and its hex field ARE the preview of the token value. */
+.tf-color input[type=color]{width:46px;height:38px;border:1px solid var(--border);border-radius:var(--r-sm);padding:2px;background:var(--surface);cursor:pointer}
+.tf-color .tf-hex{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem;text-transform:uppercase;padding:var(--sp-2) var(--sp-3)}
+.tf-range{display:flex;align-items:center;gap:var(--sp-2)}
+.tf-range input[type=range]{flex:1;accent-color:var(--brand-600,#0B4E3D)}
+/* qualified so it beats the shared `.admin-content .form-control{width:100%}` */
+.tf-range .tf-num{width:74px;flex:0 0 auto;font-size:.82rem;padding:var(--sp-1) var(--sp-2)}
 .tf-unit{font-size:.75rem;color:var(--muted);min-width:24px}
-.tf-img img{max-height:54px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);padding:4px;margin-bottom:.35rem;display:block}
+.tf-img img{display:block;max-height:54px;padding:var(--sp-1);margin-bottom:var(--sp-1);
+    border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface-2)}
 .tf-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}
 .tf-switch{padding:0;border:0;background:transparent;display:inline-flex;width:max-content}
+
+/* Live preview */
 .th-prev{position:sticky;top:150px}
-.th-prev-head{display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem}
-.th-prev-head strong{font-size:.85rem;margin-right:auto;display:inline-flex;align-items:center;gap:.35rem}
-.th-dev{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:.3rem .5rem;cursor:pointer;color:var(--muted);display:inline-flex}
-.th-dev.on{background:var(--grad-brand);color:#fff;border-color:transparent}
+.th-prev-head{display:flex;align-items:center;gap:var(--sp-1);margin-bottom:var(--sp-2)}
+.th-prev-head strong{font-size:.85rem;margin-right:auto;display:inline-flex;align-items:center;gap:var(--sp-1)}
+.th-dev{width:32px;height:32px}
+.th-dev.on{background:var(--brand-600,#0B4E3D);color:#fff;border-color:transparent}
 .th-dev svg{width:15px;height:15px}
-.th-frame{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow);transition:max-width .3s ease;margin-inline:auto}
+.th-frame{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:var(--surface);
+    box-shadow:var(--elev-2);transition:max-width var(--dur-3) var(--ease);margin-inline:auto}
 .th-frame iframe{width:100%;height:540px;border:0;display:block;background:#fff}
 .th-frame.tablet{max-width:330px}.th-frame.mobile{max-width:235px}
-.th-contrast{margin-top:1rem;border-top:1px solid var(--border);padding-top:.9rem}
-.th-cc{display:flex;align-items:center;gap:.55rem;font-size:.8rem;padding:.3rem 0}
-.th-cc .dot{width:26px;height:18px;border-radius:5px;border:1px solid var(--border)}
-.th-cc .grade{margin-left:auto;font-weight:800;padding:.1rem .5rem;border-radius:6px;font-size:.7rem}
-.grade-AAA,.grade-AA{background:rgba(88,164,47,.16);color:#308629}
-.grade-AALarge{background:rgba(230,123,29,.16);color:#9A5313}
-.grade-Fail{background:rgba(220,38,38,.14);color:#DC2626}
-.th-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:.9rem}
-.th-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface);transition:.2s}
-.th-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+
+/* Contrast report — the dot previews the background token being measured. */
+.th-contrast{margin-top:var(--sp-4);border-top:1px solid var(--border);padding-top:var(--sp-3)}
+.th-contrast-title{font-size:.82rem;display:block;margin-bottom:var(--sp-1)}
+.th-cc{display:flex;align-items:center;gap:var(--sp-2);font-size:.8rem;padding:var(--sp-1) 0}
+.th-cc .dot{width:26px;height:18px;border-radius:var(--r-sm);border:1px solid var(--border)}
+.th-cc .grade{margin-left:auto;font-weight:800;padding:var(--sp-1) var(--sp-2);border-radius:var(--r-sm);font-size:.7rem}
+.grade-AAA,.grade-AA{background:color-mix(in srgb,var(--st-ok) 16%,transparent);color:var(--st-ok)}
+.grade-AALarge{background:color-mix(in srgb,var(--st-warn) 16%,transparent);color:var(--st-warn)}
+.grade-Fail{background:color-mix(in srgb,var(--st-err) 14%,transparent);color:var(--st-err)}
+
+/* Preset cards — the swatch strip previews the preset's colour tokens. */
+.th-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:var(--sp-3)}
+.th-card{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:var(--surface);
+    transition:border-color var(--dur-1) var(--ease)}
+.th-card:hover{border-color:var(--muted)}
 .th-swatches{height:60px;display:flex}
 .th-swatches i{flex:1}
-.th-card-foot{padding:.6rem .7rem;display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.th-card-foot{padding:var(--sp-2) var(--sp-3);display:flex;align-items:center;gap:var(--sp-1);flex-wrap:wrap}
 .th-card-foot b{font-size:.84rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Below 1400px the preview moves BELOW the editor instead of being hidden —
    hiding it also prevented the lazy iframe from ever loading. */
 @media (max-width:1400px){
     .th-grid{grid-template-columns:212px 1fr}
-    .th-prev{grid-column:1 / -1;position:static;margin-top:1.2rem}
+    .th-prev{grid-column:1 / -1;position:static;margin-top:var(--sp-5)}
     .th-frame iframe{height:460px}
 }
 @media (max-width:900px){.th-grid{grid-template-columns:1fr}.th-rail{position:static;flex-direction:row;overflow-x:auto}}
@@ -242,7 +264,7 @@ include __DIR__ . '/partials/head.php';
 
 <div class="th-bar">
     <h1><?= lucide('palette') ?> Theme Settings</h1>
-    <?php if ($hasDraft): ?><span class="th-draft"><?= lucide('circle-dot') ?> Unpublished draft</span><?php endif; ?>
+    <?php if ($hasDraft): ?><span class="pill pill-amber">Unpublished draft</span><?php endif; ?>
     <div class="th-actions">
         <a class="btn btn-ghost btn-sm" href="<?= e(admin_url('theme?action=export')) ?>"><?= lucide('download') ?> Export</a>
         <a class="btn btn-secondary btn-sm" href="<?= e(url('/')) ?>" target="_blank"><?= lucide('external-link') ?> View site</a>
@@ -256,7 +278,7 @@ include __DIR__ . '/partials/head.php';
 
 <div class="th-grid">
     <nav class="th-rail">
-        <div class="th-search"><input type="search" id="thSearch" placeholder="Search settings…" aria-label="Search settings"></div>
+        <div class="th-search"><input class="form-control" type="search" id="thSearch" placeholder="Search settings…" aria-label="Search settings"></div>
         <?php foreach ($groups as $gk => $g): ?>
             <a class="<?= $sec === $gk ? 'on' : '' ?>" href="<?= e(admin_url('theme?sec=' . $gk)) ?>"><?= lucide($g['icon']) ?> <?= e($g['label']) ?></a>
         <?php endforeach; ?>
@@ -266,22 +288,22 @@ include __DIR__ . '/partials/head.php';
 
     <div>
         <?php if (isset($groups[$sec])): $g = $groups[$sec]; ?>
-            <div class="th-panel">
-                <h2><?= lucide($g['icon']) ?> <?= e($g['label']) ?></h2>
-                <p class="sub">Saved as a draft and shown in the live preview. Publish to push it across the whole platform.</p>
+            <div class="panel"><div class="panel-body">
+                <h2 class="panel-title"><?= lucide($g['icon']) ?> <?= e($g['label']) ?></h2>
+                <p class="th-sub">Saved as a draft and shown in the live preview. Publish to push it across the whole platform.</p>
                 <div class="tf-grid"><?php foreach ($g['tokens'] as $token => $m) { $field($token, $m); } ?></div>
-            </div>
+            </div></div>
 
         <?php elseif ($sec === 'presets'): ?>
-            <div class="th-panel">
-                <h2><?= lucide('layout-grid') ?> Themes</h2>
-                <p class="sub">Apply a ready-made theme, or save your current design as a reusable preset.</p>
+            <div class="panel"><div class="panel-body">
+                <h2 class="panel-title"><?= lucide('layout-grid') ?> Themes</h2>
+                <p class="th-sub">Apply a ready-made theme, or save your current design as a reusable preset.</p>
                 <div class="th-cards">
                     <?php foreach ($presets as $p): $pv = json_decode((string) $p['payload'], true) ?: []; ?>
                         <div class="th-card">
                             <div class="th-swatches">
                                 <?php foreach (['color.primary','color.secondary','color.accent','color.success'] as $sw): ?>
-                                    <i style="background:<?= e($pv[$sw] ?? '#ccc') ?>"></i>
+                                    <i style="background:<?= e($pv[$sw] ?? 'var(--border)') ?>"></i>
                                 <?php endforeach; ?>
                             </div>
                             <div class="th-card-foot">
@@ -296,42 +318,42 @@ include __DIR__ . '/partials/head.php';
                     <?php endforeach; ?>
                 </div>
                 <div class="form-actions">
-                    <input class="form-control" name="name" placeholder="Name this theme…" style="max-width:260px">
+                    <input class="form-control th-inline-input" name="name" placeholder="Name this theme…">
                     <button class="btn btn-secondary" type="submit" formnovalidate data-do="save-preset"><?= lucide('plus') ?> Save current as preset</button>
                 </div>
-            </div>
+            </div></div>
 
-            <div class="th-panel" style="margin-top:1.2rem;">
-                <h2><?= lucide('upload') ?> Import / Reset</h2>
-                <p class="sub">Import a theme JSON (loaded as a draft so you can preview it), or reset everything to the shipped defaults.</p>
+            <div class="panel th-stack"><div class="panel-body">
+                <h2 class="panel-title"><?= lucide('upload') ?> Import / Reset</h2>
+                <p class="th-sub">Import a theme JSON (loaded as a draft so you can preview it), or reset everything to the shipped defaults.</p>
                 <div class="tf-grid">
-                    <div class="tf"><label class="tf-label">Theme JSON file</label><input class="form-control" type="file" name="file" accept="application/json,.json"></div>
-                    <div class="tf"><label class="tf-label">…or paste JSON</label><textarea class="form-textarea" name="payload" rows="3" spellcheck="false"></textarea></div>
+                    <div class="tf"><label class="form-label">Theme JSON file</label><input class="form-control" type="file" name="file" accept="application/json,.json"></div>
+                    <div class="tf"><label class="form-label">…or paste JSON</label><textarea class="form-textarea" name="payload" rows="3" spellcheck="false"></textarea></div>
                 </div>
                 <div class="form-actions">
                     <button class="btn btn-secondary" type="submit" formnovalidate data-do="import"><?= lucide('upload') ?> Import</button>
                     <button class="btn btn-danger" type="submit" formnovalidate data-do="reset" data-confirm-reset><?= lucide('rotate-ccw') ?> Reset to defaults</button>
                 </div>
-            </div>
+            </div></div>
 
         <?php elseif ($sec === 'history'): ?>
-            <div class="th-panel">
-                <h2><?= lucide('history') ?> Version History</h2>
-                <p class="sub">Every publish, rollback and reset auto-snapshots the previous theme so you can restore it.</p>
-                <div class="form-actions" style="margin:0 0 1rem;padding:0;border:0;">
-                    <input class="form-control" name="label" placeholder="Backup label…" style="max-width:260px">
+            <div class="panel"><div class="panel-body">
+                <h2 class="panel-title"><?= lucide('history') ?> Version History</h2>
+                <p class="th-sub">Every publish, rollback and reset auto-snapshots the previous theme so you can restore it.</p>
+                <div class="form-actions th-bare-actions">
+                    <input class="form-control th-inline-input" name="label" placeholder="Backup label…">
                     <button class="btn btn-secondary btn-sm" type="submit" formnovalidate data-do="snapshot"><?= lucide('save') ?> Create backup</button>
                 </div>
                 <?php if ($versions): ?>
                     <div class="table-wrap"><table class="admin-table">
-                        <thead><tr><th>Version</th><th>Type</th><th>When</th><th style="text-align:right;">Restore</th></tr></thead>
+                        <thead><tr><th>Version</th><th>Type</th><th>When</th><th class="num">Restore</th></tr></thead>
                         <tbody>
                         <?php foreach ($versions as $vv): ?>
                             <tr>
                                 <td><strong><?= e((string) $vv['label']) ?></strong></td>
-                                <td><span class="pill <?= $vv['is_auto'] ? 'pill-gray' : 'pill-blue' ?>"><?= $vv['is_auto'] ? 'auto' : 'manual' ?></span></td>
+                                <td><span class="pill <?= 'pill-tag' ?>"><?= $vv['is_auto'] ? 'auto' : 'manual' ?></span></td>
                                 <td><small class="text-muted"><?= e(format_datetime($vv['created_at'])) ?></small></td>
-                                <td style="text-align:right;">
+                                <td class="num">
                                     <button class="btn btn-outline btn-sm" type="submit" formnovalidate data-do="rollback" data-id="<?= (int) $vv['id'] ?>"><?= lucide('undo-2') ?> Restore</button>
                                 </td>
                             </tr>
@@ -340,27 +362,27 @@ include __DIR__ . '/partials/head.php';
                 <?php else: ?>
                     <div class="empty-state"><div class="icon"><?= lucide('history') ?></div>No versions yet — publish a change to create the first snapshot.</div>
                 <?php endif; ?>
-            </div>
+            </div></div>
         <?php endif; ?>
     </div>
 
     <aside class="th-prev">
         <div class="th-prev-head">
             <strong><?= lucide('eye') ?> Live preview</strong>
-            <button class="th-dev on" type="button" data-dev="desktop" title="Desktop"><?= lucide('monitor') ?></button>
-            <button class="th-dev" type="button" data-dev="tablet" title="Tablet"><?= lucide('tablet') ?></button>
-            <button class="th-dev" type="button" data-dev="mobile" title="Mobile"><?= lucide('smartphone') ?></button>
-            <button class="th-dev" type="button" id="thReload" title="Reload preview"><?= lucide('refresh-cw') ?></button>
+            <button class="icon-btn th-dev on" type="button" data-dev="desktop" title="Desktop"><?= lucide('monitor') ?></button>
+            <button class="icon-btn th-dev" type="button" data-dev="tablet" title="Tablet"><?= lucide('tablet') ?></button>
+            <button class="icon-btn th-dev" type="button" data-dev="mobile" title="Mobile"><?= lucide('smartphone') ?></button>
+            <button class="icon-btn th-dev" type="button" id="thReload" title="Reload preview"><?= lucide('refresh-cw') ?></button>
         </div>
         <div class="th-frame" id="thFrame">
             <iframe id="thPreview" src="<?= e(url('/')) ?>" title="Theme preview"></iframe>
         </div>
         <div class="th-contrast">
-            <strong style="font-size:.82rem;display:block;margin-bottom:.4rem;"><?= lucide('contrast') ?> WCAG contrast</strong>
+            <strong class="th-contrast-title"><?= lucide('contrast') ?> WCAG contrast</strong>
             <?php
             $checks = [
-                ['White on Primary',   '#FFFFFF', $vals['color.primary']   ?? '#063566'],
-                ['White on Accent',    '#FFFFFF', $vals['color.accent']    ?? '#E67B1D'],
+                ['White on Primary',   '#FFFFFF', $vals['color.primary']   ?? '#0B4E3D'],
+                ['White on Accent',    '#FFFFFF', $vals['color.accent']    ?? '#F15A24'],
                 ['Body on Background', $vals['color.text_soft'] ?? '#374151', $vals['color.bg']      ?? '#FFFFFF'],
                 ['Muted on Surface',   $vals['color.muted']     ?? '#6B7280', $vals['color.surface'] ?? '#FFFFFF'],
             ];

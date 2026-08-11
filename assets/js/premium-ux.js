@@ -313,8 +313,12 @@
     });
     document.addEventListener('click', function (e) {
         if (!wrap.classList.contains('is-open')) return;
+        // The scrim is a ::before on the wrapper, so a click on it targets the
+        // wrapper itself. Without this the backdrop would look dismissible and
+        // do nothing, because wrap.contains(wrap) is true.
+        if (e.target === wrap) { close(); if (trigger) trigger.focus(); return; }
         if (wrap.contains(e.target)) return;
-        if (!input || !input.value) close();
+        close();
     });
 
     /* ---- Voice input (progressive enhancement) ---- */

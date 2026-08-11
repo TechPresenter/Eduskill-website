@@ -290,7 +290,7 @@ if ($slug !== '') {
 
             <!-- Sidebar -->
             <aside class="reveal delay-1">
-                <div class="card-3d" style="position:sticky;top:90px;">
+                <div class="card-3d sticky-aside" style="position:sticky;top:90px;">
                     <div class="icon-badge" style="background:<?= e($cm['grad']) ?>;font-size:1.6rem;"><?= lucide($cm['icon']) ?></div>
                     <h3 class="card-title mb-2">Scheme at a Glance</h3>
 

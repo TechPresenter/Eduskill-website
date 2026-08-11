@@ -147,7 +147,7 @@ include __DIR__ . '/includes/header.php';
                     <div class="grid grid-2">
                         <?php foreach ($rows as $i => $ev): ?>
                             <?php
-                                $color = preg_match('/^#[0-9A-Fa-f]{3,8}$/', (string) ($ev['color'] ?? '')) ? $ev['color'] : '#063566';
+                                $color = preg_match('/^#[0-9A-Fa-f]{3,8}$/', (string) ($ev['color'] ?? '')) ? $ev['color'] : '#0B4E3D';
                                 $day   = format_date($ev['event_date'], 'd');
                                 $mon   = format_date($ev['event_date'], 'M');
                                 $hasRange = !empty($ev['end_date'])

@@ -11,6 +11,7 @@
  * =============================================================================
  */
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/homepage.php';   // homepage content accessors + encoders
 require_admin();
 
 /* -----------------------------------------------------------------------------
@@ -21,6 +22,18 @@ require_admin();
  |    raw   = true to store the value un-sanitised (needed for HTML embeds)
  |    hint  = optional helper text under the field
  |    default = value seeded on first load when the key is missing
+ |
+ |  type 'rows' is the repeatable-item editor (add / remove / reorder) added for
+ |  the homepage focus bars, focus-area cards and donation tiers — the three
+ |  pieces of homepage content that index.php read but no admin screen offered.
+ |  It takes four extra keys and changes nothing else on the page:
+ |    source = callable returning the CURRENT rows (the saved ones, or the
+ |             built-in set while the setting is empty)
+ |    encode = callable turning posted rows back into the stored string. The
+ |             storage format lives in includes/homepage.php, beside the code
+ |             that reads it, so both sides can never disagree.
+ |    sub    = the fields of one row
+ |    store  = value written to settings.type ('json' / 'textarea')
  |--------------------------------------------------------------------------- */
 $panels = [
     'General' => [
@@ -51,6 +64,80 @@ $panels = [
             'home_about_text'  => ['type' => 'textarea', 'default' => 'EDUSKILL INDIA FOUNDATION is a registered non-profit based in Patna, Bihar. We work hand-in-hand with communities to deliver education, healthcare, skill development, and emergency relief.', 'label' => 'Home About Text'],
             'mission_short'    => ['type' => 'textarea', 'default' => 'To empower underserved communities by providing access to quality education, healthcare, and sustainable livelihoods.', 'label' => 'Mission (short)'],
             'vision_short'     => ['type' => 'textarea', 'default' => 'An equitable society where every individual has the opportunity to live with dignity and reach their full potential.', 'label' => 'Vision (short)'],
+            'home_focus_split' => [
+                'type'    => 'rows',
+                'store'   => 'textarea',
+                'label'   => 'Focus split bars',
+                'hint'    => 'The progress bars beside the mission statement. The percentages are a claim about where your effort goes, so they are yours to set — nothing is calculated. Remove every bar to restore the built-in set.',
+                'item'    => 'bar',
+                // One source of truth with the server-side clamp in the
+                // encoders — the JS that disables the Add button reads this via
+                // data-max, and includes/homepage.php enforces the same number
+                // on save and on render.
+                'max'     => HOME_ROWS_MAX,
+                'source'  => 'home_focus_split',
+                'encode'  => 'home_focus_split_encode',
+                'default' => home_focus_split_encode(home_focus_split_defaults()),
+                'sub'     => [
+                    'label' => ['label' => 'Label', 'input' => 'text', 'placeholder' => 'Education', 'maxlength' => 80, 'grow' => 2],
+                    'pct'   => ['label' => 'Percent', 'input' => 'number', 'min' => 0, 'max' => 100, 'placeholder' => '0'],
+                ],
+            ],
+        ],
+    ],
+    'Focus Areas' => [
+        'group'  => 'homepage',
+        'fields' => [
+            'home_focus_areas' => [
+                'type'    => 'rows',
+                'store'   => 'json',
+                'label'   => 'Focus area cards',
+                'hint'    => 'The “what we do” cards. The first two cards are the wide ones on the homepage, so put your strongest two first. Remove every card to restore the built-in set.',
+                'item'    => 'card',
+                'max'     => HOME_ROWS_MAX,
+                'source'  => 'home_focus_areas',
+                'encode'  => 'home_focus_areas_encode',
+                'default' => home_focus_areas_encode(home_focus_areas_defaults()),
+                'title'   => 'title',
+                'sub'     => [
+                    'title' => ['label' => 'Card title', 'input' => 'text', 'placeholder' => 'Education Empowerment', 'maxlength' => 120, 'grow' => 2,
+                                'hint' => 'Required — a card with no title is dropped.'],
+                    'label' => ['label' => 'Small label above it', 'input' => 'text', 'placeholder' => 'Education', 'maxlength' => 40],
+                    'icon'  => ['label' => 'Icon', 'input' => 'text', 'placeholder' => 'book-open', 'maxlength' => 40,
+                                'hint' => 'A lucide.dev icon name, e.g. book-open, sprout, rocket.'],
+                    'url'   => ['label' => 'Links to', 'input' => 'text', 'placeholder' => 'programs', 'maxlength' => 190,
+                                'hint' => 'A page on this site, e.g. programs or skill-development.'],
+                    'image' => ['label' => 'Photograph', 'input' => 'text', 'placeholder' => 'programs/students-classroom-learning.webp',
+                                'maxlength' => 255, 'preview' => true, 'grow' => 2,
+                                'hint' => 'Path under uploads/, or leave empty — a card with no photograph is carried by its icon tile.'],
+                    'text'  => ['label' => 'Description', 'input' => 'textarea', 'placeholder' => 'One or two sentences on what this area of work does.', 'maxlength' => 320, 'wide' => true],
+                ],
+            ],
+        ],
+    ],
+    'Donation Tiers' => [
+        'group'  => 'homepage',
+        'fields' => [
+            'home_donation_tiers' => [
+                'type'    => 'rows',
+                'store'   => 'json',
+                'label'   => 'Donation tiers',
+                'hint'    => 'Each amount on the homepage and the tangible thing it funds. Only promise what a gift really buys — this is the page a donor decides on. Remove every tier to restore the built-in set.',
+                'item'    => 'tier',
+                'max'     => HOME_ROWS_MAX,
+                'source'  => 'home_donation_tiers',
+                'encode'  => 'home_donation_tiers_encode',
+                'default' => home_donation_tiers_encode(home_donation_tiers_defaults()),
+                'title'   => 'title',
+                'sub'     => [
+                    'amount' => ['label' => 'Amount (₹)', 'input' => 'number', 'min' => 1, 'max' => 10000000, 'placeholder' => '500',
+                                 'hint' => 'Required — a tier with no amount is dropped.'],
+                    'title'  => ['label' => 'What it is called', 'input' => 'text', 'placeholder' => 'School kit', 'maxlength' => 80, 'grow' => 2],
+                    'icon'   => ['label' => 'Icon', 'input' => 'text', 'placeholder' => 'book-open', 'maxlength' => 40,
+                                 'hint' => 'A lucide.dev icon name.'],
+                    'impact' => ['label' => 'What it funds', 'input' => 'textarea', 'placeholder' => 'Books, stationery and a learning kit for a child for a month.', 'maxlength' => 320, 'wide' => true],
+                ],
+            ],
         ],
     ],
     'Legal / Organisation' => [
@@ -156,6 +243,17 @@ if (is_post() && post('_do') === 'save') {
                 set_setting($key, post($key) === '1' ? '1' : '0', $panel['group'], 'boolean');
                 continue;
             }
+            if ($meta['type'] === 'rows') {
+                // Repeatable items. Row ORDER is the order the browser posted
+                // them, which is DOM order, so reordering in the editor needs no
+                // index bookkeeping. encode() sanitises, clamps and drops empty
+                // rows; an empty result stores '' and the page falls back to its
+                // built-in set (see includes/homepage.php).
+                $rows = post($key);
+                $rows = is_array($rows) ? array_values($rows) : [];
+                set_setting($key, ($meta['encode'])($rows), $panel['group'], $meta['store'] ?? 'textarea');
+                continue;
+            }
             if ($meta['type'] === 'select') {
                 // Clamp to the declared options so a hand-crafted POST cannot
                 // store a value the renderer has no styling for.
@@ -199,7 +297,9 @@ $existing = all_settings();
 foreach ($panels as $panel) {
     foreach ($panel['fields'] as $key => $meta) {
         if (!array_key_exists($key, $existing)) {
-            set_setting($key, (string) ($meta['default'] ?? ''), $panel['group'], $meta['type']);
+            // 'rows' fields seed the built-in set, so the editor opens on the
+            // content the homepage is actually showing rather than an empty list.
+            set_setting($key, (string) ($meta['default'] ?? ''), $panel['group'], $meta['store'] ?? $meta['type']);
         }
     }
 }
@@ -215,6 +315,8 @@ $panelMeta = [
     'General'              => ['icon' => 'sliders-horizontal',     'desc' => 'Site identity, branding and SEO basics',   'hue' => '#2563eb'], // blue
     'Contact'              => ['icon' => 'phone',                  'desc' => 'How supporters reach you',                 'hue' => '#16a34a'], // green
     'Homepage'             => ['icon' => 'layout-dashboard',       'desc' => 'Headline content on the front page',       'hue' => '#7c3aed'], // purple
+    'Focus Areas'          => ['icon' => 'layout-grid',            'desc' => 'The “what we do” cards on the homepage',   'hue' => '#0f766e'], // teal
+    'Donation Tiers'       => ['icon' => 'indian-rupee',           'desc' => 'Amounts and what each gift becomes',       'hue' => '#b45309'], // amber
     'Legal / Organisation' => ['icon' => 'landmark',               'desc' => 'Registration and compliance details',      'hue' => '#ea580c'], // orange
     'Social & Footer'      => ['icon' => 'share-2',                'desc' => 'Social profiles and footer copy',          'hue' => '#db2777'], // pink
     'FAQ Section'          => ['icon' => 'message-circle-question','desc' => 'Theme, animation and hover styling',       'hue' => '#0891b2'], // cyan
@@ -222,6 +324,69 @@ $panelMeta = [
     'Maintenance'          => ['icon' => 'construction',           'desc' => 'Temporarily take the public site offline', 'hue' => '#475569'], // slate
 ];
 $panelKeys = array_keys($panels);
+
+/* -----------------------------------------------------------------------------
+ |  One row of a 'rows' field.
+ |  $index is the row's integer position, or the literal '__IDX__' placeholder
+ |  when the row is being rendered into the <template> the Add button clones.
+ |  Inputs are wrapped in their <label> rather than paired by id, so reordering
+ |  and inserting rows never has to rewrite an id/for pair — only the [n] in the
+ |  field name, which is what carries the order back to PHP.
+ |--------------------------------------------------------------------------- */
+$repRow = static function (string $key, array $meta, array $row, $index): string {
+    $item  = (string) ($meta['item'] ?? 'item');
+    $shown = is_int($index) ? (string) ($index + 1) : '1';
+
+    $html = '<div class="rep-row" data-rep-row>'
+        . '<div class="rep-row-head">'
+        . '<span class="rep-badge">' . e(ucfirst($item)) . ' <span data-rep-idx>' . $shown . '</span></span>'
+        . '<div class="rep-tools">'
+        . '<button type="button" class="rep-btn" data-rep-up aria-label="Move this ' . e($item) . ' up" title="Move up">' . lucide('chevron-up') . '</button>'
+        . '<button type="button" class="rep-btn" data-rep-down aria-label="Move this ' . e($item) . ' down" title="Move down">' . lucide('chevron-down') . '</button>'
+        . '<button type="button" class="rep-btn is-danger" data-rep-del aria-label="Remove this ' . e($item) . '" title="Remove">' . lucide('trash-2') . '</button>'
+        . '</div></div><div class="rep-grid">';
+
+    foreach (($meta['sub'] ?? []) as $sk => $spec) {
+        $name  = $key . '[' . (is_int($index) ? (string) $index : '__IDX__') . '][' . $sk . ']';
+        $value = (string) ($row[$sk] ?? '');
+        $cls   = 'rep-f'
+            . (!empty($spec['wide']) ? ' is-wide' : '')
+            . ((int) ($spec['grow'] ?? 1) > 1 ? ' is-grow' : '');
+        $ph    = isset($spec['placeholder']) ? ' placeholder="' . e((string) $spec['placeholder']) . '"' : '';
+        $ml    = isset($spec['maxlength']) ? ' maxlength="' . (int) $spec['maxlength'] . '"' : '';
+
+        $html .= '<div class="' . $cls . '"><label class="rep-lbl">' . e((string) ($spec['label'] ?? $sk));
+
+        if (($spec['input'] ?? 'text') === 'textarea') {
+            $html .= '<textarea class="form-textarea rep-input" name="' . e($name) . '" rows="3"' . $ml . $ph . '>' . e($value) . '</textarea>';
+        } elseif (($spec['input'] ?? '') === 'number') {
+            $html .= '<input class="form-control rep-input" type="number" name="' . e($name) . '" value="' . e($value) . '"'
+                . ' min="' . (int) ($spec['min'] ?? 0) . '" max="' . (int) ($spec['max'] ?? 999999999) . '" step="1"' . $ph . '>';
+        } else {
+            $html .= '<input class="form-control rep-input" type="text" name="' . e($name) . '" value="' . e($value) . '"' . $ml . $ph
+                . (!empty($spec['preview']) ? ' data-rep-src' : '') . '>';
+        }
+        $html .= '</label>';
+
+        if (!empty($spec['preview'])) {
+            // Live thumbnail so a mistyped path is obvious before saving.
+            // The src is OMITTED, not emitted empty, when there is no path yet:
+            // `<img src="">` resolves against the document URL, so browsers
+            // re-request admin/settings.php as an image on every blank row. The
+            // JS that fills this in on input sets the attribute itself.
+            $html .= '<span class="rep-thumb"' . ($value === '' ? ' hidden' : '') . ' data-rep-thumb>'
+                . '<img' . ($value !== '' ? ' src="' . e(upload_url($value)) . '"' : '')
+                . ' alt="" loading="lazy"></span>';
+        }
+        if (!empty($spec['hint'])) {
+            $html .= '<small class="rep-hint">' . e((string) $spec['hint']) . '</small>';
+        }
+        $html .= '</div>';
+    }
+
+    return $html . '</div></div>';
+};
+
 include __DIR__ . '/partials/head.php';
 ?>
 <form id="settingsForm" class="settings-page admin-form" method="post" enctype="multipart/form-data" action="<?= e(admin_url('settings')) ?>">
@@ -286,7 +451,9 @@ include __DIR__ . '/partials/head.php';
                         <?php foreach ($panel['fields'] as $key => $meta):
                             $value  = (string) get_setting($key, $meta['default'] ?? '');
                             $flabel = $meta['label'] ?? ucwords(str_replace('_', ' ', $key));
-                            $wide   = in_array($meta['type'], ['textarea', 'image', 'boolean'], true);
+                            // 'rows' repeaters carry a whole grid of their own and
+                            // must never be squeezed into one half-width column.
+                            $wide   = in_array($meta['type'], ['textarea', 'image', 'boolean', 'rows'], true);
                         ?>
                         <div class="settings-field<?= $wide ? ' span-2' : '' ?>"
                              data-field-search="<?= e(mb_strtolower($flabel . ' ' . $key . ' ' . ($meta['hint'] ?? ''))) ?>">
@@ -304,6 +471,34 @@ include __DIR__ . '/partials/head.php';
                                         <option value="<?= e($ov) ?>"<?= (string) $ov === $value ? ' selected' : '' ?>><?= e($ol) ?></option>
                                     <?php endforeach; ?>
                                 </select>
+                            <?php elseif ($meta['type'] === 'rows'):
+                                $repRows = array_values(($meta['source'])());
+                                $repMax  = (int) ($meta['max'] ?? 12);
+                                $repItem = (string) ($meta['item'] ?? 'item');
+                            ?>
+                                <label class="settings-label"><?= e($flabel) ?></label>
+                                <div class="rep" data-rep data-max="<?= $repMax ?>" data-item="<?= e($repItem) ?>"
+                                     data-upload="<?= e(UPLOAD_URI) ?>">
+                                    <div class="rep-rows" data-rep-rows>
+                                        <?php foreach ($repRows as $ri => $repItemRow): ?>
+                                            <?= $repRow($key, $meta, (array) $repItemRow, $ri) ?>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <p class="rep-none" data-rep-none<?= $repRows ? ' hidden' : '' ?>>
+                                        <?= lucide('info') ?>
+                                        No <?= e($repItem) ?>s left — saving now restores the built-in set.
+                                    </p>
+                                    <div class="rep-foot">
+                                        <button type="button" class="btn btn-outline btn-sm" data-rep-add>
+                                            <?= lucide('plus') ?> Add <?= e($repItem) ?>
+                                        </button>
+                                        <span class="rep-count" data-rep-count aria-live="polite"></span>
+                                    </div>
+                                    <?php /* Cloned by the Add button. Inputs inside a <template> are
+                                             inert and are never submitted, so the placeholder index
+                                             cannot reach PHP. */ ?>
+                                    <template data-rep-tpl><?= $repRow($key, $meta, [], '__IDX__') ?></template>
+                                </div>
                             <?php elseif ($meta['type'] === 'textarea'): ?>
                                 <div class="ff">
                                     <textarea class="ff-input" id="f_<?= e($key) ?>" name="<?= e($key) ?>" placeholder=" " rows="4"><?= e($value) ?></textarea>
@@ -359,12 +554,12 @@ include __DIR__ . '/partials/head.php';
     margin: 0 0 1.4rem; padding: 1.1rem 1.3rem;
     background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid var(--border, #e2e8f0); border-radius: var(--sp-radius);
-    box-shadow: 0 10px 30px -18px rgba(6,53,102,.4);
+    box-shadow: 0 10px 30px -18px rgba(11,78,61,.4);
 }
 html[data-theme="dark"] .settings-topbar { background: rgba(17,24,39,.72); }
 .settings-crumb { display: inline-flex; align-items: center; gap: .35rem; font-size: .78rem; font-weight: 600; color: var(--muted, #64748b); margin-bottom: .35rem; }
 .settings-crumb a { color: var(--muted, #64748b); display: inline-flex; align-items: center; gap: .25rem; }
-.settings-crumb a:hover { color: #063566; }
+.settings-crumb a:hover { color: #0B4E3D; }
 .settings-crumb svg { width: 13px; height: 13px; }
 .settings-topbar h1 { font-size: 1.5rem; margin: 0; letter-spacing: -.02em; }
 .settings-topbar p { margin: .2rem 0 0; color: var(--muted, #64748b); font-size: .9rem; max-width: 60ch; }
@@ -379,7 +574,7 @@ html[data-theme="dark"] .settings-topbar { background: rgba(17,24,39,.72); }
     margin: 0 0 .9rem; padding: .4rem;
     background: rgba(255,255,255,.76); -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid var(--border, #e2e8f0); border-radius: 18px;
-    box-shadow: 0 10px 30px -22px rgba(6,53,102,.5);
+    box-shadow: 0 10px 30px -22px rgba(11,78,61,.5);
 }
 html[data-theme="dark"] .settings-tabbar { background: rgba(17,24,39,.78); }
 
@@ -423,7 +618,7 @@ html[data-theme="dark"] .settings-tabbar { background: rgba(17,24,39,.78); }
     flex: 0 0 auto; display: none; place-items: center; width: 30px; height: 30px; cursor: pointer;
     border: 1px solid var(--border, #e2e8f0); border-radius: 9px; background: var(--surface, #fff); color: var(--muted, #64748b);
 }
-.stab-arrow:hover { color: var(--primary, #063566); border-color: var(--primary, #063566); }
+.stab-arrow:hover { color: var(--primary, #0B4E3D); border-color: var(--primary, #0B4E3D); }
 .stab-arrow svg { width: 15px; height: 15px; }
 .settings-tabbar.is-scrollable .stab-arrow { display: grid; }
 
@@ -440,8 +635,8 @@ html[data-theme="dark"] .settings-tabbar { background: rgba(17,24,39,.78); }
     transition: border-color .2s ease, box-shadow .2s ease;
 }
 .settings-search input:focus {
-    outline: none; border-color: var(--primary, #063566);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary, #063566) 13%, transparent);
+    outline: none; border-color: var(--primary, #0B4E3D);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary, #0B4E3D) 13%, transparent);
 }
 .ss-clear {
     position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
@@ -474,11 +669,11 @@ html[data-theme="dark"] .settings-tabbar { background: rgba(17,24,39,.78); }
 }
 
 /* Cards */
-.settings-card { display: none; background: var(--surface, #fff); border: 1px solid var(--border, #e2e8f0); border-radius: var(--sp-radius); box-shadow: 0 1px 2px rgba(6,53,102,.04), 0 18px 40px -30px rgba(6,53,102,.35); overflow: hidden; }
+.settings-card { display: none; background: var(--surface, #fff); border: 1px solid var(--border, #e2e8f0); border-radius: var(--sp-radius); box-shadow: 0 1px 2px rgba(11,78,61,.04), 0 18px 40px -30px rgba(11,78,61,.35); overflow: hidden; }
 .settings-card.is-active { display: block; animation: sp-fade .35s cubic-bezier(.16,1,.3,1); }
 @keyframes sp-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .settings-card-head { display: flex; align-items: center; gap: .85rem; padding: 1.15rem 1.4rem; border-bottom: 1px solid var(--border, #e2e8f0); background: linear-gradient(180deg, var(--surface-2, #f8fafc), transparent); }
-.sch-ico { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, rgba(6,53,102,.14), rgba(8,72,129,.14)); color: #063566; }
+.sch-ico { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, rgba(11,78,61,.14), rgba(23,77,61,.14)); color: #0B4E3D; }
 .sch-ico svg { width: 21px; height: 21px; }
 .settings-card-head h2 { font-size: 1.12rem; margin: 0; }
 .settings-card-head p { margin: .1rem 0 0; font-size: .82rem; color: var(--muted, #64748b); }
@@ -496,7 +691,7 @@ html[data-theme="dark"] .settings-tabbar { background: rgba(17,24,39,.78); }
 }
 textarea.ff-input { padding-top: 1.4rem; resize: vertical; line-height: 1.6; }
 .ff-input:hover { border-color: #BBD3EA; }
-.ff-input:focus { border-color: #063566; box-shadow: 0 0 0 4px rgba(6,53,102,.14); background: var(--surface, #fff); }
+.ff-input:focus { border-color: #0B4E3D; box-shadow: 0 0 0 4px rgba(11,78,61,.14); background: var(--surface, #fff); }
 .ff-label {
     position: absolute; left: .95rem; top: .82rem; font-size: .92rem; color: var(--muted, #64748b); pointer-events: none;
     transform-origin: left top; transition: transform .16s ease, color .16s ease;
@@ -504,7 +699,7 @@ textarea.ff-input { padding-top: 1.4rem; resize: vertical; line-height: 1.6; }
 }
 .ff-input:focus + .ff-label,
 .ff-input:not(:placeholder-shown) + .ff-label,
-.ff-static .ff-label { transform: translateY(-.55rem) scale(.78); color: #063566; font-weight: 600; }
+.ff-static .ff-label { transform: translateY(-.55rem) scale(.78); color: #0B4E3D; font-weight: 600; }
 .ff-static .ff-input { padding-top: 1.15rem; }
 
 /* Image upload */
@@ -529,11 +724,98 @@ textarea.ff-input { padding-top: 1.4rem; resize: vertical; line-height: 1.6; }
     position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
     background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.28); transition: transform .2s ease;
 }
-.st-input:checked + .st-track { background: var(--primary, #063566); }
+.st-input:checked + .st-track { background: var(--primary, #0B4E3D); }
 .st-input:checked + .st-track .st-thumb { transform: translateX(20px); }
-.st-input:focus-visible + .st-track { outline: 2px solid var(--primary, #063566); outline-offset: 3px; }
+.st-input:focus-visible + .st-track { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 3px; }
 .st-text { font-size: .86rem; font-weight: 600; color: var(--text, #0f172a); }
 @media (prefers-reduced-motion: reduce) { .st-track, .st-thumb { transition: none; } }
+
+/* ---------------------------------------------- repeatable rows (.rep-*)
+   Colour pairs introduced, as measured in the browser:
+     .rep-badge  #0B4E3D on a 10% primary tint over white (≈#E9EDEC) → 8.2:1
+     .rep-lbl / .rep-hint  var(--muted) #6B7280 on the row's #F4F8FC → 4.53:1
+     .rep-count / .rep-none  #6B7280 on the card's #FDFEFE → 4.78:1
+     .rep-input  #0B4E3D on #FDFEFE → 9.57:1
+   The 11.5px hint is the smallest type here and still clears 4.5:1. These use
+   var(--muted) rather than a deeper hardcoded slate so they follow the admin's
+   dark theme like every other hint on the page.
+   ---------------------------------------------------------------------- */
+.rep { display: grid; gap: .75rem; }
+.rep-rows { display: grid; gap: .75rem; }
+.rep-row {
+    border: 1px solid var(--border, #e2e8f0); border-radius: 13px;
+    background: var(--surface-2, #f8fafc); overflow: hidden;
+}
+.rep-row-head {
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+    padding: .5rem .7rem; background: var(--surface, #fff); border-bottom: 1px solid var(--border, #e2e8f0);
+}
+.rep-badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .18rem .6rem; border-radius: 999px;
+    font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 10%, transparent);
+    color: var(--primary, #0B4E3D);
+}
+.rep-tools { display: flex; gap: .3rem; }
+.rep-btn {
+    display: grid; place-items: center; width: 30px; height: 30px; cursor: pointer;
+    border: 1px solid var(--border, #e2e8f0); border-radius: 9px;
+    background: var(--surface, #fff); color: var(--muted, #64748b);
+    transition: color var(--dur-fast, .18s) var(--ease-out, cubic-bezier(.22,1,.36,1)),
+                border-color var(--dur-fast, .18s) var(--ease-out, cubic-bezier(.22,1,.36,1)),
+                background-color var(--dur-fast, .18s) var(--ease-out, cubic-bezier(.22,1,.36,1));
+}
+.rep-btn svg { width: 15px; height: 15px; }
+.rep-btn:hover { color: var(--primary, #0B4E3D); border-color: var(--primary, #0B4E3D); }
+.rep-btn.is-danger:hover {
+    color: #dc2626; border-color: #dc2626;
+    background: color-mix(in srgb, #dc2626 10%, transparent);
+}
+.rep-btn:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; }
+.rep-btn[disabled] { opacity: .4; cursor: not-allowed; }
+.rep-btn[disabled]:hover { color: var(--muted, #64748b); border-color: var(--border, #e2e8f0); background: var(--surface, #fff); }
+
+.rep-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: .75rem; padding: .85rem;
+}
+.rep-f { min-width: 0; }
+.rep-f.is-grow { grid-column: span 2; }
+.rep-f.is-wide { grid-column: 1 / -1; }
+.rep-lbl {
+    display: grid; gap: .3rem;
+    font-size: .78rem; font-weight: 650; color: var(--muted, #64748b);
+}
+.rep-input { width: 100%; font-size: .9rem; }
+textarea.rep-input { resize: vertical; line-height: 1.6; min-height: 76px; }
+.rep-hint { display: block; margin-top: .3rem; font-size: .72rem; line-height: 1.5; color: var(--muted, #64748b); }
+.rep-thumb {
+    display: block; margin-top: .45rem; width: 96px; height: 62px;
+    border: 1px solid var(--border, #e2e8f0); border-radius: 8px; overflow: hidden; background: var(--surface, #fff);
+}
+.rep-thumb[hidden] { display: none; }
+.rep-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.rep-foot { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.rep-count { font-size: .78rem; color: var(--muted, #64748b); }
+.rep-none {
+    display: flex; align-items: center; gap: .4rem; margin: 0;
+    font-size: .82rem; color: var(--muted, #64748b);
+}
+.rep-none svg { width: 14px; height: 14px; }
+.rep-none[hidden] { display: none; }
+
+/* On touch the 30px row controls become 44px targets — three of them still fit
+   the row head on a 320px screen. */
+@media (max-width: 820px) {
+    .rep-btn { width: 44px; height: 44px; }
+}
+@media (max-width: 620px) {
+    .rep-grid { grid-template-columns: 1fr; }
+    .rep-f.is-grow { grid-column: span 1; }
+}
+@media (prefers-reduced-motion: reduce) { .rep-btn { transition: none; } }
 
 /* Sticky footer bar */
 .settings-footbar {
@@ -541,11 +823,11 @@ textarea.ff-input { padding-top: 1.4rem; resize: vertical; line-height: 1.6; }
     display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
     padding: .85rem 1.2rem; border: 1px solid var(--border, #e2e8f0); border-radius: 14px;
     background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%);
-    box-shadow: 0 -10px 30px -18px rgba(6,53,102,.4);
+    box-shadow: 0 -10px 30px -18px rgba(11,78,61,.4);
 }
 html[data-theme="dark"] .settings-footbar { background: rgba(17,24,39,.82); }
 .sf-note { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--muted, #64748b); }
-.sf-note svg { width: 15px; height: 15px; color: #58A42F; }
+.sf-note svg { width: 15px; height: 15px; color: #2F8065; }
 .sf-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 .btn[data-save].is-saving { opacity: .75; pointer-events: none; }
 
@@ -691,6 +973,145 @@ html[data-theme="dark"] .settings-footbar { background: rgba(17,24,39,.82); }
             Swal.fire({ toast: true, position: 'top-end', icon: icon, title: al.textContent.trim(), showConfirmButton: false, timer: 3200, timerProgressBar: true });
             al.remove();
         });
+    });
+})();
+</script>
+
+<script>
+/* =============================================================================
+   Repeatable rows — add / remove / reorder for the 'rows' settings fields.
+   Deliberately a separate IIFE from the tab/search script above so a change here
+   can never take the rest of the settings page down with it.
+
+   Order is carried by the [n] index in each field name, and PHP reads the rows
+   in the order the browser posted them, so reordering is: move the node, then
+   renumber. No hidden sort field, no JSON blob in a textarea.
+   ========================================================================== */
+(function () {
+    var form = document.getElementById('settingsForm');
+    if (!form) { return; }
+    var reps = Array.prototype.slice.call(form.querySelectorAll('[data-rep]'));
+    if (!reps.length) { return; }
+
+    function drawIcons() {
+        if (window.PWFdrawIcons) { window.PWFdrawIcons(); }
+        else if (window.lucide) { try { window.lucide.createIcons(); } catch (e) {} }
+    }
+
+    function rowsOf(rep) {
+        return Array.prototype.slice.call(rep.querySelectorAll('[data-rep-row]'));
+    }
+
+    /* Renumber names + labels, refresh the counter, and disable the controls
+       that would do nothing (up on the first row, down on the last, add at max). */
+    function sync(rep) {
+        var rows = rowsOf(rep);
+        var max  = parseInt(rep.getAttribute('data-max') || '12', 10);
+        var item = rep.getAttribute('data-item') || 'item';
+
+        rows.forEach(function (row, i) {
+            row.querySelectorAll('[name]').forEach(function (f) {
+                f.name = f.name.replace(/\[[^\]]*\]/, '[' + i + ']');
+            });
+            var n = row.querySelector('[data-rep-idx]');
+            if (n) { n.textContent = String(i + 1); }
+            var up = row.querySelector('[data-rep-up]');
+            var dn = row.querySelector('[data-rep-down]');
+            if (up) { up.disabled = i === 0; }
+            if (dn) { dn.disabled = i === rows.length - 1; }
+        });
+
+        var add = rep.querySelector('[data-rep-add]');
+        if (add) {
+            add.disabled = rows.length >= max;
+            add.classList.toggle('is-disabled', rows.length >= max);
+        }
+        var count = rep.querySelector('[data-rep-count]');
+        if (count) {
+            count.textContent = rows.length + ' of ' + max + ' ' + item + (rows.length === 1 ? '' : 's')
+                + (rows.length >= max ? ' — that is the maximum' : '');
+        }
+        var none = rep.querySelector('[data-rep-none]');
+        if (none) { none.hidden = rows.length !== 0; }
+    }
+
+    function hasContent(row) {
+        return Array.prototype.slice.call(row.querySelectorAll('[name]')).some(function (f) {
+            return String(f.value || '').trim() !== '';
+        });
+    }
+
+    reps.forEach(function (rep) {
+        var list = rep.querySelector('[data-rep-rows]');
+        var tpl  = rep.querySelector('[data-rep-tpl]');
+
+        rep.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-rep-add], [data-rep-up], [data-rep-down], [data-rep-del]');
+            if (!btn || btn.disabled) { return; }
+            e.preventDefault();
+
+            if (btn.hasAttribute('data-rep-add')) {
+                if (!tpl || !list) { return; }
+                var max = parseInt(rep.getAttribute('data-max') || '12', 10);
+                if (rowsOf(rep).length >= max) { return; }
+                // The template carries __IDX__ placeholders; sync() would fix the
+                // numbering anyway, but a real index keeps the markup valid at
+                // every step.
+                var html = tpl.innerHTML.replace(/__IDX__/g, String(rowsOf(rep).length));
+                var frag = document.createElement('div');
+                frag.innerHTML = html;
+                var row = frag.firstElementChild;
+                if (!row) { return; }
+                list.appendChild(row);
+                sync(rep);
+                drawIcons();
+                var first = row.querySelector('input, textarea');
+                if (first) { first.focus(); }
+                return;
+            }
+
+            var row = btn.closest('[data-rep-row]');
+            if (!row) { return; }
+
+            if (btn.hasAttribute('data-rep-del')) {
+                // Nothing is saved until Save Changes, but a filled-in row is
+                // real work — confirm before throwing it away.
+                if (hasContent(row) && !window.confirm('Remove this ' + (rep.getAttribute('data-item') || 'item') + '?')) { return; }
+                row.remove();
+                sync(rep);
+                return;
+            }
+            if (btn.hasAttribute('data-rep-up') && row.previousElementSibling) {
+                row.parentNode.insertBefore(row, row.previousElementSibling);
+            } else if (btn.hasAttribute('data-rep-down') && row.nextElementSibling) {
+                row.parentNode.insertBefore(row.nextElementSibling, row);
+            }
+            sync(rep);
+            // Keep focus on the button that moved, so a keyboard user can move
+            // the same row again without hunting for it.
+            var again = row.querySelector(btn.hasAttribute('data-rep-up') ? '[data-rep-up]' : '[data-rep-down]');
+            if (again && !again.disabled) { again.focus(); }
+        });
+
+        /* Live thumbnail for image-path fields. */
+        rep.addEventListener('input', function (e) {
+            var input = e.target.closest('[data-rep-src]');
+            if (!input) { return; }
+            var wrap = input.closest('.rep-f');
+            var box  = wrap && wrap.querySelector('[data-rep-thumb]');
+            if (!box) { return; }
+            var img  = box.querySelector('img');
+            var val  = String(input.value || '').trim();
+            if (val === '') { box.hidden = true; return; }
+            if (img) {
+                img.src = /^https?:\/\//i.test(val)
+                    ? val
+                    : (rep.getAttribute('data-upload') || '') + '/' + val.replace(/^\/+/, '');
+            }
+            box.hidden = false;
+        });
+
+        sync(rep);
     });
 })();
 </script>

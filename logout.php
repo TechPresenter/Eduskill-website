@@ -32,10 +32,10 @@ $siteName = get_setting('site_name', SITE_NAME);
 .lo-card h1{ font-size:1.45rem; margin:.2rem 0 .4rem; }
 .lo-card p{ color:var(--muted); margin:0 0 1.4rem; }
 .lo-badge{ width:58px; height:58px; margin:0 auto .9rem; border-radius:18px; display:grid; place-items:center;
-    color:#fff; background:linear-gradient(135deg,#063566,#084881); }
+    color:#fff; background:linear-gradient(135deg,#0B4E3D,#174D3D); }
 .lo-badge svg.lucide{ width:26px; height:26px; }
 .lo-cancel{ display:inline-flex; align-items:center; gap:.35rem; margin-top:1.1rem; font-weight:700; color:var(--muted); }
-.lo-cancel:hover{ color:#063566; }
+.lo-cancel:hover{ color:#0B4E3D; }
 </style>
 </head>
 <body>

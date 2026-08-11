@@ -9,8 +9,12 @@ admin (PDO prepared statements, CSRF, `partials/head.php`+`foot.php`).
 ## 1. Install / upgrade
 
 ```bash
-C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v7.sql
+C:\xampp\mysql\bin\mysql.exe -u root pwf < database\eduskill.sql
 ```
+
+There is one SQL file for the whole project. On a database that already holds
+real data, run **Section 2 only** (see the banner inside the file). The tables
+and settings this module needs are listed below.
 
 Adds `schools` + `school_staff`, `school_batches`, `school_students`,
 `school_fee_structures`, `school_fee_payments`, `school_attendance`, and three

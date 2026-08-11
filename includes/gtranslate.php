@@ -26,7 +26,11 @@
  * =============================================================================
  */
 ?>
-<div class="gt-switch tu-hide-sm">
+<?php /* No tu-hide-sm here. Hiding OUR control on small screens did not hide the
+         widget — it left Google's own unstyled gadget ("Select Language | v")
+         showing through, which is what mobile visitors actually saw. The custom
+         switch stays at every width; the CSS below keeps it compact. */ ?>
+<div class="gt-switch">
     <span class="gt-ico" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">

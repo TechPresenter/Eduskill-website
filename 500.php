@@ -102,7 +102,7 @@ if ($booted) {
 <title>Something Went Wrong — EDUSKILL INDIA FOUNDATION</title>
 <style>
     :root{
-        --brand:#063566; --brand-2:#084881; --green:#58A42F; --orange:#E67B1D;
+        --brand:#0B4E3D; --brand-2:#174D3D; --green:#2F8065; --orange:#F15A24;
         --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc; --card:#ffffff;
     }
     @media (prefers-color-scheme: dark){
@@ -118,7 +118,7 @@ if ($booted) {
     .wrap{
         width:100%; max-width:560px; background:var(--card); border:1px solid var(--line);
         border-radius:18px; padding:clamp(1.75rem,5vw,3rem); text-align:center;
-        box-shadow:0 18px 45px -20px rgba(6,53,102,.35);
+        box-shadow:0 18px 45px -20px rgba(11,78,61,.35);
     }
     .eyebrow{
         display:inline-block; font-size:.7rem; font-weight:700; letter-spacing:.14em;

@@ -64,10 +64,10 @@ include __DIR__ . '/partials/head.php';
 
 <!-- Rates strip -->
 <div class="em-rates">
-  <div class="em-rate"><span class="em-rate-num"><?= $stats['deliver_rate'] ?>%</span><span class="em-rate-lbl">Delivery rate</span><div class="progress"><div class="progress-bar" style="width:<?= min(100, $stats['deliver_rate']) ?>%;background:#58A42F;"></div></div></div>
+  <div class="em-rate"><span class="em-rate-num"><?= $stats['deliver_rate'] ?>%</span><span class="em-rate-lbl">Delivery rate</span><div class="progress"><div class="progress-bar" style="width:<?= min(100, $stats['deliver_rate']) ?>%;background:#2F8065;"></div></div></div>
   <div class="em-rate"><span class="em-rate-num"><?= $stats['open_rate'] ?>%</span><span class="em-rate-lbl">Open rate</span><div class="progress"><div class="progress-bar" style="width:<?= min(100, $stats['open_rate']) ?>%;background:#8b5cf6;"></div></div></div>
-  <div class="em-rate"><span class="em-rate-num"><?= $stats['click_rate'] ?>%</span><span class="em-rate-lbl">Click rate</span><div class="progress"><div class="progress-bar" style="width:<?= min(100, $stats['click_rate']) ?>%;background:#084881;"></div></div></div>
-  <div class="em-rate"><span class="em-rate-num"><?= $stats['bounce_rate'] ?>%</span><span class="em-rate-lbl">Bounce rate</span><div class="progress"><div class="progress-bar" style="width:<?= min(100, $stats['bounce_rate']) ?>%;background:#E67B1D;"></div></div></div>
+  <div class="em-rate"><span class="em-rate-num"><?= $stats['click_rate'] ?>%</span><span class="em-rate-lbl">Click rate</span><div class="progress"><div class="progress-bar" style="width:<?= min(100, $stats['click_rate']) ?>%;background:#174D3D;"></div></div></div>
+  <div class="em-rate"><span class="em-rate-num"><?= $stats['bounce_rate'] ?>%</span><span class="em-rate-lbl">Bounce rate</span><div class="progress"><div class="progress-bar" style="width:<?= min(100, $stats['bounce_rate']) ?>%;background:#F15A24;"></div></div></div>
 </div>
 
 <!-- Chart + Scheduled -->
@@ -164,25 +164,25 @@ include __DIR__ . '/partials/head.php';
 .em-kpi-ic{position:absolute;right:12px;top:12px;opacity:.35;}.em-kpi-ic svg{width:30px;height:30px;}
 .em-kpi-val{font-size:1.9rem;font-weight:800;line-height:1;}
 .em-kpi-label{font-size:.82rem;opacity:.92;margin-top:4px;font-weight:600;}
-.g-blue{background:linear-gradient(135deg,#063566,#084881);}.g-green{background:linear-gradient(135deg,#308629,#58A42F);}
-.g-violet{background:linear-gradient(135deg,#084881,#a855f7);}.g-cyan{background:linear-gradient(135deg,#084881,#084881);}
-.g-amber{background:linear-gradient(135deg,#b45309,#E67B1D);}.g-red{background:linear-gradient(135deg,#b91c1c,#ef4444);}
-.g-orange{background:linear-gradient(135deg,#c2410c,#E67B1D);}.g-slate{background:linear-gradient(135deg,#475569,#64748b);}
+.g-blue{background:linear-gradient(135deg,#0B4E3D,#174D3D);}.g-green{background:linear-gradient(135deg,#1F5C48,#2F8065);}
+.g-violet{background:linear-gradient(135deg,#174D3D,#a855f7);}.g-cyan{background:linear-gradient(135deg,#174D3D,#174D3D);}
+.g-amber{background:linear-gradient(135deg,#b45309,#F15A24);}.g-red{background:linear-gradient(135deg,#b91c1c,#ef4444);}
+.g-orange{background:linear-gradient(135deg,#c2410c,#F15A24);}.g-slate{background:linear-gradient(135deg,#475569,#64748b);}
 .em-rates{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:6px;}
 .em-rate{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
 .em-rate-num{font-size:1.4rem;font-weight:800;color:var(--text);}
 .em-rate-lbl{display:block;font-size:.78rem;color:var(--muted);margin:2px 0 8px;}
 .em-sched-list,.em-timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;}
 .em-sched-list li{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border-soft);}
-.em-sched-ic svg{width:16px;height:16px;color:#E67B1D;}
+.em-sched-ic svg{width:16px;height:16px;color:#F15A24;}
 .em-sched-list a{flex:1;display:flex;flex-direction:column;min-width:0;}
 .em-sched-list a strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.88rem;}
 .em-sched-list a .muted{font-size:.76rem;}
 .em-timeline li{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--border-soft);font-size:.85rem;}
 .em-tl-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--surface-2);}
 .em-tl-ic svg{width:15px;height:15px;}
-.em-tl-ic.ev-open{background:#f3e8ff;color:#084881;}.em-tl-ic.ev-click{background:#cffafe;color:#084881;}
-.em-tl-ic.ev-sent{background:#dbeafe;color:#063566;}.em-tl-ic.ev-bounce,.em-tl-ic.ev-fail{background:#fee2e2;color:#dc2626;}
+.em-tl-ic.ev-open{background:#f3e8ff;color:#174D3D;}.em-tl-ic.ev-click{background:#cffafe;color:#174D3D;}
+.em-tl-ic.ev-sent{background:#dbeafe;color:#0B4E3D;}.em-tl-ic.ev-bounce,.em-tl-ic.ev-fail{background:#fee2e2;color:#dc2626;}
 .em-tl-body{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .em-snapshot{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;}
 .em-snap{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);transition:.15s;}
@@ -201,9 +201,9 @@ include __DIR__ . '/partials/head.php';
     new Chart(document.getElementById('emChart'), {
       type: 'line',
       data: { labels: labels, datasets: [
-        { label: 'Sent',    data: S.map(function(r){return r.sent;}),    borderColor: '#063566', backgroundColor: 'rgba(6,53,102,.08)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0 },
+        { label: 'Sent',    data: S.map(function(r){return r.sent;}),    borderColor: '#0B4E3D', backgroundColor: 'rgba(11,78,61,.08)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0 },
         { label: 'Opened',  data: S.map(function(r){return r.opened;}),  borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.06)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0 },
-        { label: 'Clicked', data: S.map(function(r){return r.clicked;}), borderColor: '#084881', backgroundColor: 'rgba(6,182,212,.06)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0 }
+        { label: 'Clicked', data: S.map(function(r){return r.clicked;}), borderColor: '#174D3D', backgroundColor: 'rgba(6,182,212,.06)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0 }
       ]},
       options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
         plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } },

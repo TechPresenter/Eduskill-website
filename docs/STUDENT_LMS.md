@@ -13,8 +13,12 @@ are reused; certificates/marksheets print via the browser (print-to-PDF).
 ## 1. Install / upgrade
 
 ```bash
-C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v8.sql
+C:\xampp\mysql\bin\mysql.exe -u root pwf < database\eduskill.sql
 ```
+
+There is one SQL file for the whole project. On a database that already holds
+real data, run **Section 2 only** (see the banner inside the file). The tables
+and settings this module needs are listed below.
 
 Adds profile/portal columns to `school_students`, `discount`/`scholarship` to
 `school_fee_payments`, and the tables: `admissions`, `student_documents`,

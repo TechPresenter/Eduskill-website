@@ -51,37 +51,72 @@ function membership_tier_color(?array $plan): string
     $name = strtolower((string) ($plan['name'] ?? ''));
     foreach ([
         'platinum' => '#4b5563',
-        'diamond'  => '#084881',
+        'diamond'  => '#174D3D',
         'gold'     => '#b45309',
         'silver'   => '#64748b',
         'bronze'   => '#92400e',
-        'basic'    => '#063566',
-        'partner'  => '#084881',
+        'basic'    => '#0B4E3D',
+        'partner'  => '#174D3D',
     ] as $needle => $hex) {
         if (str_contains($name, $needle)) {
             return $hex;
         }
     }
-    return '#063566';
+    return '#0B4E3D';
 }
 
-/** Human tier label for a member (plan name, or a sensible fallback). */
+/**
+ * Human tier label for a member — the plan's name, or '' when there is no plan.
+ *
+ * It used to answer 'Member' for a member with plan_id = NULL, which is a tier
+ * nobody granted them: every card's tier chip, the card page's details panel and
+ * the public verification page all printed the invented word, and on a row whose
+ * own name was empty the card read "Member" beside "Member". Callers must treat
+ * '' as "no tier" and DROP the row, exactly as they do for any other empty value.
+ */
 function member_tier_label(array $member): string
 {
     $plan = membership_plan((int) ($member['plan_id'] ?? 0));
-    return $plan['name'] ?? 'Member';
+    return trim((string) ($plan['name'] ?? ''));
 }
 
 /* =============================================================================
  |  MEMBERSHIP ID + QR TOKEN
  |============================================================================*/
 
-/** Build a human membership ID, e.g. PWF-2026-00042. */
+/**
+ * Build a human membership ID, e.g. EIF-2026-00042.
+ *
+ * The serial is a RANDOM unused 5-digit number, not members.id. It used to be
+ * sprintf('%05d', $id), so the printed code WAS the primary key: /verify/member/
+ * {code} could be walked from 00001 upward to census the whole register, and any
+ * single card disclosed both its holder's registration order and the
+ * foundation's total membership. Random serials make the URL space 100,000 wide
+ * per year instead of "however many members exist", which — with the now-atomic
+ * 8-per-600s limiter on the code path — is the difference between a few hundred
+ * requests and thousands of hours.
+ *
+ * The FORMAT is deliberately unchanged: same PREFIX-YEAR-NNNNN shape, same
+ * length, same alphabet, so every printed card, the .htaccess character class,
+ * the admin search and the "Example: EIF-2026-00042" hint all still hold, and
+ * codes already issued keep working (member_code is stored, not derived).
+ *
+ * $id is the deterministic fallback if the year's space is ever exhausted, which
+ * for a five-digit serial means 100,000 members in one calendar year.
+ */
 function member_generate_code(int $id): string
 {
-    $prefix = strtoupper((string) get_setting('membership_code_prefix', 'PWF'));
-    $prefix = preg_replace('/[^A-Z0-9]/', '', $prefix) ?: 'PWF';
-    return sprintf('%s-%s-%05d', $prefix, date('Y'), $id);
+    $prefix = strtoupper((string) get_setting('membership_code_prefix', 'EIF'));
+    $prefix = preg_replace('/[^A-Z0-9]/', '', $prefix) ?: 'EIF';
+    $year   = date('Y');
+
+    for ($try = 0; $try < 40; $try++) {
+        $code = sprintf('%s-%s-%05d', $prefix, $year, random_int(1, 99999));
+        if (!find_by('members', 'member_code', $code)) {
+            return $code;
+        }
+    }
+    return sprintf('%s-%s-%05d', $prefix, $year, $id);
 }
 
 /** A fresh, unguessable, table-unique QR token. */

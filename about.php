@@ -65,17 +65,17 @@ include __DIR__ . '/includes/header.php';
    is re-pointed to the Foundation's forest-green identity here.
    ========================================================================== */
 .about-page{
-    --grad-brand: linear-gradient(135deg,#063566 0%,#084881 100%);
-    --brand-600:#063566;
+    --grad-brand: linear-gradient(135deg,#0B4E3D 0%,#174D3D 100%);
+    --brand-600:#0B4E3D;
     --shadow-brand:0 12px 30px rgba(20,83,45,.28);
-    --ring:rgba(6,53,102,.18);
-    --pwf-gold:#E67B1D;
-    --pwf-teal:#084881;
+    --ring:rgba(11,78,61,.18);
+    --pwf-gold:#F15A24;
+    --pwf-teal:#174D3D;
 }
 
 /* ---- Unique hero treatment (page-hero is rendered by header.php) -------- */
 .about-hero-mode .page-hero{
-    background:linear-gradient(130deg,#0e3d24 0%,#063566 46%,#084881 100%);
+    background:linear-gradient(130deg,#0e3d24 0%,#0B4E3D 46%,#174D3D 100%);
 }
 .about-hero-mode .page-hero::before{
     content:"";position:absolute;inset:0;z-index:0;opacity:.5;
@@ -86,8 +86,8 @@ include __DIR__ . '/includes/header.php';
 }
 .about-hero-mode .page-hero::after{
     background:
-        radial-gradient(620px circle at 82% -25%, rgba(230,123,29,.30), transparent 60%),
-        radial-gradient(560px circle at 10% 120%, rgba(8,72,129,.42), transparent 55%);
+        radial-gradient(620px circle at 82% -25%, rgba(241,90,36,.30), transparent 60%),
+        radial-gradient(560px circle at 10% 120%, rgba(23,77,61,.42), transparent 55%);
 }
 .about-hero-mode .page-hero h1{
     font-size:clamp(2.1rem,5vw,3.15rem);letter-spacing:-.02em;line-height:1.08;
@@ -101,13 +101,13 @@ include __DIR__ . '/includes/header.php';
 .about-trust .trust-card{
     display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;align-items:center;justify-content:center;
     padding:1rem 1.6rem;border-radius:18px;
-    background:rgba(255,255,255,.82);border:1px solid rgba(6,53,102,.12);
+    background:rgba(255,255,255,.82);border:1px solid rgba(11,78,61,.12);
     box-shadow:0 18px 50px -22px rgba(15,61,36,.55);
     backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);
 }
 :root[data-theme="dark"] .about-trust .trust-card{background:rgba(20,30,32,.72);border-color:rgba(255,255,255,.08);}
 .about-trust .t-item{display:inline-flex;align-items:center;gap:.5rem;font-weight:600;font-size:.9rem;color:var(--text-soft);}
-.about-trust .t-item svg.lucide{width:18px;height:18px;color:#063566;}
+.about-trust .t-item svg.lucide{width:18px;height:18px;color:#0B4E3D;}
 .about-trust .t-sep{width:1px;height:20px;background:var(--border);}
 @media(max-width:640px){.about-trust .t-sep{display:none;}}
 
@@ -117,7 +117,7 @@ include __DIR__ . '/includes/header.php';
     background:linear-gradient(90deg,transparent,var(--pwf-teal));}
 .pwf-orn .ln.r{background:linear-gradient(90deg,var(--pwf-teal),transparent);}
 .pwf-orn .dot{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;
-    background:linear-gradient(135deg,#063566,#084881);color:#fff;box-shadow:0 8px 20px rgba(20,83,45,.34);}
+    background:linear-gradient(135deg,#0B4E3D,#174D3D);color:#fff;box-shadow:0 8px 20px rgba(20,83,45,.34);}
 .pwf-orn .dot svg.lucide{width:19px;height:19px;}
 .pwf-orn.light .ln{background:linear-gradient(90deg,transparent,rgba(255,255,255,.6));}
 .pwf-orn.light .ln.r{background:linear-gradient(90deg,rgba(255,255,255,.6),transparent);}
@@ -126,21 +126,21 @@ include __DIR__ . '/includes/header.php';
 /* ---- Typography + card polish ------------------------------------------ */
 .about-page .section-title{letter-spacing:-.02em;}
 .about-page .card-3d::before{
-    background:radial-gradient(600px circle at var(--mx,50%) var(--my,0%),rgba(8,72,129,.14),transparent 42%);
+    background:radial-gradient(600px circle at var(--mx,50%) var(--my,0%),rgba(23,77,61,.14),transparent 42%);
 }
 .about-page .card-3d{transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s cubic-bezier(.16,1,.3,1),border-color .35s;}
-.about-page .card-3d:hover{border-color:rgba(8,72,129,.35);}
+.about-page .card-3d:hover{border-color:rgba(23,77,61,.35);}
 .about-page .icon-badge{transition:transform .35s cubic-bezier(.16,1,.3,1);}
 .about-page .card-3d:hover .icon-badge,
 .about-page .value-card:hover .icon-badge{transform:rotate(-6deg) scale(1.08);}
-.about-page .badge-brand{background:rgba(6,53,102,.12);color:#063566;}
+.about-page .badge-brand{background:rgba(11,78,61,.12);color:#0B4E3D;}
 .about-page .chip svg.lucide{width:15px;height:15px;}
 
 /* Value cards get a subtle top gradient rule on hover */
 .about-page .value-card{position:relative;}
 .about-page .value-card::after{
     content:"";position:absolute;left:0;right:0;top:0;height:3px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;
-    background:linear-gradient(90deg,#063566,#084881,var(--pwf-gold));
+    background:linear-gradient(90deg,#0B4E3D,#174D3D,var(--pwf-gold));
     transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.16,1,.3,1);
 }
 .about-page .value-card:hover::after{transform:scaleX(1);}
@@ -149,7 +149,7 @@ include __DIR__ . '/includes/header.php';
 .about-page .facts-card .fact-row{display:flex;gap:.85rem;align-items:flex-start;padding:.55rem 0;}
 .about-page .facts-card .fact-row + .fact-row{border-top:1px dashed var(--border);}
 .about-page .facts-card .fi{flex-shrink:0;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
-    background:linear-gradient(135deg,rgba(6,53,102,.14),rgba(8,72,129,.14));color:#063566;}
+    background:linear-gradient(135deg,rgba(11,78,61,.14),rgba(23,77,61,.14));color:#0B4E3D;}
 .about-page .facts-card .fi svg.lucide{width:18px;height:18px;}
 .about-page .facts-card .fk{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;}
 .about-page .facts-card .fv{font-weight:600;color:var(--text);line-height:1.35;}
@@ -163,7 +163,7 @@ include __DIR__ . '/includes/header.php';
 .about-page .section-brand::after{
     content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.5;
     background:
-        radial-gradient(480px circle at 12% 0%,rgba(230,123,29,.28),transparent 55%),
+        radial-gradient(480px circle at 12% 0%,rgba(241,90,36,.28),transparent 55%),
         radial-gradient(520px circle at 90% 110%,rgba(255,255,255,.14),transparent 55%);
 }
 .about-page .section-brand > .container{position:relative;z-index:1;}
@@ -211,7 +211,7 @@ include __DIR__ . '/includes/header.php';
         <div class="reveal" data-reveal="right">
             <span class="eyebrow">Who We Are</span>
             <h2 class="section-title"><?= e(get_setting('home_about_title', 'A movement for dignity, hope and opportunity')) ?></h2>
-            <p class="text-muted"><?= e(get_setting('home_about_text', 'EDUSKILL INDIA FOUNDATION is a registered non-profit based in Vaishali, Bihar. Since our inception we have worked hand-in-hand with communities to deliver education, healthcare, skill development and emergency relief — always with compassion, transparency and accountability. We believe lasting change is built alongside people, not handed to them.')) ?></p>
+            <p class="text-muted"><?= e(get_setting('home_about_text', 'EDUSKILL INDIA FOUNDATION is a registered non-profit. Since our inception we have worked hand-in-hand with communities to deliver education, healthcare, skill development and emergency relief — always with compassion, transparency and accountability. We believe lasting change is built alongside people, not handed to them.')) ?></p>
             <p class="text-muted mt-2"><?= e(get_setting('about_registration_text', SITE_NAME . ' is a Government-registered Section 8 Non-Profit Organization incorporated under the Companies Act, 2013. The Foundation is officially registered with the Ministry of Corporate Affairs (MCA) and enrolled on the NITI Aayog NGO Darpan Portal, enabling collaboration with government departments, CSR partners, educational institutions, and social organizations.')) ?></p>
             <ul class="list-check mt-3">
                 <li>Transparent, community-led programs with measurable impact</li>
@@ -392,7 +392,7 @@ include __DIR__ . '/includes/header.php';
                                     <a class="chip" href="mailto:<?= e($m['email']) ?>"><?= lucide('mail') ?> Email</a>
                                 <?php endif; ?>
                                 <?php foreach ($socials as $platform => $link): if (empty($link)) continue; ?>
-                                    <a class="chip" href="<?= e($link) ?>" target="_blank" rel="noopener"><?= social_fa((string) $platform) ?> <?= e(ucfirst((string) $platform)) ?></a>
+                                    <a class="chip" href="<?= e($link) ?>" target="_blank" rel="noopener"><?= social_svg((string) $platform) ?> <?= e(ucfirst((string) $platform)) ?></a>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>

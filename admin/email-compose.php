@@ -276,7 +276,7 @@ include __DIR__ . '/partials/head.php';
 .var-chips,.preview-toggle{display:flex;flex-wrap:wrap;gap:6px;}
 .var-chip{background:var(--grad-brand-soft,#eff6ff);color:var(--brand-600);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.78rem;font-family:monospace;cursor:pointer;transition:.15s;}
 .var-chip:hover{background:var(--brand-600);color:#fff;}
-.cmp-modal{position:fixed;inset:0;z-index:1000;background:rgba(6,53,102,.6);display:grid;place-items:center;padding:20px;backdrop-filter:blur(3px);}
+.cmp-modal{position:fixed;inset:0;z-index:1000;background:rgba(11,78,61,.6);display:grid;place-items:center;padding:20px;backdrop-filter:blur(3px);}
 /* `display:grid` above beats the [hidden] attribute, which made the modal
    show on page load and made the close button do nothing. */
 .cmp-modal[hidden]{display:none;}

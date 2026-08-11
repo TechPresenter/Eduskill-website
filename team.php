@@ -90,7 +90,7 @@ $render_member = function (array $m, bool $lead = false): void {
                 <?php foreach ($socials as $platform => $link): ?>
                     <?php $link = is_string($link) ? safe_href($link) : ''; if ($link === '') { continue; } ?>
                     <a href="<?= e($link) ?>" target="_blank" rel="noopener"
-                       aria-label="<?= e($m['name'] . ' on ' . (string) $platform) ?>"><?= social_fa((string) $platform) ?></a>
+                       aria-label="<?= e($m['name'] . ' on ' . (string) $platform) ?>"><?= social_svg((string) $platform) ?></a>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>

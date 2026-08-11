@@ -35,7 +35,7 @@ $html = dh_render($tpl, $data, $issued);
 body{margin:0;padding:5rem 1.5rem 2rem;background:#e5e7eb;}
 .pv-bar{position:fixed;top:0;left:0;right:0;background:#0f172a;color:#fff;padding:.7rem 1rem;display:flex;gap:.6rem;justify-content:center;align-items:center;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .pv-bar b{margin-right:auto;padding-left:.5rem;font-size:.9rem}
-.pv-bar button,.pv-bar a{background:#063566;color:#fff;border:0;padding:.55rem 1rem;border-radius:9px;cursor:pointer;text-decoration:none;font:inherit;font-weight:600}
+.pv-bar button,.pv-bar a{background:#0B4E3D;color:#fff;border:0;padding:.55rem 1rem;border-radius:9px;cursor:pointer;text-decoration:none;font:inherit;font-weight:600}
 </style></head><body>
 <div class="pv-bar no-print"><b><?= e($issued['doc_no']) ?></b><button onclick="window.print()">Print / Save as PDF</button><a href="<?= e(url('verify-document?t=' . $issued['qr_token'])) ?>">Verify</a></div>
 <?= $html ?>

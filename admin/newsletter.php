@@ -133,8 +133,8 @@ if ($search !== '')       $exportQs['q'] = $search;
 $exportUrl = admin_url('newsletter?' . http_build_query($exportQs));
 
 $statCards = [
-    ['key' => '',             'label' => 'All Subscribers', 'icon' => 'mail',         'color' => '#063566', 'count' => $counts['all']],
-    ['key' => 'subscribed',   'label' => 'Subscribed',      'icon' => 'circle-check', 'color' => '#58A42F', 'count' => $counts['subscribed']],
+    ['key' => '',             'label' => 'All Subscribers', 'icon' => 'mail',         'color' => '#0B4E3D', 'count' => $counts['all']],
+    ['key' => 'subscribed',   'label' => 'Subscribed',      'icon' => 'circle-check', 'color' => '#2F8065', 'count' => $counts['subscribed']],
     ['key' => 'unsubscribed', 'label' => 'Unsubscribed',    'icon' => 'ban',          'color' => '#64748b', 'count' => $counts['unsubscribed']],
 ];
 

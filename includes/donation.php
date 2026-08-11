@@ -92,7 +92,7 @@ function donation_send_receipt(int $donationId): bool
         '<p>Dear ' . e($d['donor_name']) . ',</p>'
         . '<p>Thank you for your generous donation of <strong>' . money($d['amount'], $d['currency'] === 'INR' ? '₹' : $d['currency'] . ' ', 2)
         . '</strong>. Your official receipt (No. ' . e($d['receipt_no']) . ') is ready.</p>'
-        . '<p><a href="' . e($link) . '" style="display:inline-block;padding:11px 20px;background:#063566;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">Download receipt</a></p>'
+        . '<p><a href="' . e($link) . '" style="display:inline-block;padding:11px 20px;background:#0B4E3D;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;">Download receipt</a></p>'
         . '<p>Donations to ' . e(get_setting('site_name', SITE_NAME)) . ' are eligible for tax exemption under Section 80G.</p>');
     if ($ok) {
         db_update('donations', ['receipt_sent' => 1], 'id = :id', [':id' => $donationId]);

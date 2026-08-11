@@ -206,10 +206,10 @@ foreach ($STATUSES as $s) {
 }
 
 $statCards = [
-    ['key' => '',         'label' => 'All Messages', 'icon' => 'mailbox',   'color' => '#063566', 'count' => $counts['all']],
-    ['key' => 'unread',   'label' => 'Unread',       'icon' => 'mail',      'color' => '#E67B1D', 'count' => $counts['unread']],
-    ['key' => 'read',     'label' => 'Read',         'icon' => 'book-open', 'color' => '#084881', 'count' => $counts['read']],
-    ['key' => 'replied',  'label' => 'Replied',      'icon' => 'reply',     'color' => '#58A42F', 'count' => $counts['replied']],
+    ['key' => '',         'label' => 'All Messages', 'icon' => 'mailbox',   'color' => '#0B4E3D', 'count' => $counts['all']],
+    ['key' => 'unread',   'label' => 'Unread',       'icon' => 'mail',      'color' => '#F15A24', 'count' => $counts['unread']],
+    ['key' => 'read',     'label' => 'Read',         'icon' => 'book-open', 'color' => '#174D3D', 'count' => $counts['read']],
+    ['key' => 'replied',  'label' => 'Replied',      'icon' => 'reply',     'color' => '#2F8065', 'count' => $counts['replied']],
     ['key' => 'archived', 'label' => 'Archived',     'icon' => 'archive',   'color' => '#64748b', 'count' => $counts['archived']],
 ];
 

@@ -120,19 +120,29 @@ $renderRow = static function (array $m, bool $isChild = false) use ($ICONS): voi
     $newTab = ($m['target'] ?? '_self') === '_blank';
     ?>
     <div class="mrow<?= $isChild ? ' is-child' : '' ?><?= empty($m['status']) ? ' is-off' : '' ?>" data-id="<?= (int) $m['id'] ?>" data-loc="<?= e($m['location'] ?? 'header') ?>">
-        <span class="mrow-drag" data-drag title="Drag to reorder"><?= lucide('grip-vertical') ?></span>
+        <?php /* The grip is a mouse affordance only — a <span> with no tabindex, no role
+                 and no key handler, so reordering was drag-only (fails SC 2.1.1 Keyboard
+                 and SC 2.5.7 Dragging Movements). The two buttons beside it are the
+                 keyboard path, mirroring admin/page-builder.php's move-up/move-down.
+                 They reorder the DOM and then call the SAME saveOrder() the drag already
+                 used — same _do=reorder, same order[] field, same endpoint. */ ?>
+        <span class="mrow-drag" data-drag title="Drag to reorder" aria-hidden="true"><?= lucide('grip-vertical') ?></span>
+        <span class="mrow-move">
+            <button type="button" class="icon-btn" data-move="up" title="Move up" aria-label="Move up"><?= lucide('chevron-up') ?></button>
+            <button type="button" class="icon-btn" data-move="down" title="Move down" aria-label="Move down"><?= lucide('chevron-down') ?></button>
+        </span>
         <span class="mrow-ico"><i data-lucide="<?= e($m['icon'] ?: 'circle') ?>"></i></span>
-        <input class="mrow-in mrow-label" data-f="title" value="<?= e($m['title'] ?? '') ?>" placeholder="Label" aria-label="Label">
-        <input class="mrow-in mrow-url" data-f="url" value="<?= e($m['url'] ?? '') ?>" placeholder="/link" aria-label="URL">
-        <input class="mrow-in mrow-key" data-f="page_key" value="<?= e($m['page_key'] ?? '') ?>" placeholder="page key" aria-label="Page key">
-        <select class="mrow-sel" data-f="icon" aria-label="Icon">
+        <input class="form-control mrow-label" data-f="title" value="<?= e($m['title'] ?? '') ?>" placeholder="Label" aria-label="Label">
+        <input class="form-control mrow-url" data-f="url" value="<?= e($m['url'] ?? '') ?>" placeholder="/link" aria-label="URL">
+        <input class="form-control mrow-key" data-f="page_key" value="<?= e($m['page_key'] ?? '') ?>" placeholder="page key" aria-label="Page key">
+        <select class="form-select mrow-sel" data-f="icon" aria-label="Icon">
             <?php foreach ($ICONS as $ic): ?><option value="<?= e($ic) ?>" <?= ($m['icon'] ?? '') === $ic ? 'selected' : '' ?>><?= $ic === '' ? 'no icon' : e($ic) ?></option><?php endforeach; ?>
         </select>
         <label class="mrow-chk" title="Mega menu"><input type="checkbox" data-f="mega" <?= !empty($m['mega']) ? 'checked' : '' ?>> Mega</label>
         <label class="mrow-chk" title="Open in new tab"><input type="checkbox" data-f="new_tab" <?= $newTab ? 'checked' : '' ?>> New</label>
-        <button type="button" class="mrow-btn save" data-act="save"><?= lucide('check') ?> Save</button>
-        <a class="mrow-ib" href="<?= e($m['url'] && preg_match('#^https?://#', $m['url']) ? $m['url'] : url($m['url'] ?? '/')) ?>" target="_blank" title="Open"><?= lucide('eye') ?></a>
-        <button type="button" class="mrow-ib danger" data-act="delete" title="Delete"><?= lucide('x') ?></button>
+        <button type="button" class="btn btn-primary btn-sm" data-act="save"><?= lucide('check') ?> Save</button>
+        <a class="icon-btn" href="<?= e($m['url'] && preg_match('#^https?://#', $m['url']) ? $m['url'] : url($m['url'] ?? '/')) ?>" target="_blank" title="Open"><?= lucide('eye') ?></a>
+        <button type="button" class="icon-btn danger" data-act="delete" title="Delete"><?= lucide('x') ?></button>
     </div>
     <?php
 };
@@ -141,75 +151,75 @@ $page_title = 'Navigation Menu';
 include __DIR__ . '/partials/head.php';
 ?>
 <style>
+/* Layout-only rules for the menu builder. Tabs, panels, buttons, icon buttons
+   and form controls all come from the shared admin layers. */
 .nm-wrap{max-width:1240px}
-.nm-tabs{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:3px;gap:2px;margin-bottom:1.2rem}
-.nm-tab{border:0;background:transparent;color:var(--text-soft);font:inherit;font-weight:650;font-size:.9rem;padding:.5rem 1.1rem;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;transition:.15s}
-.nm-tab.is-active{background:linear-gradient(135deg,#308629,#58A42F);color:#fff;box-shadow:0 8px 18px -10px rgba(48,134,41,.7)}
-.nm-grid{display:grid;grid-template-columns:1fr 340px;gap:1.4rem;align-items:start}
-.nm-hint{display:flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.82rem}
-.mrow{display:flex;align-items:center;gap:.5rem;padding:.55rem .6rem;border:1px solid var(--border);border-radius:13px;background:var(--surface);margin-bottom:.6rem;
-    box-shadow:0 1px 2px rgba(6,53,102,.04);transition:box-shadow .16s ease,border-color .16s ease,transform .16s ease,opacity .16s ease;animation:nmrise .3s ease both}
-.mrow:hover{border-color:#a7f3d0;box-shadow:0 10px 24px -16px rgba(48,134,41,.5)}
-.mrow.is-child{margin-left:2.2rem;background:var(--surface-2);border-style:dashed}
+.nm-grid{display:grid;grid-template-columns:1fr 340px;gap:var(--sp-5);align-items:start}
+.nm-hint{display:flex;align-items:center;gap:var(--sp-1);color:var(--muted);font-size:.82rem}
+.nm-listhead{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-4)}
+
+/* One draggable, inline-editable row of the tree. */
+.mrow{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2);margin-bottom:var(--sp-2);
+    border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);box-shadow:var(--elev-1);
+    transition:border-color var(--dur-1) var(--ease),opacity var(--dur-1) var(--ease)}
+.mrow:hover{border-color:var(--muted)}
+.mrow.is-child{margin-left:var(--sp-7);background:var(--surface-2);border-style:dashed}
 .mrow.is-off{opacity:.55}
 .mrow.dragging{opacity:.4;border-style:dashed}
-.mrow.drop-target{border-color:#58A42F;box-shadow:0 0 0 3px rgba(88,164,47,.18)}
-@keyframes nmrise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.mrow-drag{cursor:grab;color:var(--muted);display:grid;place-items:center;width:26px;height:34px;flex:0 0 auto;border-radius:7px}
+.mrow.drop-target{border-color:var(--brand-600,#0B4E3D);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand-600,#0B4E3D) 18%,transparent)}
+.mrow-drag{flex:0 0 auto;width:26px;height:34px;display:grid;place-items:center;cursor:grab;color:var(--muted);border-radius:var(--r-sm)}
 .mrow-drag:hover{background:var(--surface-2);color:var(--text)}
 .mrow-drag:active{cursor:grabbing}
-.mrow-ico{width:38px;height:38px;flex:0 0 auto;display:grid;place-items:center;border-radius:10px;background:var(--grad-brand-soft,rgba(88,164,47,.12));color:#308629}
+/* Keyboard reorder controls. Stacked so the pair costs one column, not two. */
+.mrow-move{flex:0 0 auto;display:grid;gap:2px}
+.mrow-move .icon-btn{width:24px;height:19px;border-radius:var(--r-sm)}
+.mrow-move .icon-btn svg{width:13px;height:13px}
+/* Under a thumb the stacked pair is unreachable; side by side at 44px each. */
+@media (max-width:1024px),(pointer:coarse){
+    .mrow-move{grid-auto-flow:column}
+    .mrow-move .icon-btn{width:auto;height:auto}
+}
+.mrow-ico{flex:0 0 auto;width:38px;height:38px;display:grid;place-items:center;border-radius:var(--r-md);
+    background:color-mix(in srgb,var(--brand-600,#0B4E3D) 10%,transparent);color:var(--brand-600,#0B4E3D)}
 .mrow-ico svg,.mrow-ico i{width:19px;height:19px}
-.mrow-in,.mrow-sel{border:1px solid var(--border);border-radius:9px;padding:.5rem .6rem;background:var(--surface);color:var(--text);font:inherit;font-size:.86rem;transition:border-color .15s,box-shadow .15s;min-width:0}
-.mrow-in:focus,.mrow-sel:focus{outline:none;border-color:#58A42F;box-shadow:0 0 0 3px rgba(88,164,47,.15)}
+/* the shared control, sized down for a single-line editor row */
+.mrow .form-control,.mrow .form-select{width:auto;min-width:0;font-size:.86rem;padding:var(--sp-2) var(--sp-3)}
 .mrow-label{flex:1 1 150px}.mrow-url{flex:1 1 130px}.mrow-key{flex:0 1 110px}.mrow-sel{flex:0 0 130px}
-.mrow-chk{display:inline-flex;align-items:center;gap:.28rem;font-size:.76rem;font-weight:650;color:var(--text-soft);white-space:nowrap;cursor:pointer;flex:0 0 auto}
-.mrow-chk input{accent-color:#308629}
-.mrow-btn{display:inline-flex;align-items:center;gap:.35rem;border:0;border-radius:9px;padding:.5rem .8rem;font:inherit;font-weight:700;font-size:.82rem;cursor:pointer;flex:0 0 auto;
-    background:linear-gradient(135deg,#308629,#58A42F);color:#fff;box-shadow:0 8px 16px -9px rgba(48,134,41,.7);transition:transform .15s,box-shadow .2s,background .2s}
-.mrow-btn:hover{transform:translateY(-2px)}
-.mrow-btn svg{width:1em;height:1em}
-.mrow-btn.saved{background:linear-gradient(135deg,#047857,#308629)}
-.mrow-ib{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text-soft);cursor:pointer;text-decoration:none;transition:.15s}
-.mrow-ib:hover{transform:translateY(-2px);border-color:#58A42F;color:#308629}
-.mrow-ib.danger:hover{border-color:#fecaca;color:#dc2626}
-.mrow-ib svg{width:16px;height:16px}
-.nm-addsub{margin:.1rem 0 .8rem 2.2rem}
-.nm-addsub button{display:inline-flex;align-items:center;gap:.35rem;background:transparent;border:1px dashed var(--border);border-radius:9px;color:var(--muted);font:inherit;font-size:.8rem;font-weight:600;padding:.35rem .7rem;cursor:pointer}
-.nm-addsub button:hover{border-color:#58A42F;color:#308629}
-/* Add card + tips */
-.nm-card{border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--elev-1,0 12px 26px -18px rgba(6,53,102,.4));padding:1.2rem}
-.nm-card h3{margin:0 0 1rem;font-size:1.02rem;font-weight:800;display:flex;align-items:center;gap:.5rem}
-.nm-card h3 svg{color:#308629}
-.nm-field{margin-bottom:.85rem}
-.nm-field label{display:block;font-size:.8rem;font-weight:650;color:var(--text-soft);margin-bottom:.3rem}
-.nm-field input,.nm-field select{width:100%;border:1px solid var(--border);border-radius:10px;padding:.55rem .7rem;background:var(--surface);color:var(--text);font:inherit;font-size:.88rem}
-.nm-field input:focus,.nm-field select:focus{outline:none;border-color:#58A42F;box-shadow:0 0 0 3px rgba(88,164,47,.15)}
-.nm-addbtn{width:100%;justify-content:center;font-size:.95rem;padding:.75rem}
-.nm-tips{margin-top:1rem;background:linear-gradient(135deg,rgba(88,164,47,.08),rgba(48,134,41,.05));border:1px solid rgba(88,164,47,.28);border-radius:14px;padding:1rem 1.1rem}
-.nm-tips strong{color:#047857;display:flex;align-items:center;gap:.4rem}
-.nm-tips ul{margin:.5rem 0 0;padding-left:1.1rem;color:var(--text-soft);font-size:.82rem;line-height:1.6}
-.nm-tips code{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.05rem .3rem;font-size:.92em}
+.mrow .btn,.mrow .icon-btn{flex:0 0 auto}
+.mrow .btn.saved{background:var(--st-ok)}
+.mrow-chk{flex:0 0 auto;display:inline-flex;align-items:center;gap:var(--sp-1);font-size:.76rem;font-weight:650;color:var(--text-soft);white-space:nowrap;cursor:pointer}
+.mrow-chk input{accent-color:var(--brand-600,#0B4E3D)}
+
+.nm-addsub{margin:var(--sp-1) 0 var(--sp-3) var(--sp-7)}
+.nm-addsub button{display:inline-flex;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-3);cursor:pointer;
+    background:transparent;border:1px dashed var(--border);border-radius:var(--r-sm);color:var(--muted);font:inherit;font-size:.8rem;font-weight:600}
+.nm-addsub button:hover{border-color:var(--brand-600,#0B4E3D);color:var(--brand-600,#0B4E3D)}
+.nm-flags{display:flex;gap:var(--sp-5);margin-bottom:var(--sp-4)}
+.nm-addbtn{width:100%;justify-content:center}
+.nm-tips{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-4)}
+.nm-tips strong{display:flex;align-items:center;gap:var(--sp-1);color:var(--brand-600,#0B4E3D)}
+.nm-tips ul{margin:var(--sp-2) 0 0;padding-left:var(--sp-4);color:var(--text-soft);font-size:.82rem;line-height:1.6}
+.nm-tips code{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:0 var(--sp-1);font-size:.92em}
 @media (max-width:960px){.nm-grid{grid-template-columns:1fr}.mrow{flex-wrap:wrap}.mrow-label,.mrow-url{flex:1 1 46%}}
 </style>
 
 <div class="admin-content nm-wrap">
 <div class="admin-page-head">
-    <div><h1><?= lucide('menu') ?> Navigation Menu</h1><span class="muted">Drag to reorder · edit inline · manage header &amp; footer nav</span></div>
+    <div><h1><?= lucide('menu') ?> Navigation Menu</h1><span class="muted">Reorder · edit inline · manage header &amp; footer nav</span></div>
     <a class="btn btn-secondary" href="<?= e(url('/')) ?>" target="_blank"><?= lucide('external-link') ?> View site</a>
 </div>
 
-<div class="nm-tabs">
-    <a class="nm-tab <?= $loc === 'header' ? 'is-active' : '' ?>" href="<?= e(admin_url('menus?loc=header')) ?>"><?= lucide('panel-top') ?> Header</a>
-    <a class="nm-tab <?= $loc === 'footer' ? 'is-active' : '' ?>" href="<?= e(admin_url('menus?loc=footer')) ?>"><?= lucide('panel-bottom') ?> Footer</a>
+<div class="tabs">
+    <a class="tab <?= $loc === 'header' ? 'is-active' : '' ?>" href="<?= e(admin_url('menus?loc=header')) ?>"><?= lucide('panel-top') ?> Header</a>
+    <a class="tab <?= $loc === 'footer' ? 'is-active' : '' ?>" href="<?= e(admin_url('menus?loc=footer')) ?>"><?= lucide('panel-bottom') ?> Footer</a>
 </div>
 
 <div class="nm-grid">
     <!-- Current menu -->
-    <div class="nm-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-            <h3 style="margin:0;"><?= lucide('list') ?> Current Menu <span class="muted" style="font-weight:600;">(<?= (int) $totalItems ?> items)</span></h3>
-            <span class="nm-hint"><?= lucide('move') ?> Drag to reorder</span>
+    <div class="panel"><div class="panel-body">
+        <div class="nm-listhead">
+            <h2 class="panel-title"><?= lucide('list') ?> Current Menu <span class="muted">(<?= (int) $totalItems ?> items)</span></h2>
+            <span class="nm-hint"><?= lucide('move') ?> Drag the handle, or use the arrows, to reorder</span>
         </div>
         <?php if ($top): ?>
             <div data-sortable data-scope="top">
@@ -222,34 +232,39 @@ include __DIR__ . '/partials/head.php';
                 <?php endforeach; ?>
             </div>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('menu') ?></div>No <?= e($loc) ?> menu items yet. Add one on the right.</div>
+            <div class="empty-state">
+                <div class="icon"><?= lucide('menu') ?></div>
+                <p class="es-title">No <?= e($loc) ?> menu items yet</p>
+                <p class="es-text">This is the navigation your visitors actually use. Add the first item
+                    with the form on the right, then reorder and nest as the site grows.</p>
+            </div>
         <?php endif; ?>
-    </div>
+    </div></div>
 
     <!-- Add + tips -->
     <div>
-        <div class="nm-card">
-            <h3><?= lucide('plus-circle') ?> Add Menu Item</h3>
+        <div class="panel"><div class="panel-body">
+            <h2 class="panel-title"><?= lucide('plus-circle') ?> Add Menu Item</h2>
             <form id="nmAdd">
-                <div class="nm-field"><label>Label <span style="color:#dc2626">*</span></label><input name="title" required placeholder="About Us"></div>
-                <div class="nm-field"><label>URL <span style="color:#dc2626">*</span></label><input name="url" required placeholder="/about"></div>
-                <div class="nm-field"><label>Page key <span class="muted">(active state)</span></label><input name="page_key" placeholder="about"></div>
-                <div class="nm-field"><label>Icon</label>
-                    <select name="icon"><?php foreach ($ICONS as $ic): ?><option value="<?= e($ic) ?>"><?= $ic === '' ? '— none —' : e($ic) ?></option><?php endforeach; ?></select></div>
-                <div style="display:flex;gap:1.2rem;margin-bottom:1rem;">
+                <div class="form-group"><label class="form-label">Label <span class="req">*</span></label><input class="form-control" name="title" required placeholder="About Us"></div>
+                <div class="form-group"><label class="form-label">URL <span class="req">*</span></label><input class="form-control" name="url" required placeholder="/about"></div>
+                <div class="form-group"><label class="form-label">Page key <span class="muted">(active state)</span></label><input class="form-control" name="page_key" placeholder="about"></div>
+                <div class="form-group"><label class="form-label">Icon</label>
+                    <select class="form-select" name="icon"><?php foreach ($ICONS as $ic): ?><option value="<?= e($ic) ?>"><?= $ic === '' ? '— none —' : e($ic) ?></option><?php endforeach; ?></select></div>
+                <div class="nm-flags">
                     <label class="mrow-chk"><input type="checkbox" name="mega"> Mega Menu</label>
                     <label class="mrow-chk"><input type="checkbox" name="new_tab"> New Tab</label>
                 </div>
                 <input type="hidden" name="location" value="<?= e($loc) ?>">
-                <button class="mrow-btn nm-addbtn" type="submit"><?= lucide('plus') ?> Add Item</button>
+                <button class="btn btn-primary nm-addbtn" type="submit"><?= lucide('plus') ?> Add Item</button>
             </form>
-        </div>
+        </div></div>
         <div class="nm-tips">
             <strong><?= lucide('lightbulb') ?> Page Key Tips</strong>
             <ul>
                 <li>The <b>page key</b> highlights the active menu item. Use the key the page is known by — e.g. <code>home</code>, <code>about</code>, <code>blog</code>, <code>contact</code>.</li>
                 <li>Turn on <b>Mega</b> for items with sub-items to render a mega dropdown.</li>
-                <li>Drag the <?= lucide('grip-vertical') ?> handle to reorder; changes save automatically.</li>
+                <li>Drag the <?= lucide('grip-vertical') ?> handle to reorder, or use the <?= lucide('chevron-up') ?><?= lucide('chevron-down') ?> arrows if you are on a keyboard. Either way the new order saves automatically.</li>
             </ul>
         </div>
     </div>
@@ -335,7 +350,34 @@ include __DIR__ . '/partials/head.php';
     document.querySelectorAll('[data-sortable]').forEach(function (list) {
         list.querySelectorAll(':scope > .mrow').forEach(function (row) { bindRow(row, list); });
     });
+    /* A top-level row is followed by its child container and its "Add sub-item"
+       button. Moving the row alone would strand them, so a move carries the whole
+       group: the row plus every following sibling up to the next .mrow. In a child
+       list a group is just the row. saveOrder() still sends only the .mrow ids, so
+       what is persisted is identical either way. */
+    function groupOf(row) {
+        var g = [row], n = row.nextElementSibling;
+        while (n && !n.classList.contains('mrow')) { g.push(n); n = n.nextElementSibling; }
+        return g;
+    }
+    function moveRow(row, list, dir) {
+        var rows = Array.prototype.slice.call(list.querySelectorAll(':scope > .mrow'));
+        var i = rows.indexOf(row);
+        if (i < 0) return false;
+        var target = rows[dir === 'up' ? i - 1 : i + 1];
+        if (!target) return false;
+        var group = groupOf(row), tGroup = groupOf(target);
+        var anchor = dir === 'up' ? target : tGroup[tGroup.length - 1].nextSibling;
+        group.forEach(function (el) { list.insertBefore(el, anchor); });
+        saveOrder(list);
+        return true;
+    }
     function bindRow(row, list) {
+        row.querySelectorAll(':scope > .mrow-move > [data-move]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (moveRow(row, list, btn.dataset.move)) { btn.focus(); }
+            });
+        });
         var handle = row.querySelector('[data-drag]');
         if (!handle) return;
         handle.addEventListener('mousedown', function () { row.draggable = true; });

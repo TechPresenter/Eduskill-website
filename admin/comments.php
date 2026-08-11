@@ -104,7 +104,7 @@ if (is_post() && post('_do') === 'reply') {
 /** Render a small POST form that changes a comment's status. */
 $statusForm = static function (int $cid, string $newStatus, string $icon, string $title, string $btnClass = '') use ($statusFilter, $search): void {
     ?>
-    <form method="post" action="<?= e(admin_url('comments')) ?>" style="display:inline;">
+    <form method="post" action="<?= e(admin_url('comments')) ?>" class="inline-form">
         <?= csrf_field() ?>
         <input type="hidden" name="_do" value="status">
         <input type="hidden" name="id" value="<?= $cid ?>">
@@ -119,7 +119,7 @@ $statusForm = static function (int $cid, string $newStatus, string $icon, string
 /** Render the delete POST form (with confirm). */
 $deleteForm = static function (int $cid) use ($statusFilter, $search): void {
     ?>
-    <form method="post" action="<?= e(admin_url('comments')) ?>" data-confirm="Delete this comment permanently?" style="display:inline;">
+    <form method="post" action="<?= e(admin_url('comments')) ?>" data-confirm="Delete this comment permanently?" class="inline-form">
         <?= csrf_field() ?>
         <input type="hidden" name="_do" value="delete">
         <input type="hidden" name="id" value="<?= $cid ?>">
@@ -163,7 +163,7 @@ if ($action === 'view') {
 
     <div class="panel">
         <div class="panel-head">
-            <h3>On &ldquo;<a href="<?= e(admin_url('blogs?action=edit&id=' . (int) $row['blog_id'])) ?>"><?= e($row['blog_title']) ?></a>&rdquo;</h3>
+            <h2 class="panel-title">On &ldquo;<a href="<?= e(admin_url('blogs?action=edit&id=' . (int) $row['blog_id'])) ?>"><?= e($row['blog_title']) ?></a>&rdquo;</h2>
             <span class="pill <?= e($pillClass($row['status'])) ?>"><?= e(ucfirst($row['status'])) ?></span>
         </div>
         <div class="panel-body">
@@ -178,7 +178,7 @@ if ($action === 'view') {
                                 <a href="<?= e($siteHref) ?>" target="_blank" rel="noopener nofollow noreferrer"><?= e($row['website']) ?></a>
                             <?php else: /* Commenter-supplied and not a safe http(s) URL — show it, never link it. */ ?>
                                 <span class="muted"><?= e($row['website']) ?></span>
-                                <span class="badge badge-danger" title="Blocked: not a valid http(s) address">unsafe link</span>
+                                <span class="pill pill-red" title="Blocked: not a valid http(s) address">unsafe link</span>
                             <?php endif; ?>
                         </td></tr>
                         <?php endif; ?>
@@ -194,7 +194,7 @@ if ($action === 'view') {
                 </table>
             </div>
 
-            <div class="form-actions" style="margin-top:1.25rem;">
+            <div class="form-actions" style="margin-top: var(--sp-5);">
                 <?php
                 if ($row['status'] !== 'approved') $statusForm((int) $row['id'], 'approved', lucide('circle-check') . ' Approve', 'Approve', '');
                 if ($row['status'] !== 'pending')  $statusForm((int) $row['id'], 'pending',  lucide('undo-2') . ' Pending', 'Mark pending', '');
@@ -204,7 +204,9 @@ if ($action === 'view') {
             </div>
 
             <div class="divider"></div>
-            <h4 class="mb-2"><?= lucide('reply') ?> Reply publicly</h4>
+            <?php /* h3: a sub-section INSIDE the panel whose heading is the h2 above,
+                     so this one is genuinely a level deeper. */ ?>
+            <h3 class="panel-title mb-2"><?= lucide('reply') ?> Reply publicly</h3>
             <form method="post" action="<?= e(admin_url('comments')) ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="_do" value="reply">
@@ -270,8 +272,8 @@ include __DIR__ . '/partials/head.php';
 
 <!-- Status cards double as filter links -->
 <div class="stat-grid">
-    <?php foreach ($tabs as $key => $tab): ?>
-        <a class="stat-card" href="<?= e(admin_url('comments' . ($key === 'all' ? '' : '?status=' . $key))) ?>" style="<?= $statusFilter === $key ? 'outline:2px solid var(--brand-600);outline-offset:2px;' : '' ?>">
+    <?php foreach ($tabs as $key => $tab): $isCurrent = $statusFilter === $key; ?>
+        <a class="stat-card" href="<?= e(admin_url('comments' . ($key === 'all' ? '' : '?status=' . $key))) ?>"<?= $isCurrent ? ' aria-current="page"' : '' ?>>
             <div class="stat-icon <?= e($tab[2]) ?>"><?= lucide($tab[3]) ?></div>
             <div>
                 <div class="stat-value"><?= e(number_format((int) $tab[1])) ?></div>
@@ -298,7 +300,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Author</th><th>Comment</th><th>On Post</th><th>Date</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Author</th><th>Comment</th><th>On Post</th><th>Date</th><th>Status</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>

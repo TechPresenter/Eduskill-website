@@ -14,7 +14,7 @@
 .pb-pad-lg   { padding-block: clamp(3rem, 6vw, 5rem); }
 
 .pb-bg-soft  { background: var(--bg-alt, #f1f6fb); }
-.pb-bg-brand { background: linear-gradient(135deg, var(--primary, #063566), var(--secondary, #084881)); color: #fff; }
+.pb-bg-brand { background: linear-gradient(135deg, var(--primary, #0B4E3D), var(--secondary, #174D3D)); color: #fff; }
 .pb-bg-dark  { background: #0b1220; color: #e2e8f0; }
 .pb-bg-brand a, .pb-bg-dark a { color: #fff; text-decoration: underline; }
 .pb-bg-brand .pb-text, .pb-bg-dark .pb-text,
@@ -54,7 +54,7 @@
 
 .pb-hero {
     padding: clamp(2rem, 5vw, 3.5rem); border-radius: var(--radius-lg, 20px);
-    background: linear-gradient(135deg, var(--primary, #063566), var(--secondary, #084881));
+    background: linear-gradient(135deg, var(--primary, #0B4E3D), var(--secondary, #174D3D));
     color: #fff; text-align: center;
 }
 .pb-hero h2 { margin: 0 0 .5rem; font-size: clamp(1.6rem, 3.4vw, 2.4rem); color: #fff; }
@@ -66,12 +66,12 @@
     border: 1px solid var(--border, #e2e8f0);
     transition: transform .25s ease, box-shadow .25s ease;
 }
-.pb-card:hover { transform: translateY(-4px); box-shadow: 0 18px 34px -20px rgba(6,53,102,.42); }
+.pb-card:hover { transform: translateY(-4px); box-shadow: 0 18px 34px -20px rgba(11,78,61,.42); }
 .pb-card h3 { margin: .7rem 0 .35rem; font-size: 1.05rem; }
 .pb-card p  { margin: 0; font-size: .92rem; line-height: 1.65; color: var(--text-soft, #475569); }
 .pb-card-ico {
     width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center;
-    background: linear-gradient(135deg, var(--primary, #063566), var(--secondary, #084881)); color: #fff;
+    background: linear-gradient(135deg, var(--primary, #0B4E3D), var(--secondary, #174D3D)); color: #fff;
 }
 .pb-card-ico svg { width: 19px; height: 19px; }
 
@@ -85,7 +85,7 @@
     display: flex; align-items: center; justify-content: space-between; gap: 1rem;
 }
 .pb-acc-item > summary::-webkit-details-marker { display: none; }
-.pb-acc-item > summary::after { content: '+'; font-size: 1.2rem; color: var(--primary, #063566); transition: transform .22s ease; }
+.pb-acc-item > summary::after { content: '+'; font-size: 1.2rem; color: var(--primary, #0B4E3D); transition: transform .22s ease; }
 .pb-acc-item[open] > summary::after { transform: rotate(45deg); }
 .pb-acc-item > div { padding: 0 1.1rem 1rem; color: var(--text-soft, #475569); line-height: 1.7; }
 

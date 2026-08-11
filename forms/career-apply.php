@@ -55,8 +55,9 @@ $url = static function (string $key): ?string {
     return filter_var($v, FILTER_VALIDATE_URL) ? mb_substr($v, 0, 255) : null;
 };
 
-// Every field now has a real column (schema_v27.sql). They used to be appended
-// as text into cover_letter, which made them unsearchable and unreportable.
+// Every field now has a real column on `job_applications` (see
+// database/eduskill.sql). They used to be appended as text into cover_letter,
+// which made them unsearchable and unreportable.
 db_insert('job_applications', [
     'career_id'        => $careerId,
     'name'             => clean(post('name')),

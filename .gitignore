@@ -50,9 +50,16 @@ backup*.sql
 *.zip
 
 # ── Local preview / scratch artefacts ────────────────────────────────────────
-_dochub_preview.html
-_*-preview.php
-_*-preview.html
+# The pattern is the whole underscore PREFIX, not "-preview" suffixes: audit
+# harnesses have been left in the web root as _geo_probe.php and
+# _card_audit_tmp.php, which matched none of the old patterns, showed as "??" in
+# git status, and would have been published by a single `git add -A` — one of
+# them an unauthenticated ?id= card renderer that printed member PII.
+/_*.php
+/_*.html
+/_*.pdf
+/_*.png
+/_*.zip
 /tmp/
 /temp/
 
@@ -81,3 +88,9 @@ vendor/composer/
 
 # Temporary deployment diagnostic (upload to host, delete after use)
 /_diag.php
+
+# Build artefact: the safe UPDATE script for the live database.
+/database/eduskill-update.sql
+
+# Production config carrying live DB credentials — never commit.
+/config.production.php

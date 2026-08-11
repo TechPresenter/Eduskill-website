@@ -111,19 +111,19 @@ include __DIR__ . '/includes/header.php';
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1rem;
     padding: 1.5rem 1.75rem; background: var(--surface);
     border: 1px solid var(--border); border-radius: var(--radius-lg);
-    box-shadow: 0 24px 60px -22px rgba(6,53,102,.35);
+    box-shadow: 0 24px 60px -22px rgba(11,78,61,.35);
 }
 :root[data-theme="dark"] .ngo-trust { box-shadow: 0 24px 60px -22px rgba(0,0,0,.55); }
 .ngo-trust-item { display: flex; align-items: center; gap: .9rem; min-width: 0; }
 .ngo-trust-item + .ngo-trust-item { border-left: 1px solid var(--border); padding-left: 1.1rem; }
 .tico {
     width: 46px; height: 46px; border-radius: 13px; flex: none; display: grid; place-items: center;
-    background: rgba(6,53,102,.10); color: var(--brand); font-size: 1.15rem;
+    background: rgba(11,78,61,.10); color: var(--brand); font-size: 1.15rem;
     transition: transform var(--transition);
 }
 .ngo-trust-item:hover .tico { transform: translateY(-3px) scale(1.06); }
-.tico.gold { background: rgba(230,123,29,.16); color: #b07d12; }
-.tico.teal { background: rgba(8,72,129,.13); color: #084881; }
+.tico.gold { background: rgba(241,90,36,.16); color: #b07d12; }
+.tico.teal { background: rgba(23,77,61,.13); color: #174D3D; }
 :root[data-theme="dark"] .tico.gold { color: #e6b84a; }
 .tlabel { display: block; font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .tval { font-weight: 700; font-size: .98rem; line-height: 1.25; color: var(--text); }
@@ -133,7 +133,7 @@ include __DIR__ . '/includes/header.php';
 .ngo-divider::before, .ngo-divider::after { content: ""; flex: 1; height: 2px; border-radius: 2px; }
 .ngo-divider::before { background: linear-gradient(90deg, transparent, var(--border)); }
 .ngo-divider::after  { background: linear-gradient(90deg, var(--border), transparent); }
-.ngo-divider i { width: 9px; height: 9px; border-radius: 50%; background: var(--grad-brand); box-shadow: 0 0 0 5px rgba(6,53,102,.10); }
+.ngo-divider i { width: 9px; height: 9px; border-radius: 50%; background: var(--grad-brand); box-shadow: 0 0 0 5px rgba(11,78,61,.10); }
 
 /* ---- At-a-glance info tiles ---- */
 .glance { text-align: center; }
@@ -148,7 +148,7 @@ include __DIR__ . '/includes/header.php';
 .spec-card .table-wrap { margin: 0; }
 .ngo-page table th[scope="row"] { color: var(--text-soft); font-weight: 600; white-space: nowrap; }
 .ngo-page .spec-card tbody tr { transition: background var(--transition); }
-.ngo-page .spec-card tbody tr:hover { background: rgba(6,53,102,.045); }
+.ngo-page .spec-card tbody tr:hover { background: rgba(11,78,61,.045); }
 :root[data-theme="dark"] .ngo-page .spec-card tbody tr:hover { background: rgba(76,168,50,.08); }
 
 /* ---- Tax exemption cards with accent rail ---- */
@@ -162,12 +162,12 @@ include __DIR__ . '/includes/header.php';
 
 /* ---- Leadership cards ---- */
 .leader-card { transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition); }
-.leader-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: rgba(6,53,102,.35); }
-.leader-card .leader-photo { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; flex: none; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px rgba(6,53,102,.18); }
+.leader-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: rgba(11,78,61,.35); }
+.leader-card .leader-photo { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; flex: none; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px rgba(11,78,61,.18); }
 
 /* ---- Document cards ---- */
 .doc-card { transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition); }
-.doc-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: rgba(230,123,29,.4); }
+.doc-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: rgba(241,90,36,.4); }
 .doc-card .icon-badge { transition: transform var(--transition); }
 .doc-card:hover .icon-badge { transform: translateY(-3px) scale(1.05); }
 

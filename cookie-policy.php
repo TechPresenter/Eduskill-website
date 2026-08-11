@@ -317,7 +317,7 @@ include __DIR__ . '/includes/header.php';
 
             <!-- Sticky helper sidebar -->
             <aside class="reveal delay-1">
-                <div class="card-3d" style="position:sticky;top:90px;">
+                <div class="card-3d sticky-aside" style="position:sticky;top:90px;">
                     <div class="icon-badge accent"><?= lucide('cookie') ?></div>
                     <h3 class="card-title">Your Cookie Choices</h3>
                     <p class="card-text">

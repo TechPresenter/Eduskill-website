@@ -104,16 +104,16 @@ include __DIR__ . '/includes/header.php';
    Scoped to .our-story-page so shared CSS is never affected.
    ========================================================================= */
 .our-story-page{
-    --os-green:#063566; --os-green-700:#042a52; --os-teal:#084881; --os-gold:#E67B1D;
-    --os-grad:linear-gradient(135deg,#063566 0%,#084881 100%);
+    --os-green:#0B4E3D; --os-green-700:#0B3A2E; --os-teal:#174D3D; --os-gold:#F15A24;
+    --os-grad:linear-gradient(135deg,#0B4E3D 0%,#174D3D 100%);
 }
 
 /* ---- Unique on-brand hero (only this page's page-hero is restyled) ------ */
-.page-hero{ background:linear-gradient(135deg,#042a52 0%,#063566 45%,#084881 100%); }
+.page-hero{ background:linear-gradient(135deg,#0B3A2E 0%,#0B4E3D 45%,#174D3D 100%); }
 .page-hero::before{
     content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
     background:
-        radial-gradient(520px circle at 12% 120%, rgba(230,123,29,.28), transparent 60%),
+        radial-gradient(520px circle at 12% 120%, rgba(241,90,36,.28), transparent 60%),
         radial-gradient(circle, rgba(255,255,255,.10) 1px, transparent 1.4px);
     background-size:auto, 26px 26px;
 }
@@ -132,20 +132,20 @@ include __DIR__ . '/includes/header.php';
     background:var(--os-grad); -webkit-background-clip:text; background-clip:text; color:transparent;
 }
 .our-story-page .icon-badge{
-    background:var(--os-grad); box-shadow:0 10px 24px rgba(6,53,102,.28);
+    background:var(--os-grad); box-shadow:0 10px 24px rgba(11,78,61,.28);
 }
 .our-story-page .icon-badge.accent{
     background:linear-gradient(135deg,var(--os-gold) 0%,#eab308 100%);
-    box-shadow:0 10px 24px rgba(230,123,29,.32);
+    box-shadow:0 10px 24px rgba(241,90,36,.32);
 }
-.our-story-page .badge-brand{ background:rgba(6,53,102,.12); color:var(--os-green); }
+.our-story-page .badge-brand{ background:rgba(11,78,61,.12); color:var(--os-green); }
 .our-story-page .btn-primary{
-    background:var(--os-grad); box-shadow:0 12px 30px rgba(6,53,102,.3);
+    background:var(--os-grad); box-shadow:0 12px 30px rgba(11,78,61,.3);
 }
 .our-story-page .btn-outline{ border-color:var(--os-green); color:var(--os-green); }
 .our-story-page .btn-outline:hover{ background:var(--os-green); color:#fff; }
-.our-story-page .btn-3d.green{ background:var(--os-grad); box-shadow:0 6px 0 #0f3d24, 0 14px 28px rgba(8,72,129,.4); }
-.our-story-page .btn-3d.green:hover{ box-shadow:0 9px 0 #0f3d24, 0 20px 36px rgba(8,72,129,.5); }
+.our-story-page .btn-3d.green{ background:var(--os-grad); box-shadow:0 6px 0 #0f3d24, 0 14px 28px rgba(23,77,61,.4); }
+.our-story-page .btn-3d.green:hover{ box-shadow:0 9px 0 #0f3d24, 0 20px 36px rgba(23,77,61,.5); }
 .our-story-page .chip:hover{ border-color:var(--os-teal); color:var(--os-teal); }
 
 /* ---- Ornamental section divider ---------------------------------------- */
@@ -156,15 +156,15 @@ include __DIR__ . '/includes/header.php';
 .our-story-page .os-ornament::before,
 .our-story-page .os-ornament::after{
     content:""; flex:1; height:1px;
-    background:linear-gradient(90deg,transparent,rgba(8,72,129,.55));
+    background:linear-gradient(90deg,transparent,rgba(23,77,61,.55));
 }
 .our-story-page .os-ornament::after{
-    background:linear-gradient(90deg,rgba(8,72,129,.55),transparent);
+    background:linear-gradient(90deg,rgba(23,77,61,.55),transparent);
 }
 .our-story-page .os-om{
     width:40px; height:40px; border-radius:50%; display:grid; place-items:center;
-    background:rgba(8,72,129,.10); border:1px solid rgba(8,72,129,.28);
-    color:var(--os-teal); box-shadow:0 6px 16px rgba(8,72,129,.16);
+    background:rgba(23,77,61,.10); border:1px solid rgba(23,77,61,.28);
+    color:var(--os-teal); box-shadow:0 6px 16px rgba(23,77,61,.16);
     animation:osPulse 4.5s ease-in-out infinite;
 }
 .our-story-page .os-om svg.lucide{ width:1.15rem; height:1.15rem; }
@@ -180,27 +180,27 @@ include __DIR__ . '/includes/header.php';
     background:linear-gradient(90deg,var(--os-green),var(--os-teal),var(--os-gold));
 }
 .our-story-page .os-info-card .list-check li::before{
-    background:rgba(6,53,102,.14); color:var(--os-green); content:"\2713";
+    background:rgba(11,78,61,.14); color:var(--os-green); content:"\2713";
 }
 
 /* ---- Timeline: greener line, gold-ringed nodes, hover lift -------------- */
 .our-story-page .timeline::before{ background:linear-gradient(var(--os-green),var(--os-teal)); }
 .our-story-page .timeline-item::before{
-    border-color:var(--os-green); box-shadow:0 0 0 4px rgba(6,53,102,.15);
+    border-color:var(--os-green); box-shadow:0 0 0 4px rgba(11,78,61,.15);
     transition:transform .25s ease, box-shadow .25s ease, background .25s ease;
 }
 .our-story-page .timeline-item{
     padding:1.1rem 1.1rem 1.1rem 1.6rem; margin-bottom:1.1rem; border-radius:16px;
     background:var(--surface); border:1px solid var(--border);
-    box-shadow:0 2px 10px rgba(6,53,102,.05);
+    box-shadow:0 2px 10px rgba(11,78,61,.05);
     transition:transform .28s ease, box-shadow .28s ease, border-color .28s ease;
 }
 .our-story-page .timeline-item:hover{
-    transform:translateX(6px); border-color:rgba(8,72,129,.35);
-    box-shadow:0 16px 34px rgba(6,53,102,.12);
+    transform:translateX(6px); border-color:rgba(23,77,61,.35);
+    box-shadow:0 16px 34px rgba(11,78,61,.12);
 }
 .our-story-page .timeline-item:hover::before{
-    background:var(--os-teal); box-shadow:0 0 0 5px rgba(8,72,129,.2);
+    background:var(--os-teal); box-shadow:0 0 0 5px rgba(23,77,61,.2);
 }
 .our-story-page .timeline-item .tl-date{
     display:inline-flex; align-items:center; gap:.4rem; color:var(--os-teal);
@@ -212,7 +212,7 @@ include __DIR__ . '/includes/header.php';
 .our-story-page .os-quote{ position:relative; overflow:hidden; }
 .our-story-page .os-quote-mark{
     width:54px; height:54px; border-radius:16px; display:grid; place-items:center;
-    background:var(--os-grad); color:#fff; box-shadow:0 12px 26px rgba(6,53,102,.28);
+    background:var(--os-grad); color:#fff; box-shadow:0 12px 26px rgba(11,78,61,.28);
     margin-bottom:1.1rem;
 }
 .our-story-page .os-quote-mark svg.lucide{ width:1.6rem; height:1.6rem; }
@@ -229,8 +229,8 @@ include __DIR__ . '/includes/header.php';
 .our-story-page .stat-premium::before{ background:var(--os-grad); opacity:.12; }
 .our-story-page .stat-premium .icon-badge{ margin:0 auto 1rem; }
 .our-story-page .stat-premium:hover{
-    transform:translateY(-8px); border-color:rgba(8,72,129,.35);
-    box-shadow:0 22px 44px rgba(6,53,102,.14);
+    transform:translateY(-8px); border-color:rgba(23,77,61,.35);
+    box-shadow:0 22px 44px rgba(11,78,61,.14);
 }
 .our-story-page .stat-premium .counter-value{ color:var(--os-green); }
 
@@ -308,7 +308,7 @@ include __DIR__ . '/includes/header.php';
                 <?php endforeach; ?>
             </div>
             <aside class="reveal delay-1">
-                <div class="glass-card" style="padding:1.8rem;position:sticky;top:100px;">
+                <div class="glass-card sticky-aside" style="padding:1.8rem;position:sticky;top:100px;">
                     <div class="icon-badge" style="margin:0 0 1rem;"><?= lucide('book-open') ?></div>
                     <h3 class="card-title mb-1">Written by the People We Serve</h3>
                     <p class="card-text mb-3">Our milestones aren't just dates — they are lives changed, communities strengthened and promises kept. Here is how the journey has unfolded.</p>
@@ -397,7 +397,13 @@ include __DIR__ . '/includes/header.php';
     <div class="container">
         <div class="os-ornament reveal" aria-hidden="true"><span class="os-om"><?= lucide('flame') ?></span></div>
         <div class="section-head">
-            <span class="eyebrow" style="color:#a7f3d0;justify-content:center;">Be Part Of What Comes Next</span>
+            <?php /* The inline `color:#a7f3d0` (a pale mint that is not in the
+                     palette) is gone — an inline declaration was the only thing
+                     outranking design-system.css's `.section-brand .eyebrow`,
+                     which supplies the highlight yellow at 7.95:1 on the brand
+                     field. Centring stays inline because it is layout, not
+                     colour. */ ?>
+            <span class="eyebrow" style="justify-content:center;">Be Part Of What Comes Next</span>
             <h2 class="section-title text-white">Help Us Write the Next Chapter</h2>
             <p class="section-subtitle" style="color:rgba(255,255,255,.9);">Our story is far from over. With your support, the next milestone could reach one more child, one more family, one more village.</p>
         </div>

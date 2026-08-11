@@ -165,7 +165,7 @@ include __DIR__ . '/partials/head.php';
             <div class="an-salary-summary" style="display:flex;justify-content:space-between;gap:.5rem;background:var(--surface-2);border-radius:12px;padding:.8rem 1rem;margin:.4rem 0 1rem;">
                 <div><small class="text-muted">Gross</small><div style="font-weight:800;font-size:1.1rem;" id="sal-gross"><?= e(money($comp['gross'])) ?></div></div>
                 <div><small class="text-muted">Deductions</small><div style="font-weight:800;font-size:1.1rem;color:#b91c1c;" id="sal-ded"><?= e(money($comp['deductions'])) ?></div></div>
-                <div><small class="text-muted">Net pay</small><div style="font-weight:800;font-size:1.1rem;color:#308629;" id="sal-net"><?= e(money($comp['net'])) ?></div></div>
+                <div><small class="text-muted">Net pay</small><div style="font-weight:800;font-size:1.1rem;color:#1F5C48;" id="sal-net"><?= e(money($comp['net'])) ?></div></div>
             </div>
             <div class="form-actions"><button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save structure</button></div>
         </form>
@@ -203,7 +203,7 @@ include __DIR__ . '/partials/head.php';
                 <tr>
                     <td><strong><?= e(month_label((int) $s['period_month'])) ?> <?= (int) $s['period_year'] ?></strong></td>
                     <td><?= e(money((float) $s['gross'])) ?></td>
-                    <td style="color:#308629;font-weight:700;"><?= e(money((float) $s['net'])) ?></td>
+                    <td style="color:#1F5C48;font-weight:700;"><?= e(money((float) $s['net'])) ?></td>
                     <td><div class="actions">
                         <a class="icon-btn" href="<?= e(admin_url('payslip?id=' . $s['id'])) ?>" target="_blank" title="View / print"><?= lucide('printer') ?></a>
                         <form method="post" action="<?= e(admin_url('employee-salary')) ?>" data-confirm="Delete this payslip?" style="display:inline;">

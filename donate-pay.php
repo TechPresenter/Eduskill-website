@@ -155,7 +155,7 @@ var rzp = new Razorpay({
     name: <?= json_encode($siteName) ?>,
     description: 'Donation',
     prefill: { name: <?= json_encode($name) ?>, email: <?= json_encode($email) ?>, contact: <?= json_encode($phone) ?> },
-    theme: { color: '#063566' },
+    theme: { color: '#0B4E3D' },
     handler: function (r) {
         document.getElementById('rzp_pid').value = r.razorpay_payment_id;
         document.getElementById('rzp_oid').value = r.razorpay_order_id;
@@ -178,7 +178,7 @@ include __DIR__ . '/includes/header.php';
     <div class="container" style="max-width:640px;">
         <?php if (get('done')): ?>
             <div class="card-3d reveal" style="text-align:center;padding:2.4rem;">
-                <div class="icon-badge" style="margin:0 auto 1rem;background:var(--grad-green,#58A42F);color:#fff;font-size:2rem;"><?= lucide('heart') ?></div>
+                <div class="icon-badge" style="margin:0 auto 1rem;background:var(--grad-green,#2F8065);color:#fff;font-size:2rem;"><?= lucide('heart') ?></div>
                 <h2 class="mb-1">Thank you!</h2>
                 <p class="text-muted">Your generosity means the world. We'll be in touch with your receipt.</p>
                 <a class="btn btn-primary mt-2" href="<?= e(url('/')) ?>">Back to home</a>

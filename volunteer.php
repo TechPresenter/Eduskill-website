@@ -248,7 +248,7 @@ include __DIR__ . '/includes/header.php';
                     <div class="icon-badge"><?= lucide($role['icon']) ?></div>
                     <h3 class="card-title"><?= e($role['title']) ?></h3>
                     <p class="card-text"><?= e($role['text']) ?></p>
-                    <a href="#apply" style="color:var(--brand-600);font-weight:700;">Apply for this <?= lucide('arrow-right') ?></a>
+                    <a class="link-action" href="#apply" style="color:var(--brand-600);font-weight:700;">Apply for this <?= lucide('arrow-right') ?></a>
                 </div>
             <?php endforeach; ?>
         </div>

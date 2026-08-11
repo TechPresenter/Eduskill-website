@@ -262,7 +262,7 @@ include __DIR__ . '/includes/header.php';
 
             <!-- Sticky helper sidebar -->
             <aside class="reveal delay-1">
-                <div class="glass-card" style="position:sticky;top:90px;">
+                <div class="glass-card sticky-aside" style="position:sticky;top:90px;">
                     <div class="icon-badge accent"><?= lucide('handshake') ?></div>
                     <h3 class="card-title">Need Help With a Donation?</h3>
                     <p class="card-text">

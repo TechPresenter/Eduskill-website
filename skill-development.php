@@ -45,7 +45,7 @@ $prog_short = $program['short_description']
 $prog_long  = $program['description']
     ?? 'At ' . SITE_NAME . ', skill development is a bridge out of poverty. We run hands-on training in trades that local markets actually demand — from tailoring and computer literacy to electrical work and beauty & wellness — pairing every course with life-skills coaching, financial literacy and real placement support. Our trainers work shoulder-to-shoulder with learners who may never have had a formal opportunity, turning raw potential into steady income and lasting self-reliance for entire families.';
 $prog_icon  = $program['icon'] ?? 'wrench';
-$prog_color = $program['color'] ?? '#58A42F';
+$prog_color = $program['color'] ?? '#2F8065';
 
 /* ---- What we offer (skills grid) --------------------------------------- */
 $offerings = $list_setting('skill_offerings', [
@@ -69,10 +69,10 @@ $outcomes = $list_setting('skill_outcomes', [
 
 /* ---- Learning pathway -------------------------------------------------- */
 $pathway = $list_setting('skill_pathway', [
-    ['title' => 'Enrol & Assess',    'text' => 'Register for free, meet our counsellors and choose a trade that fits your interest and the local market.', 'color' => '#063566'],
-    ['title' => 'Learn by Doing',    'text' => 'Train hands-on with experienced instructors using real tools, live projects and small, focused batches.',   'color' => '#084881'],
-    ['title' => 'Certify & Prepare', 'text' => 'Earn a completion certificate and sharpen soft skills, interviews and financial literacy for the workplace.', 'color' => '#E67B1D'],
-    ['title' => 'Earn & Grow',       'text' => 'Get placement support or micro-enterprise guidance — and step into a dignified, sustainable income.',        'color' => '#58A42F'],
+    ['title' => 'Enrol & Assess',    'text' => 'Register for free, meet our counsellors and choose a trade that fits your interest and the local market.', 'color' => '#0B4E3D'],
+    ['title' => 'Learn by Doing',    'text' => 'Train hands-on with experienced instructors using real tools, live projects and small, focused batches.',   'color' => '#174D3D'],
+    ['title' => 'Certify & Prepare', 'text' => 'Earn a completion certificate and sharpen soft skills, interviews and financial literacy for the workplace.', 'color' => '#F15A24'],
+    ['title' => 'Earn & Grow',       'text' => 'Get placement support or micro-enterprise guidance — and step into a dignified, sustainable income.',        'color' => '#2F8065'],
 ]);
 
 /* ---- Related projects (this program first, then any skill work) -------- */
@@ -144,7 +144,7 @@ include __DIR__ . '/includes/header.php';
                      loading="lazy" width="720" height="540"
                      style="width:100%;border-radius:var(--radius-lg);box-shadow:var(--shadow);object-fit:cover;">
             <?php else: ?>
-                <div class="card-3d" style="background:linear-gradient(135deg,<?= e($prog_color) ?>,#084881);color:#fff;">
+                <div class="card-3d" style="background:linear-gradient(135deg,<?= e($prog_color) ?>,#174D3D);color:#fff;">
                     <div class="icon-badge" style="background:rgba(255,255,255,.2);"><?= lucide($prog_icon) ?></div>
                     <h3 class="card-title text-white">Empowering Hands, Uplifting Futures</h3>
                     <p style="color:rgba(255,255,255,.92);">“A skill in hand is a future secured. When we teach a person to earn, we help a whole family rise — with dignity and hope.”</p>
@@ -166,7 +166,7 @@ include __DIR__ . '/includes/header.php';
         <div class="grid grid-4">
             <?php foreach ($offerings as $i => $o): ?>
                 <div class="card-3d reveal <?= 'delay-' . (($i % 4) + 1) ?>">
-                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($prog_color) ?>,#084881);"><?= lucide($o['icon'] ?? 'star') ?></div>
+                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($prog_color) ?>,#174D3D);"><?= lucide($o['icon'] ?? 'star') ?></div>
                     <h3 class="card-title"><?= e($o['title'] ?? '') ?></h3>
                     <p class="card-text"><?= e($o['text'] ?? '') ?></p>
                 </div>
@@ -209,7 +209,7 @@ include __DIR__ . '/includes/header.php';
         <div class="grid grid-4">
             <?php foreach ($pathway as $i => $step): $num = $i + 1; ?>
                 <div class="card-3d reveal <?= 'delay-' . (($i % 4) + 1) ?>">
-                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($step['color'] ?? '#063566') ?>,#084881);font-weight:800;"><?= e(str_pad((string) $num, 2, '0', STR_PAD_LEFT)) ?></div>
+                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($step['color'] ?? '#0B4E3D') ?>,#174D3D);font-weight:800;"><?= e(str_pad((string) $num, 2, '0', STR_PAD_LEFT)) ?></div>
                     <h3 class="card-title"><?= e($step['title'] ?? '') ?></h3>
                     <p class="card-text"><?= e($step['text'] ?? '') ?></p>
                 </div>

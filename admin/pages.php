@@ -171,7 +171,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Banner</th><th>Title</th><th>Slug</th><th>Status</th><th>Updated</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Banner</th><th>Title</th><th>Slug</th><th>Status</th><th>Updated</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
@@ -186,7 +186,7 @@ include __DIR__ . '/partials/head.php';
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('pages?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('pages')) ?>" data-confirm="Delete this page permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('pages')) ?>" data-confirm="Delete this page permanently?" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -201,7 +201,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('file-text') ?></div>No pages yet. <a href="<?= e(admin_url('pages?action=create')) ?>">Add your first page</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('file-text') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No pages match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No page has that title or slug. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('pages')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('pages?action=create')) ?>"><?= lucide('plus') ?> Add your first page</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No pages yet</p>
+                                <p class="es-text">Pages are the standalone content of the site — About, Contact, Privacy. Create one and it gets its own URL straight away.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('pages?action=create')) ?>"><?= lucide('plus') ?> Add your first page</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

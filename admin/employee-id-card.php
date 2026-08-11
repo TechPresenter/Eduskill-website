@@ -30,18 +30,18 @@ include __DIR__ . '/partials/head.php';
     .emp-idc-wrap { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; }
     .emp-card {
         width: 560px; max-width: 100%; border-radius: 20px; overflow: hidden; color: #111827;
-        background: #fff; box-shadow: 0 20px 50px -18px rgba(6,53,102,.4); font-family: 'Roboto', system-ui, sans-serif;
+        background: #fff; box-shadow: 0 20px 50px -18px rgba(11,78,61,.4); font-family: 'Roboto', system-ui, sans-serif;
         border: 1px solid #e2e8f0;
     }
-    .emp-card-head { background: linear-gradient(135deg, #063566, #084881); color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
-    .emp-card-head .mono { width: 46px; height: 46px; border-radius: 50%; background: #fff; color: #063566; display: grid; place-items: center; font-weight: 800; font-size: 1.25rem; flex: none; }
+    .emp-card-head { background: linear-gradient(135deg, #0B4E3D, #174D3D); color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+    .emp-card-head .mono { width: 46px; height: 46px; border-radius: 50%; background: #fff; color: #0B4E3D; display: grid; place-items: center; font-weight: 800; font-size: 1.25rem; flex: none; }
     .emp-card-head strong { font-size: 1.05rem; display: block; line-height: 1.2; }
     .emp-card-head span { font-size: .68rem; letter-spacing: .16em; opacity: .92; }
     .emp-card-body { display: flex; gap: 18px; padding: 20px; }
-    .emp-photo { width: 118px; height: 148px; object-fit: cover; border-radius: 14px; border: 3px solid #063566; flex: none; background: #f1f5f9; }
+    .emp-photo { width: 118px; height: 148px; object-fit: cover; border-radius: 14px; border: 3px solid #0B4E3D; flex: none; background: #f1f5f9; }
     .emp-info { flex: 1; min-width: 0; }
     .emp-name { font-size: 1.4rem; font-weight: 800; line-height: 1.1; }
-    .emp-code { color: #084881; font-weight: 700; margin: 2px 0 10px; letter-spacing: .04em; }
+    .emp-code { color: #174D3D; font-weight: 700; margin: 2px 0 10px; letter-spacing: .04em; }
     .emp-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; font-size: .82rem; }
     .emp-rows .k { color: #64748b; font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; }
     .emp-rows .v { font-weight: 700; color: #111827; }
@@ -87,7 +87,7 @@ include __DIR__ . '/partials/head.php';
                     <?php if (!empty($emp['phone'])): ?><div><div class="k">Phone</div><div class="v"><?= e($emp['phone']) ?></div></div><?php endif; ?>
                 </div>
                 <div style="margin-top:10px;">
-                    <span class="emp-status" style="background:<?= $emp['status'] === 'active' ? '#58A42F' : ($emp['status'] === 'terminated' ? '#dc2626' : '#6b7280') ?>;"><?= strtoupper(e(employee_status_labels()[$emp['status']] ?? $emp['status'])) ?></span>
+                    <span class="emp-status" style="background:<?= $emp['status'] === 'active' ? '#2F8065' : ($emp['status'] === 'terminated' ? '#dc2626' : '#6b7280') ?>;"><?= strtoupper(e(employee_status_labels()[$emp['status']] ?? $emp['status'])) ?></span>
                 </div>
             </div>
             <div class="emp-qr">

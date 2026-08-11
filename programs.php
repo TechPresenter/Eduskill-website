@@ -66,8 +66,8 @@ if ($slug !== '') {
                         <?= rich_text($program['description'] ?: $program['short_description']) ?>
                     </div>
                 </article>
-                <aside class="card-3d reveal delay-1" style="position:sticky;top:90px;">
-                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($program['color'] ?: '#063566') ?>,#084881);"><?= lucide($program['icon'] ?: 'star') ?></div>
+                <aside class="card-3d reveal delay-1 sticky-aside" style="position:sticky;top:90px;">
+                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($program['color'] ?: '#0B4E3D') ?>,#174D3D);"><?= lucide($program['icon'] ?: 'star') ?></div>
                     <h3 class="card-title mt-2">Support this program</h3>
                     <p class="card-text">Your contribution directly funds <?= e($program['title']) ?> work on the ground.</p>
                     <a class="btn btn-primary btn-block mt-2" href="<?= e(url('donate?program=' . $program['slug'])) ?>"><?= lucide('heart') ?> Donate</a>
@@ -93,7 +93,7 @@ if ($slug !== '') {
                         <div class="card-body">
                             <h3 class="card-title"><?= e($pj['title']) ?></h3>
                             <p class="card-text"><?= e(excerpt($pj['summary'] ?: $pj['description'], 18)) ?></p>
-                            <a href="<?= e(url('projects?slug=' . $pj['slug'])) ?>" style="color:#063566;font-weight:700;">View project <?= lucide('arrow-right') ?></a>
+                            <a class="link-action" href="<?= e(url('projects?slug=' . $pj['slug'])) ?>" style="color:#0B4E3D;font-weight:700;">View project <?= lucide('arrow-right') ?></a>
                         </div>
                     </article>
                 <?php endforeach; ?>
@@ -118,11 +118,11 @@ $projects = db_all(
 /* Fallback programs so the page is never empty before seeding. */
 if (!$programs) {
     $programs = [
-        ['title' => 'Education for All', 'slug' => '', 'icon' => 'book', 'color' => '#063566', 'short_description' => 'Free schooling, scholarships and learning kits for underprivileged children across Bihar.'],
-        ['title' => 'Healthcare & Camps', 'slug' => '', 'icon' => 'stethoscope', 'color' => '#084881', 'short_description' => 'Free medical camps, health awareness and access to essential care in rural areas.'],
-        ['title' => 'Women Empowerment', 'slug' => '', 'icon' => 'user', 'color' => '#E67B1D', 'short_description' => 'Skill training, self-help groups and livelihood support for women.'],
+        ['title' => 'Education for All', 'slug' => '', 'icon' => 'book', 'color' => '#0B4E3D', 'short_description' => 'Free schooling, scholarships and learning kits for underprivileged children across Bihar.'],
+        ['title' => 'Healthcare & Camps', 'slug' => '', 'icon' => 'stethoscope', 'color' => '#174D3D', 'short_description' => 'Free medical camps, health awareness and access to essential care in rural areas.'],
+        ['title' => 'Women Empowerment', 'slug' => '', 'icon' => 'user', 'color' => '#F15A24', 'short_description' => 'Skill training, self-help groups and livelihood support for women.'],
         ['title' => 'Skill Development', 'slug' => 'skill-development', 'icon' => 'wrench', 'color' => '#4ca832', 'short_description' => 'Vocational training that prepares youth for sustainable employment.'],
-        ['title' => 'Clean Water & Sanitation', 'slug' => '', 'icon' => 'droplet', 'color' => '#084881', 'short_description' => 'Safe drinking water, hygiene drives and sanitation infrastructure.'],
+        ['title' => 'Clean Water & Sanitation', 'slug' => '', 'icon' => 'droplet', 'color' => '#174D3D', 'short_description' => 'Safe drinking water, hygiene drives and sanitation infrastructure.'],
         ['title' => 'Relief & Rehabilitation', 'slug' => '', 'icon' => 'life-buoy', 'color' => '#dc2626', 'short_description' => 'Rapid disaster relief, food distribution and long-term rehabilitation.'],
     ];
 }
@@ -159,7 +159,7 @@ include __DIR__ . '/includes/header.php';
         <div class="pcard-grid">
             <?php foreach ($programs as $i => $p):
                 $link  = !empty($p['slug']) ? url('programs?slug=' . $p['slug']) : url('programs');
-                $accent = $p['color'] ?: '#063566';
+                $accent = $p['color'] ?: '#0B4E3D';
                 $img   = !empty($p['image']) ? image_url($p['image']) : ''; ?>
                 <article class="pcard reveal <?= 'delay-' . (($i % 3) + 1) ?>">
                     <a class="pcard-media" href="<?= e($link) ?>" aria-label="<?= e($p['title']) ?>">
@@ -168,7 +168,7 @@ include __DIR__ . '/includes/header.php';
                         <?php else: ?>
                             <span class="pcard-ph" style="--pc:<?= e($accent) ?>"><?= lucide($p['icon'] ?: 'star') ?></span>
                         <?php endif; ?>
-                        <span class="pcard-badge" style="background:linear-gradient(135deg,<?= e($accent) ?>,#084881);border-color:transparent;"><?= lucide($p['icon'] ?: 'star') ?> Program</span>
+                        <span class="pcard-badge" style="background:linear-gradient(135deg,<?= e($accent) ?>,#174D3D);border-color:transparent;"><?= lucide($p['icon'] ?: 'star') ?> Program</span>
                     </a>
 
                     <div class="pcard-body">
@@ -177,7 +177,7 @@ include __DIR__ . '/includes/header.php';
                         <p class="pcard-text"><?= e(excerpt($p['short_description'] ?? '', 20)) ?></p>
                     </div>
 
-                    <div class="pcard-strip" style="background:linear-gradient(135deg,<?= e($accent) ?>,#084881);">
+                    <div class="pcard-strip" style="background:linear-gradient(135deg,<?= e($accent) ?>,#174D3D);">
                         <span class="ps-col"><span class="ps-k">Focus area</span><span class="ps-v"><?= e(excerpt($p['title'], 3)) ?></span></span>
                         <a class="ps-cta" href="<?= e($link) ?>">Learn more <?= lucide('arrow-right') ?></a>
                     </div>
@@ -253,7 +253,7 @@ include __DIR__ . '/includes/header.php';
 <!-- ============================== CTA ============================== -->
 <section class="section">
     <div class="container">
-        <div class="card-3d text-center" style="background:linear-gradient(135deg,#063566,#084881);color:#fff;">
+        <div class="card-3d text-center" style="background:linear-gradient(135deg,#0B4E3D,#174D3D);color:#fff;">
             <h2 class="text-white">Want to power a program?</h2>
             <p style="color:rgba(255,255,255,.9);max-width:620px;margin-inline:auto;">Your support helps us expand these initiatives to more villages and families across Bihar.</p>
             <div class="flex flex-wrap justify-center gap-2 mt-3">

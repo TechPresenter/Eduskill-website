@@ -12,15 +12,19 @@ encoder, card renderer and PDF writer are all self-contained.
 Run the migration, then the seeder (idempotent — safe to re-run):
 
 ```bash
-C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v6.sql
-C:\xampp\php\php.exe database\seed_v6.php
+C:\xampp\mysql\bin\mysql.exe -u root pwf < database\eduskill.sql
 ```
 
-`schema_v6.sql` adds membership fields to `members`, tier fields to
-`membership_plans`, the `membership_renewals`, `membership_reminders` and
-`member_audit` tables, and seeds settings. `seed_v6.php` adds four email
-templates, generates the cron token, and back-fills membership IDs + QR tokens
-onto existing members.
+There is one SQL file for the whole project. On a database that already holds
+real data, run **Section 2 only** (see the banner inside the file). The tables
+and settings this module needs are listed below.
+
+This module owns the membership fields on `members`, the tier fields on
+`membership_plans`, and the `membership_renewals`, `membership_reminders` and
+`member_audit` tables, plus four email templates. All of it ships in the single
+SQL file. The cron token (`membership_cron_token`) is deliberately seeded EMPTY
+— generate one per install from Admin -> Membership Settings, so no two sites
+share a trigger token.
 
 ---
 

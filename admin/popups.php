@@ -135,7 +135,7 @@ if ($action === 'create' || $action === 'edit') {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Status</label>
-                    <div style="padding-top:10px;">
+                    <div style="padding-top: var(--sp-3);">
                         <label class="checkbox"><input type="checkbox" name="status" value="1" <?= (!isset($row['status']) || !empty($row['status'])) ? 'checked' : '' ?>> Active (show this popup on the site)</label>
                     </div>
                 </div>
@@ -192,7 +192,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Image</th><th>Title</th><th>Schedule</th><th>Delay</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Image</th><th>Title</th><th>Schedule</th><th>Delay</th><th>Status</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
@@ -213,7 +213,7 @@ include __DIR__ . '/partials/head.php';
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('popups?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('popups')) ?>" data-confirm="Delete this popup permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('popups')) ?>" data-confirm="Delete this popup permanently?" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -228,7 +228,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('message-square') ?></div>No popups yet. <a href="<?= e(admin_url('popups?action=create')) ?>">Add your first popup</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('message-square') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No popups match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No popup has that title. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('popups')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('popups?action=create')) ?>"><?= lucide('plus') ?> Add your first popup</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No popups yet</p>
+                                <p class="es-text">A popup shows once per visitor after a delay you set. Use it for a campaign push or an urgent notice — sparingly.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('popups?action=create')) ?>"><?= lucide('plus') ?> Add your first popup</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

@@ -135,7 +135,7 @@ include __DIR__ . '/includes/header.php';
                         <div class="social-links mt-2">
                             <?php foreach ($socials as $platform => $link): if (empty($link)) continue; ?>
                                 <a href="<?= e($link) ?>" target="_blank" rel="noopener" aria-label="<?= e((string) $platform) ?>">
-                                    <?= social_fa((string) $platform) ?>
+                                    <?= social_svg((string) $platform) ?>
                                 </a>
                             <?php endforeach; ?>
                             <?php if (!empty($m['email'])): ?>

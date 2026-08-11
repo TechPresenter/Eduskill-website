@@ -31,7 +31,7 @@ if (is_post() && post('_do') === 'save') {
         'short_description' => clean(post('short_description', '')),
         'description'       => post('description', ''), // rich text allowed
         'icon'              => clean(post('icon', '')),
-        'color'             => clean(post('color', '#063566')),
+        'color'             => clean(post('color', '#0B4E3D')),
         'is_featured'       => post('is_featured') ? 1 : 0,
         'sort_order'        => (int) post('sort_order', 0),
         'status'            => in_array(post('status'), ['active', 'inactive'], true) ? post('status') : 'active',
@@ -126,7 +126,7 @@ if ($action === 'create' || $action === 'edit') {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Accent Colour</label>
-                    <input class="form-control" type="color" name="color" value="<?= e($row['color'] ?? '#063566') ?>" style="height:48px;">
+                    <input class="form-control" type="color" name="color" value="<?= e($row['color'] ?? '#0B4E3D') ?>" style="height:48px;">
                 </div>
             </div>
 

@@ -1,7 +1,9 @@
 <?php /* Premium hero — scoped styles + behaviour. Included once by index.php. */ ?>
 <style>
+/* Font comes from the Theme Engine (font.heading) so the hero can never drift
+   away from the rest of the site's typography. */
 .hx{position:relative;isolation:isolate;overflow:hidden;color:#fff;display:flex;align-items:center;
-    --acc:#a855f7;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+    --acc:var(--accent,#F15A24);font-family:var(--font-head,system-ui,sans-serif)}
 .hx-h-tall{min-height:clamp(560px,74vh,780px)}
 .hx-h-full{min-height:100vh}
 .hx-h-auto{min-height:auto;padding:clamp(3.5rem,8vw,6rem) 0}
@@ -35,7 +37,7 @@
 .hx-title{font-size:clamp(2.3rem,5.4vw,4rem);line-height:1.04;font-weight:800;letter-spacing:-.022em;margin:0 0 1.1rem;text-wrap:balance}
 /* The heading is an <h1> on the first slide and a <p> on the rest (index.php:100).
    tailwind.css targets those ELEMENTS directly — `h1..h6{color:var(--primary)}`
-   (#063566) and `p{color:var(--text-soft)}` — and an element's own colour rule
+   (#0B4E3D) and `p{color:var(--text-soft)}` — and an element's own colour rule
    beats the white `color` inherited from `.hx`. Every slide therefore painted its
    plain text dark-on-dark, leaving only the gradient .hx-hl span visible, which
    read as "the first half of the heading is missing". Pin it white here, and
@@ -62,7 +64,7 @@
 .hx-star.on svg{fill:#fbbf24}
 .hx-rate-num{font-weight:800}
 .hx-trust-txt{display:inline-flex;align-items:center;gap:.4rem;color:rgba(255,255,255,.86);font-weight:600}
-.hx-trust-txt svg{width:1.05em;height:1.05em;color:#7BC94F}
+.hx-trust-txt svg{width:1.05em;height:1.05em;color:#4CA383}
 .hx-actions{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center}
 /* premium CTAs */
 /* --- Premium 3D glowing gradient CTAs --- */
@@ -83,21 +85,29 @@
     transition:opacity .3s ease}
 .hx-btn:hover::after{opacity:.85}
 
-/* PRIMARY — vibrant orange→amber donate/CTA gradient with 3D base edge */
+/* PRIMARY — the brand CTA orange, solid.
+   This was a three-stop orange→amber→#FBBF24 gradient sitting on a hard 6px
+   "3D" base edge. Two problems: the pale amber end put white label text at
+   roughly 1.9:1, and the whole treatment is exactly the cheap-gradient button
+   the brand direction rules out. Solid --accent is 3.23:1 against the green
+   field, and the 1px inner hairline gives the control its boundary. */
 .hx-btn.is-primary,.hx-btn-gradient.is-primary{
-    background:linear-gradient(135deg,#E67B1D 0%,#F59E0B 55%,#FBBF24 100%);
-    box-shadow:0 6px 0 #A85410, 0 14px 34px -10px rgba(230,123,29,.75), inset 0 1px 0 rgba(255,255,255,.35)}
-.hx-btn.is-primary:hover{transform:translateY(-4px);
-    box-shadow:0 9px 0 #A85410, 0 22px 46px -10px rgba(230,123,29,.9), inset 0 1px 0 rgba(255,255,255,.45)}
-.hx-btn.is-primary:active{transform:translateY(2px);box-shadow:0 3px 0 #A85410, 0 10px 22px -10px rgba(230,123,29,.7)}
-.hx-btn.is-primary::after{background:linear-gradient(135deg,#E67B1D,#FBBF24)}
+    background:var(--accent-ink,#CA4C1E);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.34), 0 12px 28px -14px rgba(0,0,0,.6)}
+.hx-btn.is-primary:hover{transform:translateY(-3px);
+    background:color-mix(in srgb,var(--accent,#F15A24) 74%,#000);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.48), 0 18px 38px -14px rgba(0,0,0,.65)}
+.hx-btn.is-primary:active{transform:translateY(0)}
+.hx-btn.is-primary::after{background:var(--accent,#F15A24)}
 
-/* GRADIENT (secondary style) — brand green 3D */
+/* GRADIENT (secondary style) — brand green, solid */
 .hx-btn-gradient:not(.is-primary){
-    background:linear-gradient(135deg,#58A42F 0%,#308629 100%);
-    box-shadow:0 6px 0 #226019, 0 14px 32px -12px rgba(88,164,47,.7), inset 0 1px 0 rgba(255,255,255,.3)}
-.hx-btn-gradient:not(.is-primary):hover{transform:translateY(-4px);box-shadow:0 9px 0 #226019, 0 22px 44px -12px rgba(88,164,47,.85)}
-.hx-btn-gradient:not(.is-primary)::after{background:linear-gradient(135deg,#58A42F,#308629)}
+    background:var(--success,#2F8065);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.26), 0 12px 26px -14px rgba(0,0,0,.55)}
+.hx-btn-gradient:not(.is-primary):hover{transform:translateY(-3px);
+    background:color-mix(in srgb,var(--success,#2F8065) 88%,#fff);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.4), 0 18px 36px -14px rgba(0,0,0,.6)}
+.hx-btn-gradient:not(.is-primary)::after{background:var(--success,#2F8065)}
 .hx-btn-glass{background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4), 0 10px 26px -12px rgba(0,0,0,.5);
     backdrop-filter:blur(12px)}
 .hx-btn-glass:hover{background:rgba(255,255,255,.24);transform:translateY(-4px);
@@ -133,9 +143,81 @@ html[data-theme="dark"] .hx-divider svg{fill:#0b1220}
 .hx-animate .hx-copy.on .hx-media{animation:hxzoom .8s .2s both}
 @keyframes hxrise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 @keyframes hxzoom{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:none}}
-/* --- Mobile: badge → heading → subtitle → IMAGE → trust → buttons --- */
+/* =============================================================================
+   EDITORIAL HERO  (.hx-panel)
+   Copy left, photograph right, on a solid forest-green field.
+
+   Replaces the previous treatment, which laid white text directly over a
+   full-bleed photograph at overlay:0 — the headline competed with faces and
+   foliage and failed contrast at every breakpoint. Here the type sits on a
+   flat brand field (white on #0B4E3D = 9.67:1) and the photograph is given
+   its own space instead of doing two jobs at once.
+   ========================================================================= */
+.hx-panel{background:var(--primary,#0B4E3D);overflow:hidden}
+.hx-panel .hx-bgs{display:none}                 /* no full-bleed photo behind type */
+.hx-panel .hx-container{max-width:var(--container,1200px)}
+
+/* Organic accents: one warm sunrise bloom, one thin arc. Both yellow, both
+   far below the copy in contrast so they never compete with content. */
+.hx-panel .hx-blob{mix-blend-mode:normal;filter:blur(90px)}
+.hx-panel .hx-blob.b1{width:520px;height:520px;top:-180px;right:-120px;
+    background:radial-gradient(circle,var(--yellow,#FFE987),transparent 70%);opacity:.16;animation-duration:22s}
+.hx-panel .hx-blob.b2{width:420px;height:420px;bottom:-200px;left:-140px;
+    background:radial-gradient(circle,var(--gold,#E8C52E),transparent 72%);opacity:.10;animation-duration:26s}
+.hx-panel .hx-blob.b3{display:none}
+
+.hx-panel .hx-copy.is-split.on{
+    display:grid;grid-template-columns:1.02fr .98fr;
+    gap:clamp(2rem,5vw,4.5rem);align-items:center}
+
+.hx-panel .hx-text{max-width:36em}
+
+/* Eyebrow: a rule + uppercase label instead of a glassy pill. */
+.hx-panel .hx-badge{background:none;border:0;backdrop-filter:none;padding:0;border-radius:0;
+    color:var(--yellow,#FFE987);font-size:.76rem;font-weight:700;letter-spacing:.16em;
+    margin-bottom:1.1rem;gap:.65rem}
+.hx-panel .hx-badge::before{content:"";width:28px;height:2px;flex:none;border-radius:2px;
+    background:currentColor}
+
+.hx-panel .hx-title{font-size:clamp(2.2rem,4.6vw,3.9rem);line-height:1.05;letter-spacing:-.025em;
+    margin-bottom:1.15rem}
+.hx .hx-panel .hx-title,.hx-panel .hx-title{text-shadow:none}
+
+/* Highlighted words: solid yellow with a hand-drawn-weight underline, rather
+   than a gradient clipped through glyphs (which greyed out on dark fields). */
+.hx-panel .hx-hl{background:none;-webkit-background-clip:initial;background-clip:initial;
+    color:var(--yellow,#FFE987);-webkit-text-fill-color:var(--yellow,#FFE987);
+    text-decoration:underline;text-decoration-thickness:.055em;text-underline-offset:.16em;
+    text-decoration-color:rgba(255,233,135,.42)}
+
+.hx-panel .hx-sub{font-size:clamp(1rem,1.15vw,1.09rem);line-height:1.75;
+    color:rgba(255,255,255,.82);max-width:48ch;margin-bottom:2rem}
+.hx-panel .hx-trust{color:rgba(255,255,255,.85)}
+
+/* Photograph: generous but not excessive rounding, subtle depth, no bobbing. */
+.hx-panel .hx-media{justify-self:end;width:100%}
+.hx-panel .hx-media-glow{display:none}
+.hx-panel .hx-img{width:100%;max-width:none;aspect-ratio:4/3.4;object-fit:cover;
+    border-radius:clamp(18px,2vw,26px);border:0;animation:none;
+    box-shadow:0 40px 80px -34px rgba(4,26,18,.7)}
+
+/* --- Mobile: badge → heading → subtitle → IMAGE → trust → buttons ---
+   The collapse selector MUST carry .hx-panel. `.hx-copy.is-split.on` is (0,2,0)
+   while the desktop panel rule `.hx-panel .hx-copy.is-split.on` is (0,3,0), so
+   the two-column grid outranked the mobile flex column and never collapsed:
+   in editorial panel mode the headline stayed in a ~50% track at 375px and was
+   clipped, and because .hx-text is display:contents the title measured 0 wide.
+   Both selectors are listed here so the collapse wins in either hero mode. */
 @media (max-width:820px){
-    .hx-copy.is-split.on{display:flex;flex-direction:column;text-align:center;gap:0}
+    .hx-panel .hx-copy.is-split.on,
+    .hx-copy.is-split.on{
+        display:flex;flex-direction:column;text-align:center;gap:0;
+        grid-template-columns:none}
+    .hx-panel .hx-text{max-width:none}
+    .hx-panel .hx-badge{justify-content:center}
+    .hx-panel .hx-img{aspect-ratio:16/11;border-radius:16px}
+    .hx-panel .hx-sub{margin-inline:auto}
+    .hx-panel .hx-media{justify-self:auto}
     /* let the text children join the flex flow so the image can sit between them */
     .hx-copy.is-split .hx-text{display:contents}
     .hx-copy.is-split .hx-badge{order:1;align-self:center}
@@ -147,6 +229,23 @@ html[data-theme="dark"] .hx-divider svg{fill:#0b1220}
     .hx-img{max-width:min(78vw,340px)}
     .hx-actions .hx-btn{flex:1 1 auto;justify-content:center;padding:.95rem 1.4rem;font-size:.98rem}
     .hx-title{font-size:clamp(2rem,8vw,2.6rem)}
+    /* Mobile is not a stacked desktop: the hero gets a shorter field, the
+       decorative blooms come off (they cost a full-viewport blur on a phone GPU
+       and are invisible behind centred copy anyway), and the parallax has no
+       room to travel. */
+    .hx-h-tall,.hx-h-full{min-height:auto;padding:clamp(2.75rem,9vw,4rem) 0}
+    .hx-panel .hx-blob{display:none}
+    .hx-panel .hx-img{max-width:none;width:100%}
+}
+/* Slider dots: the visible bar stays 6px, but the control itself is a 40px
+   touch target (it was 26x6 — a quarter of the 44px minimum in either axis). */
+@media (max-width:820px){
+    .hx-dots{bottom:14px;gap:.15rem}
+    .hx-dot{width:40px;height:40px;background:none;display:grid;place-items:center}
+    .hx-dot::before{content:'';display:block;width:22px;height:5px;border-radius:999px;
+        background:rgba(255,255,255,.45);transition:width .25s ease,background .25s ease}
+    .hx-dot.on{width:44px;background:none}
+    .hx-dot.on::before{width:30px;background:#fff}
 }
 @media (prefers-reduced-motion:reduce){
     .hx-blob,.hx-img{animation:none}

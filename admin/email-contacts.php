@@ -240,8 +240,8 @@ if (is_post()) {
             set_flash('error', 'List name is required.');
             redirect('/admin/' . $BASE . '?tab=lists');
         }
-        $color = (string) post('color', '#063566');
-        if (!preg_match('/^#[0-9a-fA-F]{3,8}$/', $color)) { $color = '#063566'; }
+        $color = (string) post('color', '#0B4E3D');
+        if (!preg_match('/^#[0-9a-fA-F]{3,8}$/', $color)) { $color = '#0B4E3D'; }
         $data = [
             'name'        => mb_substr($name, 0, 128),
             'description' => clean(post('description', '')) ?: null,
@@ -749,7 +749,7 @@ $tabUrl = static function (string $t) use ($BASE): string { return admin_url($BA
                     </div>
                     <div class="form-group">
                         <label class="form-label">Colour</label>
-                        <input class="form-control ecx-color" type="color" name="color" id="ecxListColor" value="#063566">
+                        <input class="form-control ecx-color" type="color" name="color" id="ecxListColor" value="#0B4E3D">
                     </div>
                 </div>
                 <div class="form-group">
@@ -828,7 +828,7 @@ $tabUrl = static function (string $t) use ($BASE): string { return admin_url($BA
 
 .ecx-history { border-left:1px solid var(--border); padding-left:1.4rem; display:flex; flex-direction:column; gap:.6rem; }
 .ecx-hist-id { display:flex; align-items:center; gap:.7rem; padding-bottom:.4rem; }
-.ecx-avatar, .ecx-av { display:grid; place-items:center; border-radius:50%; background:var(--grad-brand,#063566); color:#fff; font-weight:700; }
+.ecx-avatar, .ecx-av { display:grid; place-items:center; border-radius:50%; background:var(--grad-brand,#0B4E3D); color:#fff; font-weight:700; }
 .ecx-avatar { width:42px; height:42px; font-size:1rem; }
 .ecx-av { width:30px; height:30px; font-size:.8rem; flex:0 0 auto; }
 .ecx-hist-head { display:flex; align-items:center; gap:.4rem; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; font-weight:700; color:var(--muted); margin-top:.5rem; }
@@ -846,7 +846,7 @@ $tabUrl = static function (string $t) use ($BASE): string { return admin_url($BA
 .ecx-msg-subj { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px; }
 
 .ecx-dupe-notice, .ecx-active-filter { display:flex; align-items:center; gap:.6rem; padding:.7rem .9rem; border-radius:var(--radius); margin-bottom:1rem; font-size:.88rem; }
-.ecx-dupe-notice { background:rgba(230,123,29,.1); border:1px solid rgba(230,123,29,.25); color:var(--text); }
+.ecx-dupe-notice { background:rgba(241,90,36,.1); border:1px solid rgba(241,90,36,.25); color:var(--text); }
 .ecx-dupe-notice svg { width:18px; height:18px; color:#b45309; flex:0 0 auto; }
 .ecx-dupe-notice a { margin-left:auto; }
 .ecx-active-filter { background:var(--grad-brand-soft); border:1px solid color-mix(in srgb, var(--brand-600) 25%, transparent); }
@@ -945,7 +945,7 @@ $tabUrl = static function (string $t) use ($BASE): string { return admin_url($BA
             set('ecxListId', id);
             set('ecxListName', b.getAttribute('data-name') || '');
             set('ecxListDesc', b.getAttribute('data-desc') || '');
-            set('ecxListColor', b.getAttribute('data-color') || '#063566');
+            set('ecxListColor', b.getAttribute('data-color') || '#0B4E3D');
             var title = document.getElementById('ecxListFormTitle');
             if (title) title.textContent = 'Edit list';
             var submit = document.getElementById('ecxListSubmit');
@@ -960,7 +960,7 @@ $tabUrl = static function (string $t) use ($BASE): string { return admin_url($BA
     if (resetBtn) resetBtn.addEventListener('click', function () {
         setTimeout(function () {
             document.getElementById('ecxListId').value = '0';
-            document.getElementById('ecxListColor').value = '#063566';
+            document.getElementById('ecxListColor').value = '#0B4E3D';
             var t = document.getElementById('ecxListFormTitle'); if (t) t.textContent = 'Create a list';
             var s = document.getElementById('ecxListSubmit'); if (s) s.textContent = 'Create list';
             resetBtn.hidden = true;

@@ -1,0 +1,509 @@
+/* =============================================================================
+   admin-ds.css — the admin panel's design system. LOADS LAST, on purpose.
+   -----------------------------------------------------------------------------
+   Why this file exists.
+
+   An admin page was loading FIVE stylesheets that all define the same
+   components — tailwind.css, premium.css, admin.css, admin-pro.css, ui.css —
+   281 KB fighting over `.btn`, `.panel`, `.form-control`, `.pill`, `.badge`,
+   `.tabs`, `.skeleton`. ui.css was written to be "the single deterministic
+   winner" for those components, but on admin pages it LOSES: it uses bare
+   classes (specificity 0,1,0) while admin-pro.css scopes everything to
+   `.admin-content` (0,2,0). So the intended resolution order was inverted on
+   every admin screen, and premium.css contributed 69 KB of public-site
+   decoration for exactly one rule.
+
+   Rather than rewrite 68 KB of admin.css in place — hundreds of declarations
+   with no way to verify each one — this layer loads after everything (including
+   the Theme Engine's inline block) and states the scales once. Measured against
+   the brand brief, the panel was at:
+
+       radius   17 distinct values, 11% of declarations legal (must be 6/10/16)
+       spacing  48 distinct rem values, 15% on the 4px grid, ZERO tokens
+       shadow   ~98 declarations, ~26 heavier than "subtle elevation"
+       colour   72 unique hex literals against a budget of 11
+
+   Everything here is scoped to `body.admin` so the public site is untouched.
+   ============================================================================= */
+
+body.admin {
+    /* ---- Radius: three steps. Nothing else. ------------------------------
+       tailwind.css ships --radius:14px / --radius-lg:22px, and theme.php lets an
+       admin push those to 30px/40px at runtime — "huge rounded cards" was a
+       user-facing setting. The legacy names are re-pointed onto the legal scale
+       so the ~123 existing declarations that reference them land correctly
+       without being edited. */
+    --r-sm:   6px;
+    --r-md:  10px;
+    --r-lg:  16px;
+    --r-pill: 999px;          /* named exception, not a fourth size */
+
+    --radius:      var(--r-md);
+    --radius-sm:   var(--r-sm);
+    --radius-lg:   var(--r-lg);
+    --radius-full: var(--r-pill);
+
+    /* ---- Spacing: the brief's scale. No token scale existed at all. ------ */
+    --sp-1:  4px;   --sp-2:  8px;   --sp-3: 12px;  --sp-4: 16px;
+    --sp-5: 20px;   --sp-6: 24px;   --sp-7: 32px;  --sp-8: 40px;
+    --sp-9: 48px;   --sp-10: 64px;  --sp-11: 80px;
+
+    /* ---- Elevation: subtle only, and nothing above --elev-3 -------------
+       The old ladder peaked at a 52px blur at 50% alpha, and in dark mode swapped
+       in pure black at .72/.85 — the "heavy black shadow" the brief names. These
+       are tinted from the ink colour, not black. */
+    --elev-0: none;
+    --elev-1: 0 1px 2px rgba(21, 24, 24, .05);
+    --elev-2: 0 1px 3px rgba(21, 24, 24, .06), 0 1px 2px rgba(21, 24, 24, .04);
+    --elev-3: 0 4px 12px -2px rgba(21, 24, 24, .08);
+
+    --shadow-sm:    var(--elev-1);
+    --shadow:       var(--elev-2);
+    --shadow-lg:    var(--elev-3);
+    --shadow-brand: var(--elev-2);   /* was decoration masquerading as elevation */
+
+    /* ---- Brand corrections ---------------------------------------------
+       Four tokens were set to cool blue-greys that are not in the palette. */
+    --border:      #C1CCB3;   /* was #E5E7EB */
+    --border-soft: #DCE4D4;
+    --muted:       #4B6754;   /* was #6B7280 */
+    --surface-2:   #F8FCF8;   /* was #F4F8FC */
+    --bg-alt:      #FEFEF1;   /* was #F1F6FB */
+
+    /* ---- Status hues: exactly three, each defined once ------------------- */
+    --st-ok:    #2F8065;
+    --st-warn:  #B26A00;
+    --st-err:   #B3261E;
+
+    /* ---- Motion: 150-400ms for UI ---------------------------------------- */
+    --dur-1: 150ms;
+    --dur-2: 240ms;
+    --dur-3: 400ms;
+    --ease:  cubic-bezier(.2, 0, .2, 1);
+}
+
+/* Dark mode kept the brand: the old dark theme abandoned #0B4E3D entirely for
+   navy (--bg:#041F3D, --brand:#4E9BE0). Here the field is the brand green
+   darkened, so the admin panel stays recognisably EduSkill in either theme. */
+body.admin[data-theme="dark"],
+html[data-theme="dark"] body.admin {
+    --elev-1: 0 1px 2px rgba(0, 0, 0, .28);
+    --elev-2: 0 1px 3px rgba(0, 0, 0, .34), 0 1px 2px rgba(0, 0, 0, .22);
+    --elev-3: 0 4px 12px -2px rgba(0, 0, 0, .40);
+    --border:      #1B4438;
+    --border-soft: #14342B;
+    --muted:       #8FA89A;
+    --surface-2:   #0D3125;
+    --bg-alt:      #0A2A20;
+}
+
+/* =============================================================================
+   BUTTONS — flat fills. Every button in the panel was a two-stop gradient with
+   a 22px coloured drop shadow, which the brief rules out twice over ("excessive
+   gradients", "excessive shadows"). Selectors mirror admin-pro.css's own
+   specificity so these win without !important.
+   ============================================================================= */
+body.admin .admin-content .btn,
+body.admin .btn {
+    border-radius: var(--r-md);
+    transition: background-color var(--dur-1) var(--ease),
+                border-color var(--dur-1) var(--ease),
+                color var(--dur-1) var(--ease),
+                box-shadow var(--dur-1) var(--ease);
+    will-change: auto;
+}
+/* The lift-on-hover was applied to every variant; a data-dense panel should not
+   have its controls jumping. Colour carries the state instead. */
+body.admin .admin-content .btn:hover,
+body.admin .btn:hover { transform: none; }
+body.admin .admin-content .btn:active,
+body.admin .btn:active { transform: none; }
+
+body.admin .btn.btn-primary {
+    background: var(--brand-600, #0B4E3D); background-image: none;
+    color: #fff; border-color: transparent; box-shadow: var(--elev-1);
+}
+body.admin .btn.btn-primary:hover { background: #0F4537; box-shadow: var(--elev-2); filter: none; }
+
+body.admin .btn.btn-secondary {
+    background: var(--surface); background-image: none; color: var(--text);
+    border-color: var(--border); box-shadow: none;
+}
+body.admin .btn.btn-secondary:hover { background: var(--surface-2); border-color: var(--muted); box-shadow: none; }
+
+body.admin .btn.btn-outline {
+    background: transparent; background-image: none;
+    color: var(--brand-600, #0B4E3D);
+    border-color: color-mix(in srgb, var(--brand-600, #0B4E3D) 45%, transparent);
+}
+body.admin .btn.btn-outline:hover {
+    background: color-mix(in srgb, var(--brand-600, #0B4E3D) 8%, transparent);
+    background-image: none;
+}
+body.admin .btn.btn-ghost { background: transparent; background-image: none; color: var(--text-soft); }
+body.admin .btn.btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+
+body.admin .btn.btn-success { background: var(--st-ok);   background-image: none; color: #fff; box-shadow: var(--elev-1); }
+body.admin .btn.btn-danger  { background: var(--st-err);  background-image: none; color: #fff; box-shadow: var(--elev-1); }
+body.admin .btn.btn-warning { background: var(--st-warn); background-image: none; color: #fff; box-shadow: var(--elev-1); }
+body.admin .btn.btn-info    { background: var(--secondary, #174D3D); background-image: none; color: #fff; box-shadow: var(--elev-1); }
+body.admin .btn.btn-success:hover, body.admin .btn.btn-danger:hover,
+body.admin .btn.btn-warning:hover, body.admin .btn.btn-info:hover {
+    filter: brightness(.94); box-shadow: var(--elev-2);
+}
+body.admin .btn.btn-sm { border-radius: var(--r-sm); }
+
+/* A control the eye can find when tabbing, on any fill. */
+body.admin .btn:focus-visible,
+body.admin .admin-content .btn:focus-visible,
+body.admin .form-control:focus-visible, body.admin .form-select:focus-visible,
+body.admin a:focus-visible, body.admin button:focus-visible {
+    outline: 2px solid var(--brand-600, #0B4E3D);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* =============================================================================
+   SURFACES — subtle elevation, legal radii.
+   ============================================================================= */
+body.admin .panel, body.admin .admin-content .panel {
+    border-radius: var(--r-lg);
+    box-shadow: var(--elev-1);
+    border: 1px solid var(--border);
+    background-image: none;
+}
+body.admin .panel:hover { box-shadow: var(--elev-1); }
+body.admin .stat-card, body.admin .admin-content .stat-card,
+body.admin .table-wrap, body.admin .form-control, body.admin .form-select,
+body.admin .form-textarea {
+    border-radius: var(--r-md);
+    box-shadow: none;
+    background-image: none;
+}
+body.admin .form-control:focus, body.admin .form-select:focus, body.admin .form-textarea:focus {
+    border-color: var(--brand-600, #0B4E3D);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-600, #0B4E3D) 14%, transparent);
+}
+
+/* =============================================================================
+   STATUS — never colour alone.
+   The panel signalled every state with a tinted pill and no other cue, which
+   fails the brief's rule outright and is invisible to anyone who cannot separate
+   the hues. Each status now carries a glyph in front of its label; the glyph is
+   CSS-generated so all ~40 screens using .pill gain it without markup edits.
+   ============================================================================= */
+body.admin .pill { border-radius: var(--r-pill); box-shadow: none; background-image: none; }
+body.admin .pill::before {
+    content: ""; display: inline-block; flex: none;
+    width: 1em; height: 1em; margin-right: .4em; vertical-align: -.16em;
+    background: currentColor;
+    -webkit-mask: var(--pill-glyph) center / contain no-repeat;
+            mask: var(--pill-glyph) center / contain no-repeat;
+}
+/* No glyph declared → no marker, so unclassified pills are unaffected. */
+body.admin .pill { --pill-glyph: none; }
+body.admin .pill.pill-green,  body.admin .pill.pill-success {
+    --pill-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E");
+}
+body.admin .pill.pill-amber, body.admin .pill.pill-warning, body.admin .pill.pill-orange {
+    --pill-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 2 1 21h22zm0 6 6.5 11h-13zm-1 3v4h2v-4zm0 5v2h2v-2z'/%3E%3C/svg%3E");
+}
+body.admin .pill.pill-red, body.admin .pill.pill-danger {
+    --pill-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z'/%3E%3C/svg%3E");
+}
+body.admin .pill.pill-blue, body.admin .pill.pill-info {
+    --pill-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M11 7h2v2h-2zm0 4h2v6h-2zm1-9a10 10 0 1 0 0 20 10 10 0 0 0 0-20z'/%3E%3C/svg%3E");
+}
+body.admin .pill.pill-gray, body.admin .pill.pill-grey, body.admin .pill.pill-muted {
+    --pill-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M6 11h12v2H6z'/%3E%3C/svg%3E");
+}
+body.admin .pill { display: inline-flex; align-items: center; }
+
+/* =============================================================================
+   TABLES — readable density, no animation. The brief forbids animating tables.
+   ============================================================================= */
+body.admin .admin-table { border-radius: 0; }
+body.admin .admin-table th {
+    font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--muted); background: var(--surface-2);
+    padding: var(--sp-3) var(--sp-4); white-space: nowrap;
+}
+body.admin .admin-table td { padding: var(--sp-3) var(--sp-4); }
+body.admin .admin-table tbody tr { transition: background-color var(--dur-1) var(--ease); }
+body.admin .admin-table tbody tr:hover { background: var(--surface-2); transform: none; box-shadow: none; }
+body.admin .admin-table tbody tr, body.admin .admin-table tbody td { animation: none !important; }
+
+/* The page must never scroll horizontally — the wrapper does. */
+body.admin .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+body.admin { overflow-x: clip; }
+
+/* =============================================================================
+   MOTION — nothing decorative, and nothing at all when the OS says so.
+   ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+    body.admin *, body.admin *::before, body.admin *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+    }
+}
+
+/* Minimum touch target on tablet/mobile, where a thumb is the pointer. */
+@media (max-width: 1024px) {
+    body.admin .btn, body.admin .icon-btn, body.admin .pager a,
+    body.admin .admin-table .btn-sm { min-height: 44px; }
+    body.admin .btn.btn-sm { min-height: 44px; padding-inline: var(--sp-3); }
+}
+
+/* =============================================================================
+   COMPONENTS THE PANEL DID NOT HAVE
+   -----------------------------------------------------------------------------
+   `.empty-state`, `.skeleton` and `.tabs` already existed in admin.css /
+   admin-pro.css and are EXTENDED here rather than redefined. These were absent
+   entirely: toast, drawer, breadcrumb, bulk-action bar, KPI card with sparkline,
+   timeline, error state, and a confirm dialog that states its consequence.
+
+   Each carries the states the brand direction demands, and status is always
+   colour PLUS an icon PLUS text — never colour alone. Render them through
+   includes/admin_ui.php so the markup shape is identical on every screen; the
+   class API below is the contract.
+   ============================================================================= */
+
+/* ---- EMPTY STATE (extends the existing .empty-state) --------------------- */
+body.admin .empty-state, body.admin .admin-content .empty-state {
+    display: grid; justify-items: center; gap: var(--sp-2);
+    padding: var(--sp-9) var(--sp-5);
+    border: 1px dashed var(--border); border-radius: var(--r-lg);
+    background: var(--surface-2); text-align: center;
+}
+/* Self-contained: centring and glyph size are declared here rather than inherited
+   from admin-pro.css's `.admin-content` descendant rule, so an empty state inside
+   a drawer or modal is not left with a top-left icon. */
+body.admin .empty-state .icon, body.admin .admin-content .empty-state .icon,
+body.admin .error-state .icon {
+    display: grid; place-items: center;
+    width: 56px; height: 56px; border-radius: var(--r-md);
+    background: color-mix(in srgb, var(--brand-600, #0B4E3D) 8%, transparent);
+    color: var(--brand-600, #0B4E3D); background-image: none;
+}
+body.admin .empty-state .es-title { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text); }
+body.admin .empty-state .es-text { margin: 0; max-width: 42ch; color: var(--muted); font-size: .92rem; line-height: 1.6; }
+/* Both states share this wrapper — admin_error_state() emits .es-actions too, and
+   scoping it to .empty-state left an error state's buttons unlaid-out. */
+body.admin .empty-state .es-actions,
+body.admin .error-state .es-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-2); }
+
+/* ---- ERROR STATE — same geometry, different semantics ------------------- */
+body.admin .error-state {
+    display: grid; justify-items: center; gap: var(--sp-2); text-align: center;
+    padding: var(--sp-8) var(--sp-5); border-radius: var(--r-lg);
+    border: 1px solid color-mix(in srgb, var(--st-err) 35%, transparent);
+    background: color-mix(in srgb, var(--st-err) 5%, transparent);
+}
+body.admin .error-state .icon { color: var(--st-err); width: 40px; height: 40px; }
+body.admin .error-state .es-title { color: var(--st-err); font-weight: 700; margin: 0; }
+body.admin .error-state .es-text { color: var(--text-soft); margin: 0; max-width: 46ch; }
+
+/* ---- SKELETON (extends the existing .skeleton) -------------------------- */
+body.admin .skeleton {
+    position: relative; overflow: hidden; min-height: 1em;
+    background: var(--surface-2); border-radius: var(--r-sm);
+}
+body.admin .skeleton::after {
+    content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(21,24,24,.05), transparent);
+    animation: ds-shimmer 1.2s var(--ease) infinite;
+}
+@keyframes ds-shimmer { to { transform: translateX(100%); } }
+body.admin .sk-line { height: .8em; margin-bottom: var(--sp-2); }
+body.admin .sk-line.is-short { width: 45%; }
+body.admin .sk-line.is-mid { width: 70%; }
+body.admin .sk-block { height: 120px; border-radius: var(--r-md); }
+body.admin .sk-circle { width: 40px; height: 40px; border-radius: 50%; }
+body.admin .sk-row { display: flex; gap: var(--sp-4); padding: var(--sp-3) var(--sp-4); }
+body.admin .sk-row > .skeleton { flex: 1; }
+
+/* ---- TOAST — compact and corner-anchored, never a blocking alert -------- */
+body.admin .toast-stack {
+    position: fixed; z-index: 1200; right: var(--sp-5); bottom: var(--sp-5);
+    display: grid; gap: var(--sp-2); pointer-events: none;
+    width: min(360px, calc(100vw - var(--sp-8)));
+}
+body.admin .toast {
+    display: flex; align-items: flex-start; gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
+    background: var(--surface); border: 1px solid var(--border);
+    box-shadow: var(--elev-3); color: var(--text);
+    font-size: .92rem; line-height: 1.5; pointer-events: auto;
+    animation: ds-toast-in var(--dur-2) var(--ease) both;
+}
+@keyframes ds-toast-in { from { opacity: 0; transform: translateY(8px); } }
+body.admin .toast.is-leaving { animation: ds-toast-out var(--dur-1) var(--ease) both; }
+@keyframes ds-toast-out { to { opacity: 0; transform: translateY(6px); } }
+body.admin .toast .t-ico { flex: none; width: 18px; height: 18px; margin-top: .15rem; }
+body.admin .toast .t-body { flex: 1; min-width: 0; }
+body.admin .toast .t-title { display: block; font-weight: 700; }
+/* Three cues per status: the rule, the glyph colour, and the text itself. */
+body.admin .toast.is-ok { border-left: 3px solid var(--st-ok); }
+body.admin .toast.is-ok .t-ico { color: var(--st-ok); }
+body.admin .toast.is-warn { border-left: 3px solid var(--st-warn); }
+body.admin .toast.is-warn .t-ico { color: var(--st-warn); }
+body.admin .toast.is-error { border-left: 3px solid var(--st-err); }
+body.admin .toast.is-error .t-ico { color: var(--st-err); }
+body.admin .toast .t-close {
+    flex: none; width: 28px; height: 28px; border: 0; cursor: pointer;
+    background: transparent; color: var(--muted); border-radius: var(--r-sm);
+}
+body.admin .toast .t-close:hover { background: var(--surface-2); color: var(--text); }
+
+/* ---- DRAWER — details / activity / transaction / profile preview -------- */
+body.admin .drawer-scrim {
+    position: fixed; inset: 0; z-index: 1100; background: rgba(21,24,24,.42);
+    opacity: 0; visibility: hidden;
+    transition: opacity var(--dur-2) var(--ease), visibility var(--dur-2);
+}
+body.admin .drawer-scrim.is-open { opacity: 1; visibility: visible; }
+body.admin .ds-drawer {
+    position: fixed; z-index: 1101; top: 0; right: 0; bottom: 0;
+    width: min(520px, 100vw); display: flex; flex-direction: column;
+    background: var(--surface); border-left: 1px solid var(--border);
+    box-shadow: var(--elev-3); transform: translateX(100%);
+    transition: transform var(--dur-3) var(--ease);
+}
+body.admin .ds-drawer.is-open { transform: none; }
+body.admin .ds-drawer-head {
+    display: flex; align-items: center; gap: var(--sp-3);
+    padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--border);
+}
+body.admin .ds-drawer-title { margin: 0; flex: 1; min-width: 0; font-size: 1.02rem; font-weight: 700; }
+body.admin .ds-drawer-body { flex: 1; overflow-y: auto; padding: var(--sp-5); }
+body.admin .ds-drawer-foot {
+    display: flex; gap: var(--sp-2); justify-content: flex-end;
+    padding: var(--sp-4) var(--sp-5); border-top: 1px solid var(--border);
+    background: var(--surface-2);
+}
+@media (max-width: 640px) {
+    /* A 520px side panel IS the whole screen on a phone. Anchor it to the bottom
+       instead, so the close control lands in thumb reach rather than top-right. */
+    body.admin .ds-drawer {
+        width: 100vw; top: auto; height: 92vh; border-left: 0;
+        border-top-left-radius: var(--r-lg); border-top-right-radius: var(--r-lg);
+        transform: translateY(100%);
+    }
+    body.admin .ds-drawer.is-open { transform: none; }
+}
+
+/* ---- BREADCRUMB -------------------------------------------------------- */
+body.admin .ds-crumbs {
+    display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2);
+    margin: 0 0 var(--sp-3); padding: 0; list-style: none; font-size: .85rem;
+}
+body.admin .ds-crumbs li { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--muted); }
+body.admin .ds-crumbs li + li::before { content: "/"; color: var(--border); }
+body.admin .ds-crumbs a { color: var(--muted); text-decoration: none; }
+body.admin .ds-crumbs a:hover { color: var(--brand-600, #0B4E3D); text-decoration: underline; }
+body.admin .ds-crumbs [aria-current="page"] { color: var(--text); font-weight: 600; }
+
+/* ---- BULK ACTION BAR — appears once rows are selected ------------------- */
+body.admin .bulk-bar {
+    position: sticky; bottom: var(--sp-4); z-index: 20;
+    display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
+    margin-top: var(--sp-4); padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--r-md); border: 1px solid var(--border);
+    background: var(--surface); box-shadow: var(--elev-3);
+}
+body.admin .bulk-bar[hidden] { display: none; }
+body.admin .bulk-count { font-weight: 700; color: var(--text); }
+body.admin .bulk-count .n { color: var(--brand-600, #0B4E3D); }
+body.admin .bulk-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-left: auto; }
+
+/* ---- KPI STAT CARD + SPARKLINE ----------------------------------------- */
+body.admin .kpi-grid {
+    display: grid; gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+body.admin .kpi {
+    display: grid; gap: var(--sp-2); padding: var(--sp-5);
+    border-radius: var(--r-lg); border: 1px solid var(--border);
+    background: var(--surface); box-shadow: var(--elev-1);
+}
+body.admin .kpi-top { display: flex; align-items: center; gap: var(--sp-3); }
+body.admin .kpi-ico {
+    flex: none; width: 36px; height: 36px; display: grid; place-items: center;
+    border-radius: var(--r-sm); color: var(--brand-600, #0B4E3D);
+    background: color-mix(in srgb, var(--brand-600, #0B4E3D) 8%, transparent);
+}
+body.admin .kpi-ico svg { width: 18px; height: 18px; }
+body.admin .kpi-label { font-size: .82rem; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
+body.admin .kpi-value {
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem); font-weight: 800; line-height: 1;
+    letter-spacing: -.02em; color: var(--text); font-variant-numeric: tabular-nums;
+}
+body.admin .kpi-delta { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; font-weight: 700; }
+body.admin .kpi-delta svg { width: 14px; height: 14px; }
+body.admin .kpi-delta.is-up { color: var(--st-ok); }
+body.admin .kpi-delta.is-down { color: var(--st-err); }
+body.admin .kpi-delta.is-flat { color: var(--muted); }
+body.admin .kpi-since { color: var(--muted); font-weight: 500; }
+body.admin .kpi-spark { display: block; width: 100%; height: 34px; }
+body.admin .kpi-spark path {
+    fill: none; stroke: var(--brand-600, #0B4E3D); stroke-width: 2;
+    stroke-linejoin: round; stroke-linecap: round;
+}
+body.admin .kpi-spark .area { fill: color-mix(in srgb, var(--brand-600, #0B4E3D) 10%, transparent); stroke: none; }
+/* A card whose figure has not arrived, and one whose query failed. */
+body.admin .kpi.is-loading .kpi-value, body.admin .kpi.is-loading .kpi-spark { visibility: hidden; }
+body.admin .kpi.is-error { border-color: color-mix(in srgb, var(--st-err) 35%, transparent); }
+body.admin .kpi.is-error .kpi-value { color: var(--st-err); font-size: 1rem; }
+
+/* ---- TIMELINE — recent activity ---------------------------------------- */
+body.admin .ds-timeline { list-style: none; margin: 0; padding: 0; }
+body.admin .ds-timeline li {
+    position: relative; display: grid; gap: var(--sp-1);
+    padding: var(--sp-3) 0 var(--sp-3) var(--sp-7);
+}
+body.admin .ds-timeline li::before {          /* the rail */
+    content: ""; position: absolute; left: 9px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+}
+body.admin .ds-timeline li:first-child::before { top: var(--sp-4); }
+body.admin .ds-timeline li:last-child::before { bottom: calc(100% - var(--sp-4)); }
+body.admin .ds-timeline li::after {           /* the node */
+    content: ""; position: absolute; left: 4px; top: var(--sp-4);
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--brand-600, #0B4E3D);
+}
+body.admin .ds-timeline li.is-ok::after { border-color: var(--st-ok); }
+body.admin .ds-timeline li.is-warn::after { border-color: var(--st-warn); }
+body.admin .ds-timeline li.is-err::after { border-color: var(--st-err); }
+body.admin .tl-row { display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap; }
+body.admin .tl-who { font-weight: 700; color: var(--text); }
+body.admin .tl-what { color: var(--text-soft); }
+body.admin .tl-when { margin-left: auto; color: var(--muted); font-size: .82rem; white-space: nowrap; }
+
+/* ---- CONFIRM DIALOG — states the consequence, not just "are you sure" --- */
+body.admin .ds-confirm {
+    border: 0; padding: 0; border-radius: var(--r-lg);
+    max-width: min(440px, calc(100vw - var(--sp-8)));
+    background: var(--surface); color: var(--text); box-shadow: var(--elev-3);
+}
+body.admin .ds-confirm::backdrop { background: rgba(21,24,24,.5); }
+body.admin .ds-confirm-body { padding: var(--sp-5); display: grid; gap: var(--sp-3); }
+body.admin .ds-confirm-title { margin: 0; font-size: 1.05rem; font-weight: 700; }
+body.admin .ds-confirm-text { margin: 0; color: var(--text-soft); line-height: 1.6; font-size: .92rem; }
+body.admin .ds-confirm-affected {
+    margin: 0; padding: var(--sp-3) var(--sp-4); border-radius: var(--r-sm);
+    background: var(--surface-2); border: 1px solid var(--border);
+    font-size: .88rem; color: var(--text);
+}
+body.admin .ds-confirm-foot {
+    display: flex; gap: var(--sp-2); justify-content: flex-end;
+    padding: var(--sp-4) var(--sp-5); border-top: 1px solid var(--border);
+    background: var(--surface-2);
+}
+body.admin .ds-confirm.is-destructive .ds-confirm-title { color: var(--st-err); }
+
+/* Inline SVG glyphs from includes/admin_ui.php are sized by width/height attributes;
+   these align them optically with the adjacent text. */
+body.admin .ds-confirm-title svg,
+body.admin .error-state .es-title svg { width: 18px; height: 18px; vertical-align: -.15em; }

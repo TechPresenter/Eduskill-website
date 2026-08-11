@@ -61,7 +61,7 @@ $esc = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8
 <title>We'll Be Right Back — EDUSKILL INDIA FOUNDATION</title>
 <style>
     :root{
-        --brand:#063566; --brand-2:#084881; --green:#58A42F; --orange:#E67B1D;
+        --brand:#0B4E3D; --brand-2:#174D3D; --green:#2F8065; --orange:#F15A24;
         --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc; --card:#ffffff;
     }
     @media (prefers-color-scheme: dark){
@@ -77,13 +77,13 @@ $esc = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8
     .wrap{
         width:100%; max-width:580px; background:var(--card); border:1px solid var(--line);
         border-radius:18px; padding:clamp(1.75rem,5vw,3rem); text-align:center;
-        box-shadow:0 18px 45px -20px rgba(6,53,102,.35);
+        box-shadow:0 18px 45px -20px rgba(11,78,61,.35);
     }
     .badge{
         width:70px; height:70px; margin:0 auto 1.2rem; border-radius:50%;
         display:grid; place-items:center;
         background:linear-gradient(135deg,var(--brand),var(--brand-2) 60%,var(--green));
-        box-shadow:0 10px 26px -10px rgba(6,53,102,.6);
+        box-shadow:0 10px 26px -10px rgba(11,78,61,.6);
     }
     .badge svg{width:32px;height:32px;stroke:#fff;fill:none;stroke-width:2;
         stroke-linecap:round;stroke-linejoin:round;animation:spin 7s linear infinite}
@@ -96,7 +96,7 @@ $esc = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8
     p{color:var(--muted); margin-bottom:.8rem}
     .eta{
         display:inline-block; margin-top:.4rem; padding:.5rem 1rem; border-radius:9px;
-        background:rgba(88,164,47,.12); color:var(--green); font-weight:600; font-size:.9rem;
+        background:rgba(47,128,101,.12); color:var(--green); font-weight:600; font-size:.9rem;
     }
     .foot{margin-top:1.7rem; padding-top:1.15rem; border-top:1px solid var(--line); font-size:.85rem}
     .foot a{color:var(--brand); font-weight:600; text-decoration:none}

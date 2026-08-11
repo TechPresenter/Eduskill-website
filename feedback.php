@@ -130,11 +130,11 @@ include __DIR__ . '/includes/header.php';
     .star-select{display:inline-flex;flex-direction:row-reverse;justify-content:flex-start;gap:.2rem;font-size:2.1rem;line-height:1}
     .star-select input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);border:0;white-space:nowrap}
     .star-select label{color:rgba(148,163,184,.45);cursor:pointer;transition:color .15s ease,transform .12s ease;padding:.05rem}
-    .star-select input:checked ~ label{color:#E67B1D}
+    .star-select input:checked ~ label{color:#F15A24}
     .star-select:hover label{color:rgba(148,163,184,.45)}
     .star-select label:hover,
-    .star-select label:hover ~ label{color:#E67B1D;transform:scale(1.08)}
-    .star-select input:focus-visible + label{outline:2px solid var(--brand-600,#063566);outline-offset:3px;border-radius:6px}
+    .star-select label:hover ~ label{color:#F15A24;transform:scale(1.08)}
+    .star-select input:focus-visible + label{outline:2px solid var(--brand-600,#0B4E3D);outline-offset:3px;border-radius:6px}
 </style>
 
 <!-- ============================== INTRO + FEEDBACK FORM ============================== -->
@@ -269,7 +269,7 @@ include __DIR__ . '/includes/header.php';
                     <div class="icon-badge"><?= lucide($cat['icon']) ?></div>
                     <h3 class="card-title"><?= e($cat['title']) ?></h3>
                     <p class="card-text"><?= e($cat['text']) ?></p>
-                    <a href="#feedback-form" style="color:var(--brand-600);font-weight:700;">Share this <?= lucide('arrow-right') ?></a>
+                    <a class="link-action" href="#feedback-form" style="color:var(--brand-600);font-weight:700;">Share this <?= lucide('arrow-right') ?></a>
                 </div>
             <?php endforeach; ?>
         </div>

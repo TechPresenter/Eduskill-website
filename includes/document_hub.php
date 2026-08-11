@@ -666,8 +666,8 @@ function dh_styles(): string
  * ========================================================================== */
 .doc-classic     { --acc:#1e3a8a; --acc2:#3b5bb5; --ink:#1f2937; --paper:#fffefb; --orn:rgba(30,58,138,.20); --frameW:1.6mm;
                    --c1:#1e3a8a; --c2:#0e7490; --c3:#b45309; --c4:#15803d; }
-.doc-premium     { --acc:#084881; --acc2:#0f6fc4; --ink:#0f172a; --paper:#fbfcff; --orn:rgba(8,72,129,.18);  --frameW:2.2mm;
-                   --c1:#084881; --c2:#7c3aed; --c3:#0891b2; --c4:#c2410c; }
+.doc-premium     { --acc:#174D3D; --acc2:#0f6fc4; --ink:#0f172a; --paper:#fbfcff; --orn:rgba(23,77,61,.18);  --frameW:2.2mm;
+                   --c1:#174D3D; --c2:#7c3aed; --c3:#0891b2; --c4:#c2410c; }
 .doc-luxury      { --acc:#6b4e00; --acc2:#c9a227; --ink:#2b2312; --paper:#fffdf4; --orn:rgba(184,145,46,.32); --frameW:3mm;
                    --c1:#8a6a00; --c2:#7f1d1d; --c3:#14532d; --c4:#1e3a8a; }
 .doc-gold        { --acc:#8a6a00; --acc2:#d4af37; --ink:#2a2410; --paper:#fffdf5; --orn:rgba(212,175,55,.36); --frameW:3mm;
@@ -676,14 +676,14 @@ function dh_styles(): string
                    --c1:#0f172a; --c2:#0e7490; --c3:#b45309; --c4:#4338ca; }
 .doc-minimal     { --acc:#111827; --acc2:#4b5563; --ink:#111827; --paper:#ffffff; --orn:rgba(17,24,39,.10);  --frameW:.5mm;
                    --c1:#111827; --c2:#374151; --c3:#4b5563; --c4:#6b7280; }
-.doc-modern      { --acc:#084881; --acc2:#22d3ee; --ink:#0f172a; --paper:#fbfeff; --orn:rgba(8,72,129,.16);  --frameW:1.6mm; --radius:3mm;
+.doc-modern      { --acc:#174D3D; --acc2:#22d3ee; --ink:#0f172a; --paper:#fbfeff; --orn:rgba(23,77,61,.16);  --frameW:1.6mm; --radius:3mm;
                    --c1:#0369a1; --c2:#0891b2; --c3:#7c3aed; --c4:#db2777; }
-.doc-blue        { --acc:#063566; --acc2:#1d6fb8; --ink:#0f2338; --paper:#f9fcff; --orn:rgba(6,53,102,.20);  --frameW:2.2mm;
-                   --c1:#063566; --c2:#0e7490; --c3:#4338ca; --c4:#b45309; }
-.doc-ngo         { --acc:#2f6b1f; --acc2:#58A42F; --ink:#14260f; --paper:#f9fdf8; --orn:rgba(88,164,47,.26); --frameW:2.2mm;
-                   --c1:#58A42F; --c2:#063566; --c3:#E67B1D; --c4:#0e7490; }
-.doc-educational { --acc:#9a4a06; --acc2:#E67B1D; --ink:#2b1a0c; --paper:#fffdf7; --orn:rgba(230,123,29,.26); --frameW:2.2mm;
-                   --c1:#E67B1D; --c2:#1d4ed8; --c3:#15803d; --c4:#7c3aed; }
+.doc-blue        { --acc:#0B4E3D; --acc2:#1d6fb8; --ink:#0f2338; --paper:#f9fcff; --orn:rgba(11,78,61,.20);  --frameW:2.2mm;
+                   --c1:#0B4E3D; --c2:#0e7490; --c3:#4338ca; --c4:#b45309; }
+.doc-ngo         { --acc:#2f6b1f; --acc2:#2F8065; --ink:#14260f; --paper:#f9fdf8; --orn:rgba(47,128,101,.26); --frameW:2.2mm;
+                   --c1:#2F8065; --c2:#0B4E3D; --c3:#F15A24; --c4:#0e7490; }
+.doc-educational { --acc:#9a4a06; --acc2:#F15A24; --ink:#2b1a0c; --paper:#fffdf7; --orn:rgba(241,90,36,.26); --frameW:2.2mm;
+                   --c1:#F15A24; --c2:#1d4ed8; --c3:#15803d; --c4:#7c3aed; }
 .doc-government  { --acc:#7f1d1d; --acc2:#b45309; --ink:#1c1917; --paper:#fffdf8; --orn:rgba(127,29,29,.22); --frameW:2.6mm;
                    --c1:#7f1d1d; --c2:#a16207; --c3:#14532d; --c4:#1e3a8a; }
 .doc-green       { --acc:#14532d; --acc2:#16a34a; --ink:#0f2417; --paper:#f8fdfa; --orn:rgba(22,163,74,.24); --frameW:2.2mm;

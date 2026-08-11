@@ -255,7 +255,7 @@ include __DIR__ . '/includes/header.php';
             c.style.outlineOffset = '';
             c.removeAttribute('aria-current');
         });
-        active.style.outline = '3px solid #063566';
+        active.style.outline = '3px solid #0B4E3D';
         active.style.outlineOffset = '2px';
         active.setAttribute('aria-current', 'true');
     }

@@ -21,7 +21,7 @@ api/v1/                    JSON REST endpoints
 forms/                     AJAX POST handlers (return JSON)
 assets/{css,js,images}
 uploads/<folder>/          user uploads (stored path is relative to /uploads)
-database/                  schema.sql, sample_data.sql
+database/                  eduskill.sql (the ONE schema + seed file)
 ```
 
 ## 2. Page template pattern (public pages, project root)
@@ -184,7 +184,7 @@ Admin uses its own head/sidebar/foot partials (Phase 9) — NOT the public heade
 ## 8. Schema quick reference (table → key columns)
 
 All tables have `id`, `created_at`; most have `updated_at`; content tables have
-`status` and a unique `slug`. Common columns below (see `database/schema.sql` for full):
+`status` and a unique `slug`. Common columns below (see `database/eduskill.sql` for full):
 
 - **settings**(group_name,key_name,value,type) · **users**(role_id,name,email,password,status,avatar)
 - **roles**(name,slug) · **permissions**(name,slug,module) · **role_permissions**(role_id,permission_id)

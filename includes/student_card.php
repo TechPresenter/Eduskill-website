@@ -19,7 +19,7 @@ function student_card_build_gd(array $student): \GdImage|false
 {
     $student = student_ensure_full($student);
     $school  = find('schools', (int) ($student['school_id'] ?? 0));
-    $accent  = '#063566';
+    $accent  = '#0B4E3D';
     $accentDark = card_darken($accent, 0.72);
     $org     = (string) get_setting('site_name', SITE_NAME);
     $name    = (string) ($student['name'] ?? 'Student');

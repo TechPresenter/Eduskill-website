@@ -10,8 +10,12 @@ gateway calls use cURL; receipts/certificates print via the browser.
 ## 1. Install / upgrade
 
 ```bash
-C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v12.sql
+C:\xampp\mysql\bin\mysql.exe -u root pwf < database\eduskill.sql
 ```
+
+There is one SQL file for the whole project. On a database that already holds
+real data, run **Section 2 only** (see the banner inside the file). The tables
+and settings this module needs are listed below.
 
 Adds campaign fields (`category`, `location`, `milestones`, `donor_count`,
 `closed_at`), donation fields (`receipt_no`, `gateway`, `gateway_order_id`,

@@ -234,48 +234,72 @@ $stateLabel = static fn(string $state): string => match ($state) {
 include __DIR__ . '/partials/head.php';
 ?>
 <style>
+/* Screen-local layout ONLY. Everything with a shared implementation now comes
+   from it: the tab strip is admin-pro.css's `.tabs`/`.tab` (this file used to
+   carry a byte-identical `.sc-tabs`/`.sc-tab` copy), the page head is
+   `.admin-page-head`, and status is a `.pill` — never a bare colour dot, which
+   the design system rules out as "colour alone". */
 .sc-wrap{max-width:1180px}
-.sc-hero{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
-.sc-ip{display:inline-flex;align-items:center;gap:.5rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:.5rem .9rem;font-size:.85rem}
+.sc-ip{display:inline-flex;align-items:center;gap:var(--sp-2);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-4);font-size:.85rem}
 .sc-ip code{font-weight:800;color:var(--brand-600)}
-.sc-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.9rem;margin-bottom:1.6rem}
-.sc-card{border:1px solid var(--border);border-radius:14px;padding:1rem 1.05rem;background:var(--surface);box-shadow:0 1px 2px rgba(6,53,102,.04),0 18px 34px -30px rgba(6,53,102,.4);transition:transform .14s ease,box-shadow .14s ease;text-decoration:none;color:inherit;display:block}
-.sc-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px -14px rgba(6,53,102,.5)}
-.sc-card .sc-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.45rem}
-.sc-card h4{font-size:.92rem;font-weight:700;margin:0}
-.sc-dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
-.sc-dot.ok{background:#58A42F;box-shadow:0 0 0 4px rgba(88,164,47,.15)}
-.sc-dot.warn{background:#E67B1D;box-shadow:0 0 0 4px rgba(230,123,29,.15)}
-.sc-dot.off{background:#94a3b8;box-shadow:0 0 0 4px rgba(148,163,184,.15)}
-.sc-card p{font-size:.78rem;color:var(--muted);margin:0;line-height:1.45}
-.sc-tabs{display:flex;flex-wrap:wrap;gap:.35rem;border-bottom:1px solid var(--border);margin-bottom:1.3rem;padding-bottom:.1rem}
-.sc-tab{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:600;font-size:.9rem;padding:.6rem .9rem;border-radius:9px 9px 0 0;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:.4rem}
-.sc-tab:hover{color:var(--text);background:var(--surface-2)}
-.sc-tab.is-active{color:var(--brand-600);border-bottom-color:var(--brand-600)}
-.sc-tab svg{width:1em;height:1em}
+.sc-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:var(--sp-3);margin-bottom:var(--sp-6)}
+.sc-card{display:block;padding:var(--sp-4);border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--elev-1);color:inherit;text-decoration:none;transition:box-shadow var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
+.sc-card:hover{box-shadow:var(--elev-2);border-color:var(--brand-600)}
+.sc-card .sc-top{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);margin-bottom:var(--sp-2)}
+.sc-card h3{margin:0;font-size:.92rem;font-weight:700}
+.sc-card p{margin:0;font-size:.8rem;line-height:1.5;color:var(--muted)}
 .sc-panel{display:none}
-.sc-panel.is-active{display:block;animation:scfade .2s ease}
-@keyframes scfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.sc-codes{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;max-width:420px;margin:.8rem 0}
-.sc-codes code{background:var(--surface-2);border:1px dashed var(--border);border-radius:8px;padding:.5rem;text-align:center;font-weight:700;letter-spacing:.05em}
-.sc-hdr-check{display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.9rem}
-.sc-qr{background:#fff;padding:12px;border-radius:12px;border:1px solid var(--border);width:172px;height:172px;display:grid;place-items:center}
+.sc-panel.is-active{display:block}
+.sc-form{max-width:720px}
+.sc-form-sm{max-width:640px}
+.sc-narrow{max-width:420px}
+/* Beats `body.admin .panel`'s `border` shorthand without !important. */
+.admin-content .panel.sc-warn{border-color:var(--st-warn)}
+.sc-codes{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-2);max-width:420px;margin:var(--sp-3) 0}
+.sc-codes code{padding:var(--sp-2);border:1px dashed var(--border);border-radius:var(--r-sm);background:var(--surface-2);text-align:center;font-weight:700;letter-spacing:.05em}
+.sc-hdr-check{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-2) 0;border-bottom:1px solid var(--border);font-size:.9rem}
+/* #fff is deliberate and not a palette exception: a QR needs maximum quiet-zone
+   contrast to scan, in either theme. */
+.sc-qr{display:grid;place-items:center;width:172px;height:172px;padding:var(--sp-3);border:1px solid var(--border);border-radius:var(--r-md);background:#fff}
 .sc-qr svg{width:100%;height:100%}
+.sc-2col{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--sp-6);align-items:start}
+.sc-step{margin:0 0 var(--sp-2);font-weight:600}
+.sc-step-2{margin-top:var(--sp-4)}
+.sc-key{font-size:1.05rem;font-weight:800;letter-spacing:.15em;color:var(--brand-600)}
+/* .admin-content .form-control pins font-size at 12.5px, so the one-time-code
+   field has to match that specificity to stay legible. */
+.admin-content .form-control.sc-otp{text-align:center;font-size:1.3rem;letter-spacing:.35em}
+.sc-hint-gap{margin-bottom:var(--sp-3)}
+.sc-inline{display:inline}
+.sc-alert-gap{margin-top:var(--sp-2)}
+.sc-lede{margin:0 0 var(--sp-2)}
+.sc-check-gap{margin-top:var(--sp-2)}
+.sc-gap-t{margin-top:var(--sp-4)}
+.sc-file{font-size:.8rem}
+.sc-details{margin-top:var(--sp-4)}
+.sc-details > summary{cursor:pointer}
+.sc-btn-row{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+.sc-ta-r{text-align:right}
 </style>
 
 <div class="admin-content sc-wrap">
-<div class="admin-page-head sc-hero">
+<div class="admin-page-head">
     <div><h1><?= lucide('shield-alert') ?> Security Center</h1><span class="muted">Monitor and control every layer of application security</span></div>
     <div class="sc-ip"><?= lucide('map-pin') ?> Your IP: <code><?= e($myIp) ?></code></div>
 </div>
 
 <!-- ===================== OVERVIEW DASHBOARD ===================== -->
+<?php /* The card grid needs a heading of its own, otherwise the outline runs
+         h1 → h4 (card titles) → h2 (the tab panels below) and skips two levels on
+         the way in. It is visually redundant next to the cards, so it is announced
+         to assistive tech only — the same .sr-only the topbar already uses. */ ?>
+<h2 class="sr-only">Security overview</h2>
 <div class="sc-cards">
     <?php foreach ($features as $f): ?>
         <a class="sc-card" href="#<?= e($f['href'] ?: 'overview') ?>" <?= $f['href'] ? 'data-goto="' . e($f['href']) . '"' : '' ?>>
             <div class="sc-top">
-                <h4><?= e($f['label']) ?></h4>
-                <span class="sc-dot <?= e($f['state']) ?>" title="<?= e($stateLabel($f['state'])) ?>"></span>
+                <h3><?= e($f['label']) ?></h3>
+                <span class="pill <?= e($pill($f['state'])) ?>"><?= e($stateLabel($f['state'])) ?></span>
             </div>
             <p><?= e($f['detail']) ?></p>
         </a>
@@ -283,22 +307,22 @@ include __DIR__ . '/partials/head.php';
 </div>
 
 <!-- ===================== TABS ===================== -->
-<div class="sc-tabs" role="tablist">
-    <button class="sc-tab is-active" data-tab="access"><?= lucide('key-round') ?> Access &amp; Session</button>
-    <button class="sc-tab" data-tab="twofa"><?= lucide('smartphone') ?> Two-Factor</button>
-    <button class="sc-tab" data-tab="login"><?= lucide('log-in') ?> Login Protection</button>
-    <button class="sc-tab" data-tab="password"><?= lucide('lock-keyhole') ?> Password Policy</button>
-    <button class="sc-tab" data-tab="uploads"><?= lucide('file-up') ?> Uploads</button>
-    <button class="sc-tab" data-tab="headers"><?= lucide('globe-lock') ?> Headers &amp; HTTPS</button>
-    <button class="sc-tab" data-tab="encryption"><?= lucide('binary') ?> Encryption</button>
-    <button class="sc-tab" data-tab="backups"><?= lucide('database-backup') ?> Backups</button>
-    <button class="sc-tab" data-tab="audit"><?= lucide('scroll-text') ?> Audit Log</button>
+<div class="tabs" role="tablist">
+    <button type="button" class="tab is-active" data-tab="access"><?= lucide('key-round') ?> Access &amp; Session</button>
+    <button type="button" class="tab" data-tab="twofa"><?= lucide('smartphone') ?> Two-Factor</button>
+    <button type="button" class="tab" data-tab="login"><?= lucide('log-in') ?> Login Protection</button>
+    <button type="button" class="tab" data-tab="password"><?= lucide('lock-keyhole') ?> Password Policy</button>
+    <button type="button" class="tab" data-tab="uploads"><?= lucide('file-up') ?> Uploads</button>
+    <button type="button" class="tab" data-tab="headers"><?= lucide('globe-lock') ?> Headers &amp; HTTPS</button>
+    <button type="button" class="tab" data-tab="encryption"><?= lucide('binary') ?> Encryption</button>
+    <button type="button" class="tab" data-tab="backups"><?= lucide('database-backup') ?> Backups</button>
+    <button type="button" class="tab" data-tab="audit"><?= lucide('scroll-text') ?> Audit Log</button>
 </div>
 
 <!-- ===================== ACCESS & SESSION ===================== -->
 <section class="sc-panel is-active" id="tab-access">
-    <div class="panel"><div class="panel-head"><h3>Access &amp; Session</h3></div><div class="panel-body">
-        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form" style="max-width:720px;">
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('key-round') ?> Access &amp; Session</h2></div><div class="panel-body">
+        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form sc-form">
             <?= csrf_field() ?><input type="hidden" name="_do" value="save-access">
             <div class="grid-2">
                 <div class="form-group">
@@ -313,7 +337,7 @@ include __DIR__ . '/partials/head.php';
                 </div>
             </div>
             <label class="checkbox"><input type="checkbox" name="trust_proxy" value="1" <?= (int) get_setting('trust_proxy', 0) === 1 ? 'checked' : '' ?>> Trust reverse-proxy headers (X-Forwarded-For / CF-Connecting-IP)</label>
-            <span class="form-hint" style="display:block;margin-top:.3rem;">Leave off unless a real proxy/CDN sits in front — proxy headers are spoofable and would weaken IP restriction &amp; lockout.</span>
+            <span class="form-hint">Leave off unless a real proxy/CDN sits in front — proxy headers are spoofable and would weaken IP restriction &amp; lockout.</span>
             <div class="form-actions"><button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save</button></div>
         </form>
     </div></div>
@@ -322,21 +346,21 @@ include __DIR__ . '/partials/head.php';
 <!-- ===================== TWO-FACTOR ===================== -->
 <section class="sc-panel" id="tab-twofa">
     <?php if ($recoveryCodes): ?>
-        <div class="panel" style="border:1px solid rgba(230,123,29,.4);"><div class="panel-head"><h3><?= lucide('life-buoy') ?> Your recovery codes</h3></div><div class="panel-body">
+        <div class="panel sc-warn"><div class="panel-head"><h2 class="panel-title"><?= lucide('life-buoy') ?> Your recovery codes</h2></div><div class="panel-body">
             <div class="alert alert-warning">Save these now — each works once if you lose your authenticator. They are shown only this once.</div>
             <div class="sc-codes"><?php foreach ($recoveryCodes as $c): ?><code><?= e($c) ?></code><?php endforeach; ?></div>
         </div></div>
     <?php endif; ?>
 
-    <div class="panel"><div class="panel-head"><h3>Two-Factor Authentication (TOTP)</h3>
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('smartphone') ?> Two-Factor Authentication (TOTP)</h2>
         <span class="pill <?= $enabled ? 'pill-green' : 'pill-gray' ?>"><?= $enabled ? 'Enabled' : 'Disabled' ?></span></div>
         <div class="panel-body">
         <?php if ($enabled): ?>
             <p class="text-muted">Your account is protected with an authenticator app. You'll be asked for a 6-digit code at every sign-in. <strong><?= (int) sec_recovery_remaining((int) $me['id']) ?></strong> recovery code(s) remain.</p>
-            <div class="flex flex-wrap gap-2" style="margin-bottom:1rem;">
+            <div class="sc-btn-row">
                 <form method="post" action="<?= e(admin_url('security')) ?>"><?= csrf_field() ?><input type="hidden" name="_do" value="gen-recovery"><button class="btn btn-secondary" type="submit"><?= lucide('refresh-cw') ?> Regenerate recovery codes</button></form>
             </div>
-            <form method="post" action="<?= e(admin_url('security')) ?>" style="max-width:420px;">
+            <form method="post" action="<?= e(admin_url('security')) ?>" class="sc-narrow">
                 <?= csrf_field() ?><input type="hidden" name="_do" value="disable-2fa">
                 <div class="form-group"><label class="form-label">Confirm your password to disable 2FA</label>
                     <input class="form-control" type="password" name="password" required></div>
@@ -344,19 +368,19 @@ include __DIR__ . '/partials/head.php';
             </form>
         <?php else: ?>
             <p class="text-muted">Install Google Authenticator (or any TOTP app), scan the code, then confirm. Recovery codes are generated automatically.</p>
-            <div class="grid-2" style="gap:1.5rem;align-items:start;">
+            <div class="sc-2col">
                 <div>
-                    <p style="font-weight:600;margin-bottom:.5rem;">1. Scan this QR code:</p>
+                    <p class="sc-step">1. Scan this QR code:</p>
                     <?php if (!empty($qrSvg)): ?><div class="sc-qr"><?= $qrSvg ?></div><?php endif; ?>
-                    <p style="font-weight:600;margin:1rem 0 .3rem;">…or enter the key manually:</p>
-                    <code style="font-size:1.05rem;letter-spacing:.15em;font-weight:800;color:var(--brand-600);"><?= e(chunk_split($setupSecret, 4, ' ')) ?></code>
-                    <p class="form-hint" style="margin-top:.4rem;">Account: <?= e($me['email']) ?> · Issuer: <?= e(get_setting('site_name', SITE_NAME)) ?></p>
+                    <p class="sc-step sc-step-2">…or enter the key manually:</p>
+                    <code class="sc-key"><?= e(chunk_split($setupSecret, 4, ' ')) ?></code>
+                    <p class="form-hint">Account: <?= e($me['email']) ?> · Issuer: <?= e(get_setting('site_name', SITE_NAME)) ?></p>
                 </div>
                 <div>
-                    <p style="font-weight:600;margin-bottom:.5rem;">2. Enter the 6-digit code:</p>
+                    <p class="sc-step">2. Enter the 6-digit code:</p>
                     <form method="post" action="<?= e(admin_url('security')) ?>">
                         <?= csrf_field() ?><input type="hidden" name="_do" value="enable-2fa">
-                        <div class="form-group"><input class="form-control" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="000000" style="letter-spacing:.35em;text-align:center;font-size:1.3rem;"></div>
+                        <div class="form-group"><input class="form-control sc-otp" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="000000"></div>
                         <button class="btn btn-primary" type="submit">Verify &amp; Enable 2FA</button>
                     </form>
                 </div>
@@ -365,10 +389,10 @@ include __DIR__ . '/partials/head.php';
         </div>
     </div>
 
-    <div class="panel"><div class="panel-head"><h3>Organisation Policy</h3></div><div class="panel-body">
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('building-2') ?> Organisation Policy</h2></div><div class="panel-body">
         <form method="post" action="<?= e(admin_url('security')) ?>"><?= csrf_field() ?><input type="hidden" name="_do" value="force-2fa">
             <label class="checkbox"><input type="checkbox" name="force_2fa" value="1" <?= (int) get_setting('force_2fa', 0) === 1 ? 'checked' : '' ?>> Require 2FA for all admins</label>
-            <span class="form-hint" style="display:block;margin:.3rem 0 .8rem;">Admins without 2FA are redirected here to enroll — they are never locked out. Enroll yourself first so you have recovery codes.</span>
+            <span class="form-hint sc-hint-gap">Admins without 2FA are redirected here to enroll — they are never locked out. Enroll yourself first so you have recovery codes.</span>
             <button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save policy</button>
         </form>
     </div></div>
@@ -376,8 +400,8 @@ include __DIR__ . '/partials/head.php';
 
 <!-- ===================== LOGIN PROTECTION ===================== -->
 <section class="sc-panel" id="tab-login">
-    <div class="panel"><div class="panel-head"><h3>Login Protection</h3></div><div class="panel-body">
-        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form" style="max-width:720px;">
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('log-in') ?> Login Protection</h2></div><div class="panel-body">
+        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form sc-form">
             <?= csrf_field() ?><input type="hidden" name="_do" value="save-login">
             <div class="grid-3">
                 <div class="form-group"><label class="form-label">Max failed attempts</label>
@@ -393,23 +417,28 @@ include __DIR__ . '/partials/head.php';
         </form>
     </div></div>
 
-    <div class="panel"><div class="panel-head"><h3>Currently Locked</h3>
-        <?php if ($lockedList): ?><span class="pill pill-red"><?= count($lockedList) ?></span><?php endif; ?></div>
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('lock') ?> Currently Locked</h2>
+        <?php if ($lockedList): ?><span class="pill pill-red"><?= count($lockedList) ?> locked</span><?php endif; ?></div>
         <div class="panel-body">
         <?php if ($lockedList): ?>
             <div class="table-wrap"><table class="admin-table"><thead><tr><th>Email</th><th>IP</th><th>Fails</th><th>Last</th><th></th></tr></thead><tbody>
             <?php foreach ($lockedList as $l): ?>
                 <tr><td><?= e($l['email'] ?: '—') ?></td><td><code><?= e($l['ip_address']) ?></code></td><td><?= (int) $l['fails'] ?></td>
                     <td><small class="text-muted"><?= e(time_ago($l['last_at'])) ?></small></td>
-                    <td style="text-align:right;"><form method="post" action="<?= e(admin_url('security')) ?>" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="_do" value="unlock"><input type="hidden" name="unlock_key" value="<?= e($l['email'] ?: $l['ip_address']) ?>"><button class="btn btn-sm btn-outline" type="submit"><?= lucide('unlock') ?> Unlock</button></form></td></tr>
+                    <td class="sc-ta-r"><form method="post" action="<?= e(admin_url('security')) ?>" class="sc-inline"><?= csrf_field() ?><input type="hidden" name="_do" value="unlock"><input type="hidden" name="unlock_key" value="<?= e($l['email'] ?: $l['ip_address']) ?>"><button class="btn btn-sm btn-outline" type="submit"><?= lucide('unlock') ?> Unlock</button></form></td></tr>
             <?php endforeach; ?>
             </tbody></table></div>
-        <?php else: ?><div class="empty-state"><div class="icon"><?= lucide('shield-check') ?></div>No accounts are locked out.</div><?php endif; ?>
+        <?php else: ?>
+            <div class="empty-state"><div class="icon"><?= lucide('shield-check') ?></div>
+                <p class="es-title">No accounts are locked out</p>
+                <p class="es-text">Sign-ins that trip the failed-attempt threshold appear here with an unlock control.</p>
+            </div>
+        <?php endif; ?>
         </div>
     </div>
 
-    <div class="panel"><div class="panel-head"><h3>Recent Login Attempts</h3>
-        <form method="post" action="<?= e(admin_url('security')) ?>" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="_do" value="prune-attempts"><button class="btn btn-sm btn-ghost" type="submit"><?= lucide('trash-2') ?> Prune &gt;90 days</button></form></div>
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('history') ?> Recent Login Attempts</h2>
+        <form method="post" action="<?= e(admin_url('security')) ?>" class="sc-inline"><?= csrf_field() ?><input type="hidden" name="_do" value="prune-attempts"><button class="btn btn-sm btn-ghost" type="submit"><?= lucide('trash-2') ?> Prune &gt;90 days</button></form></div>
         <div class="panel-body">
         <?php if ($attempts): ?>
             <div class="table-wrap"><table class="admin-table"><thead><tr><th>When</th><th>Email</th><th>IP</th><th>Result</th></tr></thead><tbody>
@@ -419,15 +448,20 @@ include __DIR__ . '/partials/head.php';
                     <td><span class="pill <?= $a['success'] ? 'pill-green' : 'pill-red' ?>"><?= $a['success'] ? 'success' : 'failed' ?></span></td></tr>
             <?php endforeach; ?>
             </tbody></table></div>
-        <?php else: ?><div class="empty-state"><div class="icon"><?= lucide('history') ?></div>No login attempts recorded.</div><?php endif; ?>
+        <?php else: ?>
+            <div class="empty-state"><div class="icon"><?= lucide('history') ?></div>
+                <p class="es-title">No login attempts recorded</p>
+                <p class="es-text">Every admin sign-in — successful or failed — is logged here with its source IP.</p>
+            </div>
+        <?php endif; ?>
         </div>
     </div>
 </section>
 
 <!-- ===================== PASSWORD POLICY ===================== -->
 <section class="sc-panel" id="tab-password">
-    <div class="panel"><div class="panel-head"><h3>Password Policy</h3></div><div class="panel-body">
-        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form" style="max-width:720px;">
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('lock-keyhole') ?> Password Policy</h2></div><div class="panel-body">
+        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form sc-form">
             <?= csrf_field() ?><input type="hidden" name="_do" value="save-password">
             <div class="grid-3">
                 <div class="form-group"><label class="form-label">Minimum length</label>
@@ -445,7 +479,7 @@ include __DIR__ . '/partials/head.php';
                 <label class="checkbox"><input type="checkbox" name="pw_require_number" value="1" <?= $policy['require_number'] ? 'checked' : '' ?>> Require a number</label>
                 <label class="checkbox"><input type="checkbox" name="pw_require_symbol" value="1" <?= $policy['require_symbol'] ? 'checked' : '' ?>> Require a special character</label>
             </div>
-            <div class="alert alert-info" style="margin-top:.6rem;">Applies to admin user creation and password changes. Passwords are always bcrypt-hashed.</div>
+            <div class="alert alert-info sc-alert-gap">Applies to admin user creation and password changes. Passwords are always bcrypt-hashed.</div>
             <div class="form-actions"><button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save</button></div>
         </form>
     </div></div>
@@ -453,13 +487,13 @@ include __DIR__ . '/partials/head.php';
 
 <!-- ===================== UPLOADS ===================== -->
 <section class="sc-panel" id="tab-uploads">
-    <div class="panel"><div class="panel-head"><h3>Upload Protection</h3></div><div class="panel-body">
-        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form" style="max-width:640px;">
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('file-up') ?> Upload Protection</h2></div><div class="panel-body">
+        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form sc-form-sm">
             <?= csrf_field() ?><input type="hidden" name="_do" value="save-uploads">
             <div class="form-group"><label class="form-label">Maximum file size (MB)</label>
                 <input class="form-control" type="number" name="upload_max_mb" min="1" value="<?= e(get_setting('upload_max_mb', '5')) ?>"></div>
             <label class="checkbox"><input type="checkbox" name="upload_block_svg" value="1" <?= (int) get_setting('upload_block_svg', 0) === 1 ? 'checked' : '' ?>> Block SVG uploads</label>
-            <span class="form-hint" style="display:block;margin:.3rem 0 .8rem;">SVGs can carry scripts. Uploaded SVGs are already stripped of scripts/handlers; block them entirely for maximum safety.</span>
+            <span class="form-hint sc-hint-gap">SVGs can carry scripts. Uploaded SVGs are already stripped of scripts/handlers; block them entirely for maximum safety.</span>
             <div class="alert alert-info">Always enforced: extension + MIME whitelist, random filenames, real-image validation, PHP execution disabled under <code>/uploads</code>.</div>
             <div class="form-actions"><button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save</button></div>
         </form>
@@ -468,15 +502,16 @@ include __DIR__ . '/partials/head.php';
 
 <!-- ===================== HEADERS & HTTPS ===================== -->
 <section class="sc-panel" id="tab-headers">
-    <div class="panel"><div class="panel-head"><h3>Response Headers</h3></div><div class="panel-body">
-        <p class="text-muted" style="margin-bottom:.6rem;">Live self-check of security headers on this response:</p>
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('globe-lock') ?> Response Headers</h2></div><div class="panel-body">
+        <p class="text-muted sc-lede">Live self-check of security headers on this response:</p>
         <?php foreach ($headerScan as $name => $present): ?>
-            <div class="sc-hdr-check"><span class="sc-dot <?= $present ? 'ok' : 'warn' ?>"></span> <strong><?= e($name) ?></strong> <span class="text-muted" style="margin-left:auto;"><?= $present ? 'present' : 'not detected' ?></span></div>
+            <div class="sc-hdr-check"><strong><?= e($name) ?></strong>
+                <span class="pill <?= $present ? 'pill-green' : 'pill-amber' ?>"><?= $present ? 'present' : 'not detected' ?></span></div>
         <?php endforeach; ?>
-        <p class="form-hint" style="margin-top:.7rem;">Headers are set in <code>.htaccess</code> and mirrored by a PHP fallback for hosts without mod_headers.</p>
+        <p class="form-hint">Headers are set in <code>.htaccess</code> and mirrored by a PHP fallback for hosts without mod_headers.</p>
     </div></div>
 
-    <div class="panel"><div class="panel-head"><h3>HTTPS &amp; HSTS</h3>
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('shield-check') ?> HTTPS &amp; HSTS</h2>
         <span class="pill <?= $httpsInfo['is_https'] ? 'pill-green' : 'pill-gray' ?>"><?= $httpsInfo['is_https'] ? 'HTTPS' : 'HTTP' ?></span></div>
         <div class="panel-body">
         <?php if (!$httpsInfo['safe_to_enable']): ?>
@@ -484,8 +519,8 @@ include __DIR__ . '/partials/head.php';
         <?php endif; ?>
         <form method="post" action="<?= e(admin_url('security')) ?>"><?= csrf_field() ?><input type="hidden" name="_do" value="save-headers">
             <label class="checkbox"><input type="checkbox" name="force_https" value="1" <?= $httpsInfo['force_enabled'] ? 'checked' : '' ?> <?= $httpsInfo['safe_to_enable'] ? '' : 'disabled' ?>> Force HTTPS (redirect HTTP → HTTPS)</label><br>
-            <label class="checkbox" style="margin-top:.5rem;"><input type="checkbox" name="hsts_enabled" value="1" <?= $httpsInfo['hsts_enabled'] ? 'checked' : '' ?> <?= $httpsInfo['safe_to_enable'] ? '' : 'disabled' ?>> Enable HSTS (Strict-Transport-Security)</label>
-            <span class="form-hint" style="display:block;margin:.4rem 0 .8rem;">Both take effect only in production over real HTTPS. HSTS is cached by browsers — enable only when HTTPS is permanent.</span>
+            <label class="checkbox sc-check-gap"><input type="checkbox" name="hsts_enabled" value="1" <?= $httpsInfo['hsts_enabled'] ? 'checked' : '' ?> <?= $httpsInfo['safe_to_enable'] ? '' : 'disabled' ?>> Enable HSTS (Strict-Transport-Security)</label>
+            <span class="form-hint sc-hint-gap">Both take effect only in production over real HTTPS. HSTS is cached by browsers — enable only when HTTPS is permanent.</span>
             <?php if ($httpsInfo['safe_to_enable']): ?><button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save</button><?php else: ?><button class="btn btn-secondary" type="submit"><?= lucide('save') ?> Save (dormant)</button><?php endif; ?>
         </form>
     </div></div>
@@ -493,7 +528,7 @@ include __DIR__ . '/partials/head.php';
 
 <!-- ===================== ENCRYPTION ===================== -->
 <section class="sc-panel" id="tab-encryption">
-    <div class="panel"><div class="panel-head"><h3>Encryption at Rest</h3>
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('binary') ?> Encryption at Rest</h2>
         <span class="pill <?= sec_has_encryption() ? 'pill-green' : 'pill-gray' ?>"><?= sec_has_encryption() ? 'AES-256-GCM ready' : 'Not configured' ?></span></div>
         <div class="panel-body">
         <?php if (sec_has_encryption()): ?>
@@ -503,44 +538,58 @@ include __DIR__ . '/partials/head.php';
         <?php endif; ?>
         <form method="post" action="<?= e(admin_url('security')) ?>"><?= csrf_field() ?><input type="hidden" name="_do" value="save-encryption">
             <label class="checkbox"><input type="checkbox" name="encrypt_secrets" value="1" <?= (int) get_setting('encrypt_secrets', 0) === 1 ? 'checked' : '' ?> <?= sec_has_encryption() ? '' : 'disabled' ?>> Encrypt sensitive settings (backup credentials, tokens)</label>
-            <div class="form-actions" style="margin-top:1rem;"><button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save</button></div>
+            <div class="form-actions"><button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save</button></div>
         </form>
     </div></div>
 </section>
 
 <!-- ===================== BACKUPS ===================== -->
 <section class="sc-panel" id="tab-backups">
-    <div class="panel"><div class="panel-head"><h3>Database Backups</h3></div><div class="panel-body">
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('database-backup') ?> Database Backups</h2></div><div class="panel-body">
         <?php if ($dumpBin === null): ?>
             <div class="alert alert-warning"><?= lucide('triangle-alert') ?> <code>mysqldump</code> was not found. Set <code>BACKUP_MYSQLDUMP</code> in <code>config.php</code> to enable backups.</div>
         <?php elseif (!sec_exec_available()): ?>
             <div class="alert alert-warning"><?= lucide('triangle-alert') ?> PHP <code>exec()</code> is disabled on this server; on-demand backups are unavailable.</div>
         <?php else: ?>
-            <div class="flex flex-wrap gap-2" style="margin-bottom:1rem;">
-                <form method="post" action="<?= e(admin_url('security')) ?>" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="_do" value="run-backup"><input type="hidden" name="destination" value="local"><button class="btn btn-primary" type="submit"><?= lucide('database-backup') ?> Back up now</button></form>
-                <form method="post" action="<?= e(admin_url('security')) ?>" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="_do" value="prune-backups"><button class="btn btn-ghost" type="submit"><?= lucide('archive') ?> Prune old</button></form>
+            <div class="sc-btn-row">
+                <form method="post" action="<?= e(admin_url('security')) ?>" class="sc-inline"><?= csrf_field() ?><input type="hidden" name="_do" value="run-backup"><input type="hidden" name="destination" value="local"><button class="btn btn-primary" type="submit"><?= lucide('database-backup') ?> Back up now</button></form>
+                <form method="post" action="<?= e(admin_url('security')) ?>" class="sc-inline"><?= csrf_field() ?><input type="hidden" name="_do" value="prune-backups"><button class="btn btn-ghost" type="submit"><?= lucide('archive') ?> Prune old</button></form>
             </div>
         <?php endif; ?>
-        <p class="form-hint">Backups are gzip-compressed SQL dumps stored under <code>/storage/backups</code>, outside the public web root.</p>
+        <?php /* Name the REAL directory. This used to read "/storage/backups",
+                 which is inside the app folder and has never been where backups
+                 go — an admin looking for their dump would have found an empty
+                 directory and concluded the backup had failed. The path comes
+                 from BACKUP_DIR (config.php), which deliberately sits one level
+                 ABOVE the app so a gzipped copy of the whole database is not
+                 sitting in a served tree. */ ?>
+        <p class="form-hint">Backups are gzip-compressed SQL dumps stored in
+            <code><?= e(function_exists('sec_backup_dir') ? sec_backup_dir() : (defined('BACKUP_DIR') ? BACKUP_DIR : '')) ?></code>,
+            outside the public web root.</p>
 
         <?php if ($backups): ?>
-        <div class="table-wrap" style="margin-top:1rem;"><table class="admin-table"><thead><tr><th>File</th><th>Size</th><th>Status</th><th>When</th><th style="text-align:right;">Actions</th></tr></thead><tbody>
+        <div class="table-wrap sc-gap-t"><table class="admin-table"><thead><tr><th>File</th><th>Size</th><th>Status</th><th>When</th><th class="sc-ta-r">Actions</th></tr></thead><tbody>
             <?php foreach ($backups as $b): ?>
-                <tr><td><code style="font-size:.8rem;"><?= e($b['filename']) ?></code></td>
+                <tr><td><code class="sc-file"><?= e($b['filename']) ?></code></td>
                     <td><?= e(human_filesize((int) $b['size_bytes'])) ?></td>
                     <td><span class="pill <?= $b['status'] === 'success' ? 'pill-green' : ($b['status'] === 'failed' ? 'pill-red' : 'pill-amber') ?>"><?= e($b['status']) ?></span></td>
                     <td><small class="text-muted"><?= e(format_datetime($b['created_at'], 'd M Y, H:i')) ?></small></td>
-                    <td style="text-align:right;"><div class="actions">
+                    <td class="sc-ta-r"><div class="actions">
                         <?php if ($b['status'] === 'success'): ?><a class="icon-btn" href="<?= e(admin_url('security?action=download-backup&id=' . $b['id'])) ?>" title="Download"><?= lucide('download') ?></a><?php endif; ?>
-                        <form method="post" action="<?= e(admin_url('security')) ?>" data-confirm="Delete this backup?" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="_do" value="delete-backup"><input type="hidden" name="id" value="<?= (int) $b['id'] ?>"><button class="icon-btn danger" type="submit" title="Delete"><?= lucide('trash-2') ?></button></form>
+                        <form method="post" action="<?= e(admin_url('security')) ?>" data-confirm="Delete this backup?" class="sc-inline"><?= csrf_field() ?><input type="hidden" name="_do" value="delete-backup"><input type="hidden" name="id" value="<?= (int) $b['id'] ?>"><button class="icon-btn danger" type="submit" title="Delete"><?= lucide('trash-2') ?></button></form>
                     </div></td></tr>
             <?php endforeach; ?>
         </tbody></table></div>
-        <?php else: ?><div class="empty-state" style="margin-top:1rem;"><div class="icon"><?= lucide('database') ?></div>No backups yet.</div><?php endif; ?>
+        <?php else: ?>
+            <div class="empty-state sc-gap-t"><div class="icon"><?= lucide('database') ?></div>
+                <p class="es-title">No backups yet</p>
+                <p class="es-text">Run one from “Back up now” above, or schedule it with the cron command below.</p>
+            </div>
+        <?php endif; ?>
     </div></div>
 
-    <div class="panel"><div class="panel-head"><h3>Backup Configuration</h3></div><div class="panel-body">
-        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form" style="max-width:720px;">
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('settings-2') ?> Backup Configuration</h2></div><div class="panel-body">
+        <form method="post" action="<?= e(admin_url('security')) ?>" class="admin-form sc-form">
             <?= csrf_field() ?><input type="hidden" name="_do" value="save-backup-config">
             <div class="grid-2">
                 <div class="form-group"><label class="form-label">Default destination</label>
@@ -561,15 +610,15 @@ include __DIR__ . '/partials/head.php';
             </div>
             <div class="form-actions"><button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save configuration</button></div>
         </form>
-        <details style="margin-top:1rem;"><summary class="text-muted" style="cursor:pointer;">Automate with a scheduled task</summary>
-            <p class="form-hint" style="margin-top:.5rem;">Run a daily backup on Windows Task Scheduler:<br>
+        <details class="sc-details"><summary class="text-muted">Automate with a scheduled task</summary>
+            <p class="form-hint">Run a daily backup on Windows Task Scheduler:<br>
             <code>C:\xampp\php\php.exe C:\xampp\htdocs\pwf\cron\backup.php</code> (add a token-gated cron like the membership reminders).</p></details>
     </div></div>
 </section>
 
 <!-- ===================== AUDIT LOG ===================== -->
 <section class="sc-panel" id="tab-audit">
-    <div class="panel"><div class="panel-head"><h3>Security Audit Feed</h3>
+    <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('scroll-text') ?> Security Audit Feed</h2>
         <a class="btn btn-sm btn-secondary" href="<?= e(admin_url('activity-logs')) ?>"><?= lucide('external-link') ?> Full activity log</a></div>
         <div class="panel-body">
         <?php if ($auditFeed): ?>
@@ -581,7 +630,12 @@ include __DIR__ . '/partials/head.php';
                     <td><code><?= e($log['ip_address'] ?: '—') ?></code></td></tr>
             <?php endforeach; ?>
             </tbody></table></div>
-        <?php else: ?><div class="empty-state"><div class="icon"><?= lucide('scroll-text') ?></div>No security events yet.</div><?php endif; ?>
+        <?php else: ?>
+            <div class="empty-state"><div class="icon"><?= lucide('scroll-text') ?></div>
+                <p class="es-title">No security events yet</p>
+                <p class="es-text">Policy changes, 2FA events, backups and anything logged as a warning or critical land here.</p>
+            </div>
+        <?php endif; ?>
         </div>
     </div>
 </section>
@@ -589,7 +643,8 @@ include __DIR__ . '/partials/head.php';
 
 <script>
 (function () {
-    var tabs = document.querySelectorAll('.sc-tab'), panels = document.querySelectorAll('.sc-panel');
+    // Shared .tabs component (admin-pro.css) — the local .sc-tab copy is gone.
+    var tabs = document.querySelectorAll('.sc-wrap .tabs .tab'), panels = document.querySelectorAll('.sc-panel');
     function show(name) {
         var found = false;
         tabs.forEach(function (t) { t.classList.toggle('is-active', t.dataset.tab === name); found = found || t.dataset.tab === name; });

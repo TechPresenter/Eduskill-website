@@ -50,18 +50,18 @@ function donation_receipt_html(array $d): string
 @page{size:A4;margin:16mm;}
 body{font-family:'Segoe UI',system-ui,sans-serif;color:#1f2937;margin:0;padding:26px;background:#eef2f7;}
 .doc{max-width:760px;margin:0 auto;background:#fff;padding:38px;border:1px solid #e5e7eb;border-radius:10px;}
-.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #063566;padding-bottom:14px;margin-bottom:20px;}
+.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0B4E3D;padding-bottom:14px;margin-bottom:20px;}
 .org h1{margin:0;font-size:1.4rem;color:#1e3a8a;} .org p{margin:2px 0;font-size:.8rem;color:#6b7280;}
-.badge{background:#eff6ff;color:#084881;padding:8px 14px;border-radius:8px;font-weight:800;text-align:center;font-size:.8rem;}
+.badge{background:#eff6ff;color:#174D3D;padding:8px 14px;border-radius:8px;font-weight:800;text-align:center;font-size:.8rem;}
 h2.title{text-align:center;letter-spacing:.1em;color:#111827;margin:6px 0 20px;}
 table{width:100%;border-collapse:collapse;} table th,table td{padding:8px 10px;border:1px solid #e5e7eb;font-size:.86rem;text-align:left;vertical-align:top;}
 table th{background:#f8fafc;width:130px;color:#374151;}
-.amount{margin:22px 0;text-align:center;} .amount .v{font-size:2rem;font-weight:800;color:#308629;}
+.amount{margin:22px 0;text-align:center;} .amount .v{font-size:2rem;font-weight:800;color:#1F5C48;}
 .foot{margin-top:26px;font-size:.76rem;color:#6b7280;display:flex;justify-content:space-between;align-items:flex-end;}
 .sign{text-align:center;} .sign .line{border-top:1px solid #9ca3af;width:180px;margin:34px auto 4px;}
 .toolbar{max-width:760px;margin:0 auto 14px;display:flex;gap:8px;justify-content:flex-end;}
 .btn{border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;text-decoration:none;font-size:.86rem;}
-.btn-p{background:#063566;color:#fff;} .btn-o{background:#fff;color:#1f2937;border:1px solid #cbd5e1;}
+.btn-p{background:#0B4E3D;color:#fff;} .btn-o{background:#fff;color:#1f2937;border:1px solid #cbd5e1;}
 @media print{.toolbar{display:none;}body{background:#fff;padding:0;}.doc{border:0;}}
 </style></head><body>
 <div class="toolbar">

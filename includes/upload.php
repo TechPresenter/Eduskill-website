@@ -112,13 +112,63 @@ function upload_file(array $file, string $folder = 'media', array $opts = []): a
         if ($info === false) {
             return $fail('The file is not a valid image.');
         }
+
+        /* getimagesize() and mime_content_type() both read only the HEADER, so a
+           polyglot passes both. A file whose entire contents were
+               GIF89a<?php echo "x"; ?>
+           was accepted as a genuine GIF: getimagesize() reported it as
+           image/gif at 16188x26736 (it parsed the PHP text as dimension bytes)
+           and mime_content_type() agreed, because both stop after the magic
+           number. Nothing downstream looked at the rest of the file.
+
+           uploads/.htaccess already stops such a file EXECUTING (engine off,
+           handlers removed, script extensions denied), so this was not remote
+           code execution. But "we store attacker-supplied PHP and rely on one
+           .htaccess never being lost" is a thinner margin than it needs to be —
+           a copy to another directory, a host that ignores .htaccess, or a
+           future image pipeline would each remove it.
+
+           So: scan the WHOLE file for server-side script markers.
+
+           Every marker here must be long enough not to occur in compressed
+           pixel data by chance. The first version of this check also looked for
+           "<%" (ASP/JSP), and that ONE alternative rejected every genuine photo
+           tested — 29 hits across three ordinary JPEG/PNG images, because two
+           specific bytes recur roughly every 64 KB of entropy. A guard that
+           blocks all real uploads is a worse bug than the polyglot it was
+           added to stop, and ASP tags are meaningless on this stack anyway.
+           Measured on real images: <?php, <?=, <script and #!/bin all score
+           zero; only the two-byte pattern was unsafe. */
+        $bytes = (string) @file_get_contents($file['tmp_name']);
+        if ($bytes !== '' && preg_match('/<\?php|<\?=|<script\b|#!\s*\/(bin|usr)/i', $bytes)) {
+            return $fail('That image contains embedded code and was rejected.');
+        }
     }
+
     // SVG: positively require an <svg> root so a text/HTML payload renamed .svg
     // (which mime_content_type() reports as text/plain) is rejected.
     if ($ext === 'svg') {
-        $head = (string) @file_get_contents($file['tmp_name'], false, null, 0, 8192);
-        if (stripos($head, '<svg') === false) {
+        $svg = (string) @file_get_contents($file['tmp_name']);
+        if (stripos($svg, '<svg') === false) {
             return $fail('The file is not a valid SVG image.');
+        }
+
+        /* SVG is a scriptable document format, so an <svg> root is necessary but
+           nowhere near sufficient: <svg><script>alert(1)</script></svg> passed
+           the old check untouched.
+
+           There IS a kill switch for this — upload_block_svg — but it defaults
+           to 0 and NOTHING anywhere sets it: no admin screen writes the key and
+           no row exists in `settings`. A control nobody can reach is not a
+           control, so blocking the dangerous constructs is what actually has to
+           carry the weight. (uploads/.htaccess serves SVG as an attachment
+           under a `sandbox` CSP, which is the second layer, not the first.)
+
+           Reject rather than strip: silently rewriting someone's artwork and
+           storing the result is worse than telling them the file is not
+           acceptable. */
+        if (preg_match('/<script\b|<foreignObject\b|javascript:|<!ENTITY|\bon[a-z]+\s*=/i', $svg)) {
+            return $fail('That SVG contains scripting and was rejected. Please upload a plain image.');
         }
     }
 

@@ -138,7 +138,7 @@ include __DIR__ . '/includes/header.php';
                     <span class="eyebrow">Our Office</span>
                     <address class="ob-addr">
                         <a class="ob-phone" href="tel:<?= e($telHref) ?>"><?= lucide('phone') ?> <?= e($phone) ?></a>
-                        <span>Mani Casadona, International Financial Hub (IFH)</span>
+                        <span>International Financial Hub (IFH)</span>
                         <span>Plot No. IIF/04, Action Area II</span>
                         <span>New Town, Kolkata &ndash; 700156</span>
                         <span>West Bengal, India</span>
@@ -176,23 +176,23 @@ include __DIR__ . '/includes/header.php';
     <style>
     .office-block{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.4rem;margin-top:2.2rem}
     .ob-card{display:flex;gap:1.1rem;align-items:flex-start;padding:1.6rem;border-radius:18px;background:var(--surface,#fff);
-        border:1px solid var(--border,#e5e7eb);box-shadow:0 1px 2px rgba(6,53,102,.05),0 18px 40px -30px rgba(6,53,102,.45);
+        border:1px solid var(--border,#e5e7eb);box-shadow:0 1px 2px rgba(11,78,61,.05),0 18px 40px -30px rgba(11,78,61,.45);
         transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
-    .ob-card:hover{transform:translateY(-4px);border-color:var(--primary,#063566);box-shadow:0 24px 52px -28px rgba(6,53,102,.5)}
+    .ob-card:hover{transform:translateY(-4px);border-color:var(--primary,#0B4E3D);box-shadow:0 24px 52px -28px rgba(11,78,61,.5)}
     .ob-ico{flex:0 0 auto;width:52px;height:52px;border-radius:15px;display:grid;place-items:center;
-        background:rgba(6,53,102,.1);color:var(--primary,#063566)}
-    .ob-ico.green{background:rgba(88,164,47,.13);color:var(--green,#58A42F)}
+        background:rgba(11,78,61,.1);color:var(--primary,#0B4E3D)}
+    .ob-ico.green{background:rgba(47,128,101,.13);color:var(--green,#2F8065)}
     .ob-ico svg{width:25px;height:25px}
     .ob-addr{display:flex;flex-direction:column;gap:.3rem;font-style:normal;margin:.4rem 0 0;line-height:1.55}
     .ob-addr span{color:var(--text-soft,#374151);font-weight:600}
-    .ob-phone,.ob-mail{display:inline-flex;align-items:center;gap:.45rem;font-weight:800;color:var(--primary,#063566);text-decoration:none;transition:color .2s}
-    .ob-phone:hover,.ob-mail:hover{color:var(--secondary,#084881)}
+    .ob-phone,.ob-mail{display:inline-flex;align-items:center;gap:.45rem;font-weight:800;color:var(--primary,#0B4E3D);text-decoration:none;transition:color .2s}
+    .ob-phone:hover,.ob-mail:hover{color:var(--secondary,#174D3D)}
     .ob-phone svg,.ob-mail svg{width:1.05em;height:1.05em}
     .ob-mail{margin-top:.3rem}
     .ob-ids{display:flex;flex-wrap:wrap;gap:.4rem 1rem;margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--border,#e5e7eb)}
     .ob-ids span{display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--muted,#6b7280)}
     .ob-ids svg{width:1em;height:1em}
-    .ob-ids b{color:var(--text,#063566);font-weight:800}
+    .ob-ids b{color:var(--text,#0B4E3D);font-weight:800}
     </style>
 </section>
 
@@ -271,7 +271,7 @@ include __DIR__ . '/includes/header.php';
                         <strong>Connect With Us</strong>
                         <div class="contact-socials mt-2">
                             <?php foreach ($socials as $s): ?>
-                                <a class="contact-social <?= e(strtolower($s['platform'])) ?>" href="<?= e(safe_href($s['url'])) ?>" target="_blank" rel="noopener" aria-label="<?= e(ucfirst($s['platform'])) ?>" title="<?= e(ucfirst($s['platform'])) ?>"><?= social_fa($s['platform']) ?></a>
+                                <a class="contact-social <?= e(strtolower($s['platform'])) ?>" href="<?= e(safe_href($s['url'])) ?>" target="_blank" rel="noopener" aria-label="<?= e(ucfirst($s['platform'])) ?>" title="<?= e(ucfirst($s['platform'])) ?>"><?= social_svg($s['platform']) ?></a>
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
@@ -322,7 +322,7 @@ include __DIR__ . '/includes/header.php';
 
         <p class="text-center text-muted mt-4">
             Can't find what you're looking for?
-            <a href="mailto:<?= e($email) ?>" style="color:var(--brand-600);font-weight:700;">Email us directly</a>.
+            <a class="link-action" href="mailto:<?= e($email) ?>" style="color:var(--brand-600);font-weight:700;">Email us directly</a>.
         </p>
     </div>
 </section>
@@ -357,7 +357,7 @@ include __DIR__ . '/includes/header.php';
         content: '+';
         font-size: 1.5rem;
         line-height: 1;
-        color: var(--brand-600, #063566);
+        color: var(--brand-600, #0B4E3D);
         transition: transform .2s ease;
         flex: 0 0 auto;
     }

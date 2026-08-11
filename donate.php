@@ -55,7 +55,15 @@ $presets = [
     ['amount' => 2500, 'icon' => 'stethoscope', 'title' => 'Health Camp',     'impact' => 'A free medical check-up and essential medicines for 10 patients.'],
     ['amount' => 5000, 'icon' => 'scissors',    'title' => 'Livelihood',      'impact' => 'A month of vocational skill training for a young woman.'],
 ];
-$defaultAmount = 1000; // friendly, pre-highlighted default
+/* Pre-highlighted amount. Honours ?amount= so a tier chosen elsewhere (the
+   homepage donation band, a campaign card, an email link) carries through
+   instead of resetting to the default. Clamped to a sane range and cast to int
+   so the query string can never inject anything into the form. */
+$defaultAmount = 1000;
+$requested     = (int) get('amount', 0);
+if ($requested >= 100 && $requested <= 1000000) {
+    $defaultAmount = $requested;
+}
 
 /* ---- Payment methods (recorded as pending — no gateway) --------------- */
 $paymentMethods = ['UPI', 'Bank Transfer', 'Card'];
@@ -227,7 +235,7 @@ include __DIR__ . '/includes/header.php';
 
         <!-- Sidebar: reassurance + impact -->
         <aside class="reveal delay-1">
-            <div class="card-3d" style="position:sticky;top:90px;">
+            <div class="card-3d sticky-aside" style="position:sticky;top:90px;">
                 <div class="flex items-center gap-2 mb-2">
                     <div class="icon-badge"><?= lucide('handshake') ?></div>
                     <strong style="font-size:1.15rem;">Why give to us?</strong>

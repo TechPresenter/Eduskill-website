@@ -67,48 +67,59 @@ $backUrl  = admin_url('school-fees?school=' . $schoolId);
     <meta name="robots" content="noindex,nofollow">
     <title>Fee Receipt · <?= e($receiptNo) ?></title>
     <style>
+        /* Standalone by design — no app stylesheets, so print output carries no
+           panel chrome. Palette written out by hand; sizes, padding and the print
+           block are untouched. The cool blue-greys this receipt shipped with
+           (#eef2f7 field, #1f2937 ink, #64748b / #475569 / #94a3b8 labels,
+           #e2e8f0 / #cbd5e1 rules) were outside the brand and are re-pointed onto
+           text #151818, muted #4B6754 and border #C1CCB3. */
         *{box-sizing:border-box;}
-        body{margin:0;min-height:100vh;background:#eef2f7;color:#1f2937;
+        body{margin:0;min-height:100vh;background:#F8FCF8;color:#151818;
              font-family:system-ui,Segoe UI,Roboto,sans-serif;
              display:flex;flex-direction:column;align-items:center;gap:22px;padding:30px;}
         .toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
-        .btn{border:0;border-radius:9px;padding:10px 18px;font-weight:700;cursor:pointer;text-decoration:none;
+        .btn{border:0;border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer;text-decoration:none;
              font-size:.92rem;display:inline-flex;align-items:center;gap:6px;}
-        .btn-p{background:#063566;color:#fff;} .btn-o{background:#fff;color:#1f2937;border:1px solid #cbd5e1;}
-        .receipt{width:100%;max-width:720px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;
-                 padding:34px 38px;box-shadow:0 10px 30px rgba(6,53,102,.08);}
+        .btn-p{background:#0B4E3D;color:#fff;} .btn-o{background:#fff;color:#151818;border:1px solid #C1CCB3;}
+        /* 16px radius = the design system's largest step (was 14px); the drop
+           shadow is screen-only and now sits in the subtle band. */
+        .receipt{width:100%;max-width:720px;background:#fff;border:1px solid #C1CCB3;border-radius:16px;
+                 padding:34px 38px;box-shadow:0 4px 12px -2px rgba(21,24,24,.08);}
         .r-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
-                border-bottom:2px solid #1f2937;padding-bottom:16px;margin-bottom:22px;}
+                border-bottom:2px solid #151818;padding-bottom:16px;margin-bottom:22px;}
         .r-org{font-size:1.35rem;font-weight:800;letter-spacing:.2px;margin:0;}
-        .r-tag{font-size:.8rem;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px;}
+        .r-tag{font-size:.8rem;color:#4B6754;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px;}
         .r-title{font-size:1.05rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;text-align:right;}
-        .r-meta{text-align:right;font-size:.85rem;color:#475569;margin-top:6px;line-height:1.6;}
-        .r-meta strong{color:#1f2937;}
+        .r-meta{text-align:right;font-size:.85rem;color:#4B6754;margin-top:6px;line-height:1.6;}
+        .r-meta strong{color:#151818;}
         .parties{display:flex;flex-wrap:wrap;gap:20px;margin-bottom:24px;}
         .party{flex:1 1 240px;}
-        .party h4{margin:0 0 6px;font-size:.72rem;text-transform:uppercase;letter-spacing:1.2px;color:#64748b;font-weight:700;}
+        .party h4{margin:0 0 6px;font-size:.72rem;text-transform:uppercase;letter-spacing:1.2px;color:#4B6754;font-weight:700;}
         .party .name{font-size:1.02rem;font-weight:700;}
-        .party .sub{font-size:.85rem;color:#64748b;margin-top:2px;}
+        .party .sub{font-size:.85rem;color:#4B6754;margin-top:2px;}
         table{width:100%;border-collapse:collapse;margin:8px 0 20px;}
         th,td{padding:11px 14px;text-align:left;font-size:.9rem;}
-        thead th{background:#f1f5f9;color:#475569;text-transform:uppercase;font-size:.72rem;letter-spacing:1px;}
-        tbody td{border-bottom:1px solid #eef2f7;}
+        thead th{background:#F8FCF8;color:#4B6754;text-transform:uppercase;font-size:.72rem;letter-spacing:1px;}
+        tbody td{border-bottom:1px solid #C1CCB3;}
         tbody tr:last-child td{border-bottom:0;}
         .num{text-align:right;font-variant-numeric:tabular-nums;}
         .totals{margin-left:auto;width:100%;max-width:320px;}
         .totals td{padding:8px 14px;font-size:.92rem;}
-        .totals .lbl{color:#64748b;}
-        .totals .grand td{border-top:2px solid #1f2937;font-weight:800;font-size:1rem;}
-        .due-open{color:#b91c1c;} .due-clear{color:#308629;}
+        .totals .lbl{color:#4B6754;}
+        .totals .grand td{border-top:2px solid #151818;font-weight:800;font-size:1rem;}
+        /* Balance due and the status pill use the three status hues only, tinted
+           from themselves. The balance figure is also labelled "Balance due" and
+           each pill carries its word, so neither state rests on colour alone. */
+        .due-open{color:#B3261E;} .due-clear{color:#2F8065;}
         .pill{display:inline-block;padding:3px 12px;border-radius:999px;font-size:.75rem;font-weight:700;
               text-transform:uppercase;letter-spacing:.5px;}
-        .pill-paid{background:#dcfce7;color:#308629;} .pill-partial{background:#fef3c7;color:#b45309;}
-        .pill-pending{background:#fee2e2;color:#b91c1c;} .pill-waived{background:#e2e8f0;color:#475569;}
-        .r-foot{margin-top:26px;padding-top:16px;border-top:1px dashed #cbd5e1;
+        .pill-paid{background:rgba(47,128,101,.12);color:#2F8065;} .pill-partial{background:rgba(178,106,0,.12);color:#B26A00;}
+        .pill-pending{background:rgba(179,38,30,.10);color:#B3261E;} .pill-waived{background:rgba(75,103,84,.12);color:#4B6754;}
+        .r-foot{margin-top:26px;padding-top:16px;border-top:1px dashed #C1CCB3;
                 display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
-                font-size:.78rem;color:#94a3b8;}
-        .sign{text-align:center;color:#475569;}
-        .sign .line{width:170px;border-top:1px solid #94a3b8;margin-bottom:5px;}
+                font-size:.78rem;color:#4B6754;}
+        .sign{text-align:center;color:#4B6754;}
+        .sign .line{width:170px;border-top:1px solid #C1CCB3;margin-bottom:5px;}
         @media print{
             body{background:#fff;padding:0;}
             .toolbar{display:none;}

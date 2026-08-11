@@ -1,20 +1,24 @@
 <?php
 /**
  * =============================================================================
- *  Admin — Sitemap & Robots  (SPECIAL module).
- *  Two panels:
- *    1. Regenerate a static XML sitemap at BASE_PATH/sitemap.xml from all
- *       currently-published content (home, main static pages, programs,
- *       blogs, events, campaigns).
- *    2. Edit robots.txt (BASE_PATH/robots.txt) directly in a textarea.
- *  Both write to disk with @-guarded calls and report success/error via flash.
+ *  Admin — XML Sitemap  (SPECIAL module).
+ *  Regenerates a static XML sitemap at BASE_PATH/sitemap.xml from all currently
+ *  published content (home, main static pages, programs, blogs, events,
+ *  campaigns). Writes to disk with an @-guarded call and reports success/error
+ *  via flash.
+ *
+ *  robots.txt is NOT edited here. This screen used to carry a second panel that
+ *  wrote BASE_PATH/robots.txt with its own default template, while
+ *  admin/robots.php wrote the SAME file with a different UI and a different
+ *  default — whichever screen an admin saved last silently won, and only
+ *  robots.php kept the settings-table backup copy. The duplicate half was
+ *  removed; admin/robots.php is the single editor and is linked from here.
  * =============================================================================
  */
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_admin();
 
 $sitemapPath = BASE_PATH . '/sitemap.xml';
-$robotsPath  = BASE_PATH . '/robots.txt';
 
 /**
  * Build the sitemap XML string from published content.
@@ -96,96 +100,95 @@ if (is_post() && post('_do') === 'regenerate') {
     redirect('/admin/sitemap');
 }
 
-/* -------------------------------------------------------------- SAVE ROBOTS.TXT */
-if (is_post() && post('_do') === 'save_robots') {
-    require_csrf();
-    // Normalise line endings; robots.txt is plain text (no tag stripping).
-    $content = str_replace("\r\n", "\n", (string) post('robots', ''));
-    $bytes   = @file_put_contents($robotsPath, $content);
-    if ($bytes === false) {
-        set_flash('error', 'Could not write robots.txt. Check file permissions on the site root.');
-    } else {
-        log_activity('update', 'sitemap', 'Updated robots.txt');
-        set_flash('success', 'robots.txt saved.');
-    }
-    redirect('/admin/sitemap');
-}
-
 /* -------------------------------------------------------------- VIEW */
-$page_title = 'Sitemap & Robots';
+$page_title = 'XML Sitemap';
 
 $sitemapExists = is_file($sitemapPath);
 $sitemapMtime  = $sitemapExists ? filemtime($sitemapPath) : 0;
 $sitemapSize   = $sitemapExists ? filesize($sitemapPath) : 0;
 
-$defaultRobots = "User-agent: *\nAllow: /\n\nDisallow: /admin/\nDisallow: /includes/\nDisallow: /uploads/tmp/\n\nSitemap: " . abs_url('sitemap.xml') . "\n";
-$robotsContent = is_file($robotsPath) ? (string) @file_get_contents($robotsPath) : $defaultRobots;
-
 include __DIR__ . '/partials/head.php';
 ?>
 <div class="admin-page-head">
-    <div><h1>Sitemap &amp; Robots</h1><span class="muted">SEO / Crawler files</span></div>
-    <a class="btn btn-outline btn-sm" href="<?= e(url('sitemap.xml')) ?>" target="_blank"><?= lucide('globe') ?> View sitemap.xml</a>
+    <div><h1><?= lucide('map') ?> XML Sitemap</h1><span class="muted">Marketing &amp; SEO / Crawler files</span></div>
+    <div class="flex flex-wrap gap-1">
+        <a class="btn btn-secondary" href="<?= e(admin_url('robots')) ?>"><?= lucide('bot') ?> Robots.txt</a>
+        <a class="btn btn-outline" href="<?= e(url('sitemap.xml')) ?>" target="_blank" rel="noopener"><?= lucide('external-link') ?> View sitemap.xml</a>
+    </div>
 </div>
 
-<div class="grid-2">
+<?php /* `grid grid-2`, not the bare `grid-2` this screen used to carry: tailwind.css
+         puts display:grid on .grid and only the column count on .grid-2, and the
+         .admin-form .grid-2 rule that supplies display:grid elsewhere does not apply
+         here — so the two panels were stacking instead of sitting side by side. */ ?>
+<div class="grid grid-2">
     <!-- Panel 1: Regenerate XML sitemap -->
     <div class="panel">
+        <div class="panel-head">
+            <h2 class="panel-title"><?= lucide('refresh-cw') ?> Regenerate XML sitemap</h2>
+            <?php if ($sitemapExists): ?>
+                <span class="pill pill-green">Generated</span>
+            <?php else: ?>
+                <span class="pill pill-amber">Not generated</span>
+            <?php endif; ?>
+        </div>
         <div class="panel-body">
-            <h2 style="margin:0 0 4px;">Regenerate XML sitemap</h2>
-            <p class="muted" style="margin:0 0 16px;">
+            <p class="text-muted mb-2">
                 Writes a fresh <code>sitemap.xml</code> at the site root, listing the homepage,
                 main static pages and every published program, blog, event and campaign.
             </p>
 
             <?php if ($sitemapExists): ?>
-                <div class="data-toolbar" style="gap:8px;flex-wrap:wrap;">
-                    <span class="pill pill-green">Generated</span>
-                    <span class="muted">Last built: <strong><?= e(date('d M Y, g:i A', $sitemapMtime)) ?></strong></span>
-                    <span class="muted">·</span>
-                    <span class="muted"><?= e(human_filesize($sitemapSize)) ?></span>
-                </div>
-            <?php else: ?>
                 <div class="data-toolbar">
-                    <span class="pill pill-amber">Not generated yet</span>
-                    <span class="muted">A dynamic fallback is served until you generate a static file.</span>
+                    <span class="text-muted">Last built: <strong><?= e(date('d M Y, g:i A', $sitemapMtime)) ?></strong></span>
+                    <span class="text-muted">·</span>
+                    <span class="text-muted"><?= e(human_filesize($sitemapSize)) ?></span>
+                </div>
+
+                <form method="post" action="<?= e(admin_url('sitemap')) ?>" class="mt-2">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="_do" value="regenerate">
+                    <div class="flex flex-wrap items-center gap-1">
+                        <button class="btn btn-primary" type="submit"><?= lucide('refresh-cw') ?> Regenerate sitemap.xml</button>
+                        <a class="btn btn-ghost" href="<?= e(url('sitemap.xml')) ?>" target="_blank" rel="noopener">Open</a>
+                    </div>
+                </form>
+            <?php else: ?>
+                <?php /* No static file on disk yet — the shared .empty-state shape.
+                         Swap for the admin_ui.php empty-state helper once it ships. */ ?>
+                <div class="empty-state">
+                    <div class="icon"><?= lucide('map') ?></div>
+                    <p class="es-title">No sitemap file yet</p>
+                    <p class="es-text">A dynamic fallback is served until you generate a static
+                        <code>sitemap.xml</code>. Generating one lets search engines fetch the
+                        whole site in a single request.</p>
+                    <div class="es-actions">
+                        <form method="post" action="<?= e(admin_url('sitemap')) ?>">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="_do" value="regenerate">
+                            <button class="btn btn-primary" type="submit"><?= lucide('refresh-cw') ?> Generate sitemap.xml</button>
+                        </form>
+                    </div>
                 </div>
             <?php endif; ?>
-
-            <form method="post" action="<?= e(admin_url('sitemap')) ?>" style="margin-top:16px;">
-                <?= csrf_field() ?>
-                <input type="hidden" name="_do" value="regenerate">
-                <div class="form-actions" style="margin:0;">
-                    <button class="btn btn-primary" type="submit"><?= lucide('refresh-cw') ?> Regenerate sitemap.xml</button>
-                    <a class="btn btn-ghost" href="<?= e(url('sitemap.xml')) ?>" target="_blank">Open</a>
-                </div>
-            </form>
         </div>
     </div>
 
-    <!-- Panel 2: robots.txt editor -->
+    <!-- Panel 2: pointer to the single robots.txt editor (this screen no longer edits it) -->
     <div class="panel">
+        <div class="panel-head">
+            <h2 class="panel-title"><?= lucide('bot') ?> Crawler rules (robots.txt)</h2>
+        </div>
         <div class="panel-body">
-            <h2 style="margin:0 0 4px;">robots.txt</h2>
-            <p class="muted" style="margin:0 0 16px;">
-                Controls how search engines crawl the site. Saved to
-                <code>robots.txt</code> at the site root.
-                <a href="<?= e(url('robots.txt')) ?>" target="_blank">View live file ↗</a>
+            <p class="text-muted mb-2">
+                <code>robots.txt</code> is edited on its own screen, which also keeps a backup
+                copy in settings and offers ready-made presets. It used to be editable here as
+                well — two forms writing one file — so that duplicate was removed.
             </p>
-
-            <form method="post" action="<?= e(admin_url('sitemap')) ?>">
-                <?= csrf_field() ?>
-                <input type="hidden" name="_do" value="save_robots">
-                <div class="form-group">
-                    <label class="form-label" for="robots">File contents</label>
-                    <textarea class="form-textarea" id="robots" name="robots" spellcheck="false"
-                              style="min-height:280px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;"><?= e($robotsContent) ?></textarea>
-                    <p class="form-hint">One directive per line. Include a <code>Sitemap:</code> line pointing to your sitemap URL.</p>
-                </div>
-                <div class="form-actions" style="margin:0;">
-                    <button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save robots.txt</button>
-                </div>
-            </form>
+            <div class="flex flex-wrap items-center gap-1">
+                <a class="btn btn-primary" href="<?= e(admin_url('robots')) ?>"><?= lucide('file-code') ?> Edit robots.txt</a>
+                <a class="btn btn-ghost" href="<?= e(url('robots.txt')) ?>" target="_blank" rel="noopener"><?= lucide('external-link') ?> View live file</a>
+            </div>
         </div>
     </div>
 </div>

@@ -124,18 +124,33 @@ if ($action === 'create' || $action === 'edit') {
     include __DIR__ . '/partials/head.php';
     ?>
     <style>
-    .hs-tabs{display:flex;flex-wrap:wrap;gap:.35rem;border-bottom:1px solid var(--border);margin-bottom:1.3rem}
-    .hs-tab{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:600;padding:.6rem 1rem;border-radius:9px 9px 0 0;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:inline-flex;gap:.4rem;align-items:center}
-    .hs-tab:hover{color:var(--text);background:var(--surface-2)}.hs-tab.is-active{color:var(--brand-600);border-bottom-color:var(--brand-600)}
-    .hs-panel{display:none}.hs-panel.is-active{display:block;animation:hsf .2s ease}
-    @keyframes hsf{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-    .hs-prev{border-radius:16px;overflow:hidden;min-height:220px;display:flex;align-items:center;padding:1.6rem;color:#fff;position:relative;isolation:isolate}
-    .hs-prev .ov{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(8,11,26,.3),rgba(8,11,26,.7))}
-    .hs-prev-badge{display:inline-flex;gap:.4rem;align-items:center;padding:.35rem .8rem;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.7rem}
-    .hs-prev-title{font-size:1.7rem;font-weight:800;line-height:1.1;margin:0 0 .5rem}
-    .hs-prev .hx-hl{background:linear-gradient(120deg,var(--acc,#a855f7),#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
-    .hs-prev-sub{font-size:.9rem;opacity:.9;max-width:46ch}
-    .swatch{display:flex;align-items:center;gap:.5rem}.swatch input[type=color]{width:44px;height:38px;padding:2px;border-radius:9px;border:1px solid var(--border);background:var(--surface);cursor:pointer}
+    /* Screen-local layout ONLY. The tab strip is the shared `.tabs`/`.tab`
+       component from admin-pro.css — this file carried a third copy of it
+       (`.hs-tab*`, after security.php's and document-builder.php's). The badge
+       lost its backdrop-filter (glassmorphism) for a flat ink scrim, and the
+       overlay/scrim tints are mixed from brand ink, not a blue-black. */
+    .hs-panel{display:none}
+    .hs-panel.is-active{display:block}
+    /* Mirrors the shared layers' own specificity (`body.admin .panel`,
+       `.admin-content .panel`) so a nested panel can flatten without !important. */
+    .admin-content .panel.hs-sub{box-shadow:none;margin-bottom:var(--sp-4)}
+    .admin-content .panel.hs-sub:last-child{margin-bottom:0}
+    .hs-prev{position:relative;isolation:isolate;display:flex;align-items:center;min-height:220px;padding:var(--sp-6);border-radius:var(--r-lg);overflow:hidden;color:#fff}
+    .hs-prev .ov{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(21,24,24,.3),rgba(21,24,24,.7))}
+    .hs-prev-body{width:100%}
+    .hs-prev-badge{display:inline-flex;align-items:center;gap:var(--sp-1);margin-bottom:var(--sp-3);padding:var(--sp-1) var(--sp-3);border:1px solid rgba(255,255,255,.24);border-radius:var(--r-pill);background:rgba(21,24,24,.55);font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .hs-prev-title{margin:0 0 var(--sp-2);font-size:1.7rem;font-weight:800;line-height:1.1}
+    .hs-prev-sub{max-width:46ch;font-size:.9rem;opacity:.9}
+    /* Mirrors the public hero's .hx-hl so the preview tells the truth. The accent
+       fallback is the brand green hero_accent() itself falls back to — it used to
+       be a purple that is nowhere in the palette. */
+    .hs-prev .hx-hl{background:linear-gradient(120deg,var(--acc,#174D3D),#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+    .swatch{display:flex;align-items:center;gap:var(--sp-2)}
+    .swatch input[type=color]{width:44px;height:44px;padding:2px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);cursor:pointer}
+    .hs-desc{min-height:90px}
+    .hs-thumb{max-height:90px}
+    .hs-thumb-lg{max-height:110px}
+    .hs-check-gap{margin-top:var(--sp-2)}
     </style>
 
     <div class="admin-page-head">
@@ -144,26 +159,30 @@ if ($action === 'create' || $action === 'edit') {
     </div>
 
     <!-- live-ish preview (reflects saved state) -->
-    <div class="panel" style="margin-bottom:1rem;"><div class="panel-body">
+    <div class="panel"><div class="panel-body">
         <div class="hs-prev" style="<?= hero_bg_style($prev) ?>--acc:<?= e(hero_accent($prev)) ?>;text-align:<?= e($prev['text_align']) ?>">
             <?php if ((int) ($prev['overlay'] ?? 0) > 0 && in_array($prev['bg_type'], ['image', 'video'], true)): ?><span class="ov" style="opacity:<?= (int) $prev['overlay'] / 100 ?>"></span><?php endif; ?>
-            <div style="width:100%">
+            <div class="hs-prev-body">
                 <?php if (!empty($prev['badge_text'])): ?><span class="hs-prev-badge"><?= !empty($prev['badge_icon']) ? lucide($prev['badge_icon']) : '' ?><?= e($prev['badge_text']) ?></span><br><?php endif; ?>
-                <div class="hs-prev-title"><?= $row ? hero_title_html($prev) . hero_typing_html($prev) : 'Your headline with a <span class="hero-hl">highlight</span>' ?></div>
+                <?php /* hx-hl, not hero-hl: the highlight class the public hero and this
+                         screen's own `.hs-prev .hx-hl` rule both use. The old name matched no
+                         rule anywhere, so the empty-form preview showed plain text where a
+                         live slide shows the accent gradient. */ ?>
+                <div class="hs-prev-title"><?= $row ? hero_title_html($prev) . hero_typing_html($prev) : 'Your headline with a <span class="hx-hl">highlight</span>' ?></div>
                 <div class="hs-prev-sub"><?= e($prev['description'] ?: $prev['subtitle'] ?: 'Subtitle / supporting copy appears here.') ?></div>
             </div>
         </div>
-        <p class="form-hint" style="margin-top:.6rem;">Preview reflects the last saved state. Save to refresh.</p>
+        <p class="form-hint">Preview reflects the last saved state. Save to refresh.</p>
     </div></div>
 
     <form class="admin-form" method="post" enctype="multipart/form-data" action="<?= e(admin_url('hero-slides')) ?>">
         <?= csrf_field() ?><input type="hidden" name="_do" value="save"><input type="hidden" name="id" value="<?= (int) ($row['id'] ?? 0) ?>">
         <div class="panel"><div class="panel-body">
-            <div class="hs-tabs" role="tablist">
-                <button type="button" class="hs-tab is-active" data-tab="content"><?= lucide('type') ?> Content</button>
-                <button type="button" class="hs-tab" data-tab="design"><?= lucide('palette') ?> Design</button>
-                <button type="button" class="hs-tab" data-tab="buttons"><?= lucide('mouse-pointer-click') ?> Buttons</button>
-                <button type="button" class="hs-tab" data-tab="effects"><?= lucide('sparkles') ?> Effects</button>
+            <div class="tabs" role="tablist">
+                <button type="button" class="tab is-active" data-tab="content"><?= lucide('type') ?> Content</button>
+                <button type="button" class="tab" data-tab="design"><?= lucide('palette') ?> Design</button>
+                <button type="button" class="tab" data-tab="buttons"><?= lucide('mouse-pointer-click') ?> Buttons</button>
+                <button type="button" class="tab" data-tab="effects"><?= lucide('sparkles') ?> Effects</button>
             </div>
 
             <!-- CONTENT -->
@@ -180,7 +199,7 @@ if ($action === 'create' || $action === 'edit') {
                     <div class="form-group"><label class="form-label">Typing words (rotating)</label><input class="form-control" name="typing_words" maxlength="255" value="<?= $v('typing_words') ?>" placeholder="Digital Marketing, Web Design, Data Science"></div>
                 </div>
                 <div class="form-group"><label class="form-label">Subtitle</label><input class="form-control" name="subtitle" maxlength="255" value="<?= $v('subtitle') ?>"></div>
-                <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" name="description" style="min-height:90px"><?= $v('description') ?></textarea></div>
+                <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea hs-desc" name="description"><?= $v('description') ?></textarea></div>
                 <div class="grid-3">
                     <div class="form-group"><label class="form-label">Trust signal text</label><input class="form-control" name="trust_text" maxlength="191" value="<?= $v('trust_text') ?>" placeholder="Trusted by 12,000+ members"></div>
                     <div class="form-group"><label class="form-label">Rating (0–5)</label><input class="form-control" type="number" step="0.1" min="0" max="5" name="rating" value="<?= $v('rating') ?>" placeholder="4.9"></div>
@@ -193,10 +212,17 @@ if ($action === 'create' || $action === 'edit') {
                 <div class="grid-3">
                     <div class="form-group"><label class="form-label">Background type</label>
                         <select class="form-select" name="bg_type"><?php foreach (['gradient' => 'Gradient', 'mesh' => 'Mesh gradient', 'image' => 'Image', 'solid' => 'Solid colour', 'video' => 'Video'] as $k => $l): ?><option value="<?= $k ?>" <?= $sel('bg_type', $k, 'gradient') ?>><?= e($l) ?></option><?php endforeach; ?></select></div>
+                    <?php /* NOTE: this default is left exactly as shipped. Changing it changes
+                             the value a NEW slide submits when the admin never opens the picker,
+                             which is a data change, not a presentation one — it needs its own
+                             product decision (and a migration for existing rows) rather than
+                             riding along in a CSS pass. hero_accent() falls back to #174D3D. */ ?>
                     <div class="form-group"><label class="form-label">Accent colour</label><div class="swatch"><input type="color" name="accent" value="<?= $v('accent', '#a855f7') ?>"><input class="form-control" value="<?= $v('accent', '#a855f7') ?>" readonly></div></div>
                     <div class="form-group"><label class="form-label">Overlay darkness (%)</label><input class="form-control" type="number" min="0" max="100" name="overlay" value="<?= $v('overlay', '45') ?>"></div>
                 </div>
                 <div class="grid-3">
+                    <?php /* Same reasoning as the accent field above: submitted-value defaults
+                             are data, so they stay at the shipped values. */ ?>
                     <div class="form-group"><label class="form-label">Gradient from</label><div class="swatch"><input type="color" name="bg_from" value="<?= $v('bg_from', '#084881') ?>"><input class="form-control" value="<?= $v('bg_from', '#084881') ?>" readonly></div></div>
                     <div class="form-group"><label class="form-label">Gradient to</label><div class="swatch"><input type="color" name="bg_to" value="<?= $v('bg_to', '#084881') ?>"><input class="form-control" value="<?= $v('bg_to', '#084881') ?>" readonly></div></div>
                     <div class="form-group"><label class="form-label">Gradient angle (°)</label><input class="form-control" type="number" min="0" max="360" name="bg_angle" value="<?= $v('bg_angle', '135') ?>"></div>
@@ -204,7 +230,7 @@ if ($action === 'create' || $action === 'edit') {
                 <div class="grid-2">
                     <div class="form-group"><label class="form-label">Background image (for “Image” type)</label>
                         <input class="form-control" type="file" name="image" accept="image/*" data-preview="#bgPrev">
-                        <img id="bgPrev" class="img-preview" src="<?= e(!empty($row['image']) ? upload_url($row['image']) : asset('images/placeholder.svg')) ?>" style="<?= empty($row['image']) ? 'display:none;' : '' ?>margin-top:.5rem;max-height:90px;border-radius:10px;"></div>
+                        <img id="bgPrev" class="img-preview hs-thumb" src="<?= e(!empty($row['image']) ? upload_url($row['image']) : asset('images/placeholder.svg')) ?>" style="<?= empty($row['image']) ? 'display:none;' : '' ?>"></div>
                     <div class="form-group"><label class="form-label">Background video URL (for “Video” type)</label><input class="form-control" name="bg_video" value="<?= $v('bg_video') ?>" placeholder="/uploads/... or https://…"></div>
                 </div>
                 <div class="grid-3">
@@ -214,14 +240,13 @@ if ($action === 'create' || $action === 'edit') {
                 </div>
                 <div class="form-group"><label class="form-label">Foreground / side image (for “Split” layout)</label>
                     <input class="form-control" type="file" name="hero_image" accept="image/*" data-preview="#fgPrev">
-                    <img id="fgPrev" class="img-preview" src="<?= e(!empty($row['hero_image']) ? upload_url($row['hero_image']) : asset('images/placeholder.svg')) ?>" style="<?= empty($row['hero_image']) ? 'display:none;' : '' ?>margin-top:.5rem;max-height:110px;border-radius:12px;"></div>
+                    <img id="fgPrev" class="img-preview hs-thumb-lg" src="<?= e(!empty($row['hero_image']) ? upload_url($row['hero_image']) : asset('images/placeholder.svg')) ?>" style="<?= empty($row['hero_image']) ? 'display:none;' : '' ?>"></div>
             </section>
 
             <!-- BUTTONS -->
             <section class="hs-panel" id="hs-buttons">
-                <div class="panel" style="box-shadow:none;border:1px solid var(--border);margin-bottom:1rem;"><div class="panel-body">
-                    <strong>Primary button</strong>
-                    <div class="grid-2" style="margin-top:.7rem;">
+                <div class="panel hs-sub"><div class="panel-head"><h2 class="panel-title"><?= lucide('mouse-pointer-click') ?> Primary button</h2></div><div class="panel-body">
+                    <div class="grid-2">
                         <div class="form-group"><label class="form-label">Text</label><input class="form-control" name="button_text" maxlength="64" value="<?= $v('button_text') ?>" placeholder="Get Started"></div>
                         <div class="form-group"><label class="form-label">URL</label><input class="form-control" name="button_url" maxlength="255" value="<?= $v('button_url') ?>" placeholder="/donate"></div>
                     </div>
@@ -230,9 +255,8 @@ if ($action === 'create' || $action === 'edit') {
                         <div class="form-group"><label class="form-label">Icon</label><?= $iconSelect('btn_icon', (string) ($row['btn_icon'] ?? 'arrow-right')) ?></div>
                     </div>
                 </div></div>
-                <div class="panel" style="box-shadow:none;border:1px solid var(--border);"><div class="panel-body">
-                    <strong>Secondary button</strong>
-                    <div class="grid-2" style="margin-top:.7rem;">
+                <div class="panel hs-sub"><div class="panel-head"><h2 class="panel-title"><?= lucide('mouse-pointer-click') ?> Secondary button</h2></div><div class="panel-body">
+                    <div class="grid-2">
                         <div class="form-group"><label class="form-label">Text</label><input class="form-control" name="button2_text" maxlength="64" value="<?= $v('button2_text') ?>" placeholder="Learn More"></div>
                         <div class="form-group"><label class="form-label">URL</label><input class="form-control" name="button2_url" maxlength="255" value="<?= $v('button2_url') ?>" placeholder="/about"></div>
                     </div>
@@ -250,7 +274,7 @@ if ($action === 'create' || $action === 'edit') {
                     <div class="form-group"><label class="form-label">Sort order</label><input class="form-control" type="number" name="sort_order" value="<?= (int) ($row['sort_order'] ?? 0) ?>"></div>
                 </div>
                 <label class="checkbox"><input type="checkbox" name="animate" value="1" <?= $chk('animate', 1) ?>> Entrance animations &amp; floating effects</label><br>
-                <label class="checkbox" style="margin-top:.5rem;"><input type="checkbox" name="status" value="1" <?= $chk('status', 1) ?>> Active (show on homepage)</label>
+                <label class="checkbox hs-check-gap"><input type="checkbox" name="status" value="1" <?= $chk('status', 1) ?>> Active (show on homepage)</label>
             </section>
         </div></div>
         <div class="form-actions"><button class="btn btn-primary" type="submit"><?= lucide('save') ?> <?= $action === 'edit' ? 'Update' : 'Create' ?> Slide</button><a class="btn btn-ghost" href="<?= e(admin_url('hero-slides')) ?>">Cancel</a></div>
@@ -258,7 +282,8 @@ if ($action === 'create' || $action === 'edit') {
 
     <script>
     (function () {
-        var tabs = document.querySelectorAll('.hs-tab'), panels = document.querySelectorAll('.hs-panel');
+        // Shared .tabs component (admin-pro.css) — the local .hs-tab copy is gone.
+        var tabs = document.querySelectorAll('.tabs .tab'), panels = document.querySelectorAll('.hs-panel');
         tabs.forEach(function (t) { t.addEventListener('click', function () {
             tabs.forEach(function (x) { x.classList.toggle('is-active', x === t); });
             panels.forEach(function (p) { p.classList.toggle('is-active', p.id === 'hs-' + t.dataset.tab); });
@@ -279,17 +304,23 @@ $rows = db_all("SELECT * FROM $table ORDER BY sort_order ASC, id DESC");
 include __DIR__ . '/partials/head.php';
 ?>
 <style>
-.hero-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.2rem}
-.hero-card{border:1px solid var(--border);border-radius:18px;overflow:hidden;background:var(--surface);box-shadow:var(--elev-1,0 12px 26px -18px rgba(6,53,102,.4));transition:transform .18s ease,box-shadow .18s ease}
-.hero-card:hover{transform:translateY(-4px);box-shadow:var(--elev-2,0 26px 52px -30px rgba(6,53,102,.5))}
-.hero-card-prev{position:relative;min-height:170px;display:flex;align-items:flex-end;padding:1.1rem;color:#fff;isolation:isolate}
-.hero-card-prev .ov{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(8,11,26,.15),rgba(8,11,26,.65))}
-.hero-card-badge{position:absolute;top:.9rem;left:.9rem;display:inline-flex;gap:.35rem;align-items:center;padding:.3rem .7rem;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;backdrop-filter:blur(6px)}
-.hero-card-status{position:absolute;top:.9rem;right:.9rem}
-.hero-card-title{font-size:1.15rem;font-weight:800;line-height:1.15;text-shadow:0 2px 10px rgba(0,0,0,.35)}
-.hero-card-title .hx-hl{background:linear-gradient(120deg,var(--acc,#a855f7),#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
-.hero-card-foot{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem;gap:.5rem}
-.hero-card-meta{font-size:.78rem;color:var(--muted)}
+/* Screen-local layout ONLY. Each card is now a `.panel`, so its radius (--r-lg,
+   was 18px), border, elevation and corner clipping all come from the shared
+   surface — including the no-lift-on-hover rule. Gone with the old block: the
+   translateY hover, the 0 2px 10px black text-shadow, the backdrop-filter glass
+   badge, 0.68rem type, and the purple accent fallback. */
+.hero-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--sp-5)}
+.admin-content .panel.hero-card{margin-bottom:0}
+.hero-card-prev{position:relative;isolation:isolate;display:flex;align-items:flex-end;min-height:170px;padding:var(--sp-4);color:#fff}
+.hero-card-prev .ov{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(21,24,24,.2),rgba(21,24,24,.7))}
+.hero-card-badge{position:absolute;top:var(--sp-3);left:var(--sp-3);display:inline-flex;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-2);border:1px solid rgba(255,255,255,.24);border-radius:var(--r-pill);background:rgba(21,24,24,.55);font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.hero-card-status{position:absolute;top:var(--sp-3);right:var(--sp-3)}
+.hero-card-title{font-size:1.15rem;font-weight:800;line-height:1.15}
+/* Mirrors the public hero's .hx-hl; fallback is hero_accent()'s own brand default. */
+.hero-card-title .hx-hl{background:linear-gradient(120deg,var(--acc,#174D3D),#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.hero-card-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:var(--sp-3) var(--sp-4)}
+.hero-card-meta{font-size:.8rem;color:var(--muted)}
+.hs-inline{display:inline}
 </style>
 <div class="admin-page-head">
     <div><h1><?= lucide('image') ?> Hero Slider</h1><span class="muted"><?= count($rows) ?> slide<?= count($rows) === 1 ? '' : 's' ?> · the rotating banners at the top of your homepage</span></div>
@@ -300,7 +331,7 @@ include __DIR__ . '/partials/head.php';
 <?php if ($rows): ?>
 <div class="hero-grid">
     <?php foreach ($rows as $i => $r): $s = hero_slide($r); ?>
-        <div class="hero-card">
+        <div class="panel hero-card">
             <div class="hero-card-prev" style="<?= hero_bg_style($s) ?>--acc:<?= e(hero_accent($s)) ?>;text-align:<?= e($s['text_align']) ?>">
                 <?php if (in_array($s['bg_type'], ['image', 'video'], true)): ?><span class="ov"></span><?php endif; ?>
                 <?php if (!empty($s['badge_text'])): ?><span class="hero-card-badge"><?= !empty($s['badge_icon']) ? lucide($s['badge_icon']) : '' ?><?= e($s['badge_text']) ?></span><?php endif; ?>
@@ -311,14 +342,20 @@ include __DIR__ . '/partials/head.php';
                 <span class="hero-card-meta">#<?= (int) $r['sort_order'] ?> · <?= e(ucfirst($s['bg_type'])) ?> · <?= e(ucfirst($s['layout'])) ?></span>
                 <div class="actions">
                     <a class="icon-btn" href="<?= e(admin_url('hero-slides?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                    <form method="post" action="<?= e(admin_url('hero-slides')) ?>" data-confirm="Delete this slide permanently?" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="_do" value="delete"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><button class="icon-btn danger" type="submit" title="Delete"><?= lucide('trash-2') ?></button></form>
+                    <form method="post" action="<?= e(admin_url('hero-slides')) ?>" data-confirm="Delete this slide permanently?" class="hs-inline"><?= csrf_field() ?><input type="hidden" name="_do" value="delete"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><button class="icon-btn danger" type="submit" title="Delete"><?= lucide('trash-2') ?></button></form>
                 </div>
             </div>
         </div>
     <?php endforeach; ?>
 </div>
 <?php else: ?>
-    <div class="panel"><div class="panel-body"><div class="empty-state"><div class="icon"><?= lucide('image') ?></div>No hero slides yet. <a href="<?= e(admin_url('hero-slides?action=create')) ?>">Create your first slide</a>.</div></div></div>
+    <div class="panel"><div class="panel-body">
+        <div class="empty-state"><div class="icon"><?= lucide('image') ?></div>
+            <p class="es-title">No hero slides yet</p>
+            <p class="es-text">The homepage falls back to its built-in banner until you add one. A slide can be a gradient, a mesh, an image or a video.</p>
+            <div class="es-actions"><a class="btn btn-primary btn-sm" href="<?= e(admin_url('hero-slides?action=create')) ?>"><?= lucide('plus') ?> Create your first slide</a></div>
+        </div>
+    </div></div>
 <?php endif; ?>
 
 <?php include __DIR__ . '/partials/foot.php'; ?>

@@ -21,17 +21,23 @@ require_admin();
 
 $table = 'activity_logs';
 
-/* Visual meta (pill colour + stat-card icon/colour) for a given action type. */
+/*
+ | Visual meta for a given action type: the shared pill class, a lucide glyph and a
+ | TONE NAME. The tone used to be a raw hex per branch — a red, a slate grey and an
+ | indigo, none of them in the palette — written straight into a style attribute on
+ | both the stat card and its outline. It is now a token name resolved in CSS, so the
+ | action types sit on the three status hues plus brand and nothing else.
+ */
 $actionMeta = static function (string $a): array {
     $a = strtolower(trim($a));
     return match (true) {
-        str_contains($a, 'create')                          => ['pill' => 'pill-green', 'icon' => 'plus', 'color' => '#58A42F'],
-        str_contains($a, 'update') || str_contains($a, 'edit') => ['pill' => 'pill-blue',  'icon' => 'pencil', 'color' => '#063566'],
-        str_contains($a, 'delete') || str_contains($a, 'remove') => ['pill' => 'pill-red', 'icon' => 'trash-2', 'color' => '#dc2626'],
-        str_contains($a, 'login') && (str_contains($a, 'fail') || str_contains($a, 'error')) => ['pill' => 'pill-amber', 'icon' => 'triangle-alert', 'color' => '#E67B1D'],
-        str_contains($a, 'login')                           => ['pill' => 'pill-blue',  'icon' => 'lock-open', 'color' => '#084881'],
-        str_contains($a, 'logout')                          => ['pill' => 'pill-gray',  'icon' => 'lock', 'color' => '#64748b'],
-        default                                             => ['pill' => 'pill-gray',  'icon' => 'pin', 'color' => '#6366f1'],
+        str_contains($a, 'create')                          => ['pill' => 'pill-green', 'icon' => 'plus',           'tone' => 'ok'],
+        str_contains($a, 'update') || str_contains($a, 'edit') => ['pill' => 'pill-blue',  'icon' => 'pencil',        'tone' => 'brand'],
+        str_contains($a, 'delete') || str_contains($a, 'remove') => ['pill' => 'pill-red', 'icon' => 'trash-2',      'tone' => 'err'],
+        str_contains($a, 'login') && (str_contains($a, 'fail') || str_contains($a, 'error')) => ['pill' => 'pill-amber', 'icon' => 'triangle-alert', 'tone' => 'warn'],
+        str_contains($a, 'login')                           => ['pill' => 'pill-blue',  'icon' => 'lock-open',      'tone' => 'deep'],
+        str_contains($a, 'logout')                          => ['pill' => 'pill-gray',  'icon' => 'lock',           'tone' => 'muted'],
+        default                                             => ['pill' => 'pill-gray',  'icon' => 'pin',            'tone' => 'neutral'],
     };
 };
 
@@ -120,8 +126,36 @@ $hasFilter = ($moduleFilter !== '' || $actFilter !== '' || $search !== '');
 
 include __DIR__ . '/partials/head.php';
 ?>
+<?php /* Per-screen rules that replace what used to be style attributes on every
+         stat card and table cell. TOKENS ONLY — the action-type hues resolve to the
+         three status tokens plus brand, so no colour literal survives in this file.
+         The tone → token map belongs in assets/css/admin.css next to .stat-card,
+         which this change does not own. */ ?>
+<style>
+/* Action-type filter cards. The link reset and the selected-filter outline are
+   NOT here: `a.stat-card` and `.stat-card.is-active` are declared once in
+   assets/css/admin-pro.css, because five screens had five different mechanisms for
+   "this stat card is the current filter". Only the tone map is page-local. */
+body.admin .al-tone-ok      .stat-icon { background: var(--st-ok); }
+body.admin .al-tone-warn    .stat-icon { background: var(--st-warn); }
+body.admin .al-tone-err     .stat-icon { background: var(--st-err); }
+body.admin .al-tone-brand   .stat-icon { background: var(--brand-600, #0B4E3D); }
+body.admin .al-tone-deep    .stat-icon { background: var(--secondary, #174D3D); }
+/* Fixed palette values, not --muted / --text-soft: those flip light in dark mode
+   and .stat-icon draws a white glyph on them. #4B6754 and #372C22 stay dark in
+   both themes, so the glyph keeps its contrast. */
+body.admin .al-tone-muted   .stat-icon { background: #4B6754; }
+body.admin .al-tone-neutral .stat-icon { background: #372C22; }
+
+/* Log filters + expandable description cell. */
+body.admin .al-filters { flex: 1; min-width: 260px; }
+body.admin .al-module { max-width: 220px; }
+body.admin .al-desc > summary { cursor: pointer; }
+body.admin .al-desc-full { white-space: pre-wrap; }
+</style>
+
 <div class="admin-page-head">
-    <div><h1>Activity Logs</h1><span class="muted"><?= (int) $p['total'] ?> shown · <?= (int) $totalAll ?> total</span></div>
+    <div><h1><?= lucide('history') ?> Activity Logs</h1><span class="muted"><?= (int) $p['total'] ?> shown · <?= (int) $totalAll ?> total</span></div>
     <form method="post" action="<?= e(admin_url('activity-logs')) ?>" data-confirm="Permanently delete all logs older than 30 days?">
         <?= csrf_field() ?>
         <input type="hidden" name="_do" value="clear_old">
@@ -131,9 +165,9 @@ include __DIR__ . '/partials/head.php';
 
 <div class="stat-grid">
     <?php $allActive = ($actFilter === ''); ?>
-    <a class="stat-card" href="<?= e(admin_url('activity-logs')) ?>"
-       style="text-decoration:none;<?= $allActive ? 'outline:2px solid #6366f1;' : '' ?>">
-        <span class="stat-icon" style="background:#6366f1;"><?= lucide('clipboard-list') ?></span>
+    <a class="stat-card al-tone-brand"
+       href="<?= e(admin_url('activity-logs')) ?>" <?= $allActive ? 'aria-current="page"' : '' ?>>
+        <span class="stat-icon"><?= lucide('clipboard-list') ?></span>
         <span>
             <span class="stat-value"><?= (int) $totalAll ?></span>
             <span class="stat-label">All Actions</span>
@@ -144,9 +178,10 @@ include __DIR__ . '/partials/head.php';
         $meta     = $actionMeta((string) $ar['action']);
         $isActive = ($actFilter === $ar['action']);
         ?>
-        <a class="stat-card" href="<?= e(admin_url('activity-logs?act=' . urlencode((string) $ar['action']))) ?>"
-           style="text-decoration:none;<?= $isActive ? 'outline:2px solid ' . e($meta['color']) . ';' : '' ?>">
-            <span class="stat-icon" style="background:<?= e($meta['color']) ?>;"><?= lucide($meta['icon']) ?></span>
+        <a class="stat-card al-tone-<?= e($meta['tone']) ?>"
+           href="<?= e(admin_url('activity-logs?act=' . urlencode((string) $ar['action']))) ?>"
+           <?= $isActive ? 'aria-current="page"' : '' ?>>
+            <span class="stat-icon"><?= lucide($meta['icon']) ?></span>
             <span>
                 <span class="stat-value"><?= (int) $ar['c'] ?></span>
                 <span class="stat-label"><?= e($prettyLabel((string) $ar['action'])) ?></span>
@@ -156,13 +191,21 @@ include __DIR__ . '/partials/head.php';
 </div>
 
 <div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title"><?= lucide('clipboard-list') ?> Audit trail</h2>
+        <?php if ($hasFilter): ?>
+            <span class="pill pill-tag">Filtered · <?= (int) $p['total'] ?> of <?= (int) $totalAll ?></span>
+        <?php else: ?>
+            <span class="pill pill-tag"><?= (int) $totalAll ?> entries</span>
+        <?php endif; ?>
+    </div>
     <div class="panel-body">
         <div class="data-toolbar">
-            <form class="search" method="get" action="<?= e(admin_url('activity-logs')) ?>" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+            <form class="search al-filters flex flex-wrap items-center gap-1" method="get" action="<?= e(admin_url('activity-logs')) ?>">
                 <?php if ($actFilter !== ''): ?>
                     <input type="hidden" name="act" value="<?= e($actFilter) ?>">
                 <?php endif; ?>
-                <select class="form-select" name="module" onchange="this.form.submit()" style="max-width:220px;">
+                <select class="form-select al-module" name="module" onchange="this.form.submit()">
                     <option value="">All modules</option>
                     <?php foreach ($moduleList as $m): ?>
                         <option value="<?= e($m['module']) ?>" <?= $moduleFilter === $m['module'] ? 'selected' : '' ?>>
@@ -189,7 +232,7 @@ include __DIR__ . '/partials/head.php';
                         <th>Description</th>
                         <th>IP</th>
                         <th>When</th>
-                        <th style="text-align:right;">Actions</th>
+                        <th class="num">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -208,21 +251,21 @@ include __DIR__ . '/partials/head.php';
                             <?php elseif (!empty($r['user_id'])): ?>
                                 <span class="text-muted">User #<?= (int) $r['user_id'] ?></span>
                             <?php else: ?>
-                                <span class="pill pill-gray">System</span>
+                                <span class="pill pill-tag">System</span>
                             <?php endif; ?>
                         </td>
                         <td><span class="pill <?= e($meta['pill']) ?>"><?= lucide($meta['icon']) ?> <?= e($prettyLabel((string) $r['action'])) ?></span></td>
                         <td><?= !empty($r['module']) ? e($prettyLabel((string) $r['module'])) : '<span class="text-muted">—</span>' ?></td>
                         <td>
                             <?php if ($desc !== '' || $ua !== ''): ?>
-                                <details>
-                                    <summary style="cursor:pointer;"><?= $desc !== '' ? e(excerpt($desc, 14)) : '<span class="text-muted">(no description)</span>' ?></summary>
-                                    <div style="margin-top:.5rem;">
+                                <details class="al-desc">
+                                    <summary><?= $desc !== '' ? e(excerpt($desc, 14)) : '<span class="text-muted">(no description)</span>' ?></summary>
+                                    <div class="mt-1">
                                         <?php if ($desc !== ''): ?>
-                                            <div style="white-space:pre-wrap;"><?= e($desc) ?></div>
+                                            <div class="al-desc-full"><?= e($desc) ?></div>
                                         <?php endif; ?>
                                         <?php if ($ua !== ''): ?>
-                                            <small class="text-muted" style="display:block;margin-top:.4rem;"><?= lucide('monitor') ?> <?= e($ua) ?></small>
+                                            <small class="form-hint"><?= lucide('monitor') ?> <?= e($ua) ?></small>
                                         <?php endif; ?>
                                     </div>
                                 </details>
@@ -237,7 +280,7 @@ include __DIR__ . '/partials/head.php';
                         </td>
                         <td>
                             <div class="actions">
-                                <form method="post" action="<?= e(admin_url('activity-logs')) ?>" data-confirm="Delete this log entry permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('activity-logs')) ?>" data-confirm="Delete this log entry permanently?">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -252,11 +295,18 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('clipboard-list') ?></div>
+            <?php /* Shared .empty-state shape — swap for the admin_ui.php helper once it ships. */ ?>
+            <div class="empty-state">
+                <div class="icon"><?= lucide('clipboard-list') ?></div>
                 <?php if ($hasFilter): ?>
-                    No activity matches your filters. <a href="<?= e(admin_url('activity-logs')) ?>">Show all</a>.
+                    <p class="es-title">No activity matches these filters</p>
+                    <p class="es-text">Nothing in the log matches the module, action type and search term you have combined. Widen one of them, or clear all three.</p>
+                    <div class="es-actions">
+                        <a class="btn btn-primary" href="<?= e(admin_url('activity-logs')) ?>">Show all activity</a>
+                    </div>
                 <?php else: ?>
-                    No activity has been logged yet. Admin actions across the panel will appear here.
+                    <p class="es-title">Nothing logged yet</p>
+                    <p class="es-text">Every create, update, delete and sign-in across the panel is recorded here with the user, module, IP address and time. Entries appear as soon as someone acts.</p>
                 <?php endif; ?>
             </div>
         <?php endif; ?>

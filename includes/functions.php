@@ -349,22 +349,46 @@ function is_post(): bool
     return ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
 }
 
-/** Read a GET parameter. */
+/**
+ * Coerce a request value to a scalar.
+ *
+ * PHP lets a client turn ANY parameter into an array simply by writing
+ * `?lang[]=1`, and callers overwhelmingly treat these as strings — passing them
+ * to explode(), preg_match(), an array offset, or a bound query parameter. In
+ * PHP 8 an array reaching any of those is a TypeError, not a silent false, so a
+ * single crafted link could 500 a page. Anything non-scalar is therefore
+ * discarded here and the caller sees the default, exactly as if the parameter
+ * had been absent. Callers that genuinely want an array (multi-selects, id
+ * lists) must read the superglobal directly and validate it themselves.
+ */
+function request_scalar($value, $default = null)
+{
+    if ($value === null) {
+        return $default;
+    }
+    if (is_array($value) || is_object($value)) {
+        return $default;
+    }
+    return $value;
+}
+
+/** Read a GET parameter. Arrays are rejected — see request_scalar(). */
 function get(string $key, $default = null)
 {
-    return $_GET[$key] ?? $default;
+    return request_scalar($_GET[$key] ?? null, $default);
 }
 
-/** Read a POST parameter. */
+/** Read a POST parameter. Arrays are rejected — see request_scalar(). */
 function post(string $key, $default = null)
 {
-    return $_POST[$key] ?? $default;
+    return request_scalar($_POST[$key] ?? null, $default);
 }
 
-/** Read from POST then GET. */
+/** Read from POST then GET. Arrays are rejected — see request_scalar(). */
 function request(string $key, $default = null)
 {
-    return $_POST[$key] ?? $_GET[$key] ?? $default;
+    $v = $_POST[$key] ?? $_GET[$key] ?? null;
+    return request_scalar($v, $default);
 }
 
 /** Best-effort client IP address. */
@@ -593,7 +617,25 @@ function validate(array $data, array $rules): array
 {
     $errors = [];
     foreach ($rules as $field => $ruleset) {
-        $value = trim((string) ($data[$field] ?? ''));
+        $raw = $data[$field] ?? '';
+
+        /* A form field can arrive as an ARRAY — "name[]=x" in the query string
+           or POST body is all it takes, and every public form here passes $_POST
+           straight in. The old line was:
+               $value = trim((string) ($data[$field] ?? ''));
+           Casting an array to string emits "Array to string conversion" and
+           yields the literal "Array", which is five non-empty characters. So
+           `required` PASSED, `min:3` PASSED, and the handler carried on with a
+           value the user never typed — while the warning went to the error log
+           on every such request.
+           Non-scalars are not input this validator can reason about, so treat
+           them as a validation failure rather than silently stringifying. */
+        if (is_array($raw) || is_object($raw)) {
+            $errors[$field] = ucwords(str_replace('_', ' ', $field)) . ' is not valid.';
+            continue;
+        }
+
+        $value = trim((string) $raw);
         foreach (explode('|', $ruleset) as $rule) {
             [$name, $param] = array_pad(explode(':', $rule, 2), 2, null);
             $label = ucwords(str_replace('_', ' ', $field));

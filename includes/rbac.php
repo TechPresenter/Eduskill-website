@@ -259,6 +259,9 @@ function rbac_slug_aliases(): array
         // People / Marketing
         'member-card'          => 'People',
         'analytics-data'       => 'Marketing & SEO',
+        /* Governs who may self-register and whether approval is automatic —
+           an access-control surface, so it belongs to System, not Programs. */
+        'registration-settings' => 'System',
     ];
 }
 
@@ -298,7 +301,14 @@ function rbac_slug_group(string $slug): ?string
 
 function rbac_enforcement_on(): bool
 {
-    return (int) get_setting('rbac_enforce', 0) === 1;
+    /* Fail CLOSED. The default was 0, which made role assignment cosmetic: with
+       the setting absent, rbac_gate() returned immediately and EVERY row in
+       `users` was an unrestricted administrator regardless of its role. A fresh
+       install, or a database where the row was never written, silently ran with
+       no access control at all. Defaulting to 1 means an operator must opt OUT
+       deliberately rather than discover they never opted in. Super-admins and
+       role-less legacy admins still bypass, so this cannot lock anyone out. */
+    return (int) get_setting('rbac_enforce', 1) === 1;
 }
 
 /** Is the user a super admin (or role-less legacy admin)? Always full access. */
@@ -359,7 +369,19 @@ function rbac_can_slug(string $slug): bool
  */
 function rbac_current_slug(): string
 {
-    $path = function_exists('current_path') ? current_path() : ($_SERVER['REQUEST_URI'] ?? '');
+    /* SOURCE OF TRUTH: the script Apache actually resolved, not the request line.
+       -----------------------------------------------------------------------
+       Deriving the slug from REQUEST_URI let the gate and the executed file
+       disagree. Apache normalises '..' BEFORE choosing the script, so
+       GET /admin/blogs/%2e%2e/security executes admin/security.php while the
+       gate saw the slug 'blogs' — any granted module became a key to every
+       other one. SCRIPT_NAME is post-normalisation, so the two can no longer
+       diverge. REQUEST_URI stays only as a fallback for exotic SAPIs, and the
+       '..' handling below now POPS rather than discards. */
+    $path = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
+    if ($path === '') {
+        $path = function_exists('current_path') ? current_path() : ($_SERVER['REQUEST_URI'] ?? '');
+    }
     $path = (string) $path;
     foreach (['?', '#'] as $cut) {
         if (($p = strpos($path, $cut)) !== false) {
@@ -371,8 +393,12 @@ function rbac_current_slug(): string
     $parts = [];
     foreach (explode('/', $path) as $seg) {
         $seg = trim($seg);
-        if ($seg === '' || $seg === '.' || $seg === '..') {
-            continue; // collapse '//', './' and '../'
+        if ($seg === '..') {
+            array_pop($parts);          // resolve, do not discard
+            continue;
+        }
+        if ($seg === '' || $seg === '.') {
+            continue;                   // collapse '//' and './'
         }
         $parts[] = $seg;
     }
@@ -419,11 +445,11 @@ function rbac_403_page(string $slug): string
     $out  = e(admin_url('logout'));
     return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
         . '<title>Access denied</title><style>body{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:#f1f5f9;color:#0f172a;display:grid;place-items:center;min-height:100vh}'
-        . '.box{max-width:440px;text-align:center;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:2.5rem 2rem;box-shadow:0 20px 46px -24px rgba(6,53,102,.4)}'
+        . '.box{max-width:440px;text-align:center;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:2.5rem 2rem;box-shadow:0 20px 46px -24px rgba(11,78,61,.4)}'
         . '.ico{width:64px;height:64px;border-radius:16px;margin:0 auto 1.1rem;display:grid;place-items:center;background:linear-gradient(135deg,#fee2e2,#fecaca);color:#dc2626;font-size:1.8rem}'
         . 'h1{font-size:1.35rem;margin:.2rem 0 .5rem}p{color:#64748b;line-height:1.6;margin:0 0 1.4rem}'
         . 'a{display:inline-block;text-decoration:none;font-weight:650;padding:.6rem 1.1rem;border-radius:11px;margin:0 .3rem}'
-        . '.p{background:linear-gradient(135deg,#063566,#084881);color:#fff}.s{background:#f1f5f9;color:#334155}</style></head>'
+        . '.p{background:linear-gradient(135deg,#0B4E3D,#174D3D);color:#fff}.s{background:#f1f5f9;color:#334155}</style></head>'
         . '<body><div class="box"><div class="ico">&#9888;</div><h1>Access restricted</h1>'
         . '<p>Your role does not have permission to open this section. Contact a super administrator if you need access.</p>'
         . '<a class="p" href="' . $dash . '">Back to dashboard</a><a class="s" href="' . $out . '">Sign out</a></div></body></html>';

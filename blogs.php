@@ -204,7 +204,7 @@ include __DIR__ . '/includes/header.php';
                                 <?php if (!empty($b['is_breaking'])): ?>
                                     <span class="badge" style="position:absolute;top:12px;right:12px;background:#dc2626;color:#fff;"><?= lucide('zap') ?> Breaking</span>
                                 <?php elseif (!empty($b['is_featured'])): ?>
-                                    <span class="badge" style="position:absolute;top:12px;right:12px;background:#E67B1D;color:#111;"><?= lucide('star') ?> Featured</span>
+                                    <span class="badge" style="position:absolute;top:12px;right:12px;background:#F15A24;color:#111;"><?= lucide('star') ?> Featured</span>
                                 <?php endif; ?>
                             </div>
                             <div class="card-body flex flex-col">

@@ -45,17 +45,21 @@ foreach (array_unique([$headingFont, $bodyFont, 'Manrope']) as $f) {
 }
 $fontUrl = 'https://fonts.googleapis.com/css2?' . implode('&', $fontFamilies) . '&display=swap';
 
-$hexOk = static fn($v) => is_string($v) && preg_match('/^#[0-9a-fA-F]{6}$/', $v) ? $v : null;
-$themePrimary   = $hexOk(get_setting('theme_primary_color'));
-$themeSecondary = $hexOk(get_setting('theme_secondary_color'));
-$themeAccent    = $hexOk(get_setting('theme_accent_color'));
+/* The three legacy `settings` colour keys (theme_primary_color / _secondary_ /
+   _accent_) were read here into variables that nothing ever consumed — three
+   queries per page render for values that never reached the output. They also
+   still hold the pre-rebrand navy palette (#276db0 / #123740), so anyone
+   reading this block would reasonably conclude the site colour came from there.
+   Colour now comes exclusively from the Theme Engine (theme_settings, 69
+   tokens) via theme_get() / theme_style_tag(), the same source the fonts on
+   lines 38-39 already use. */
 ?>
 <!DOCTYPE html>
 <html lang="<?= e(current_lang()) ?>" dir="<?= e(current_dir()) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#063566">
+    <meta name="theme-color" content="<?= e(theme_get('adv.theme_color') ?: theme_get('color.primary') ?: '#0B4E3D') ?>">
     <link rel="manifest" href="<?= e(url('manifest.webmanifest')) ?>">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="<?= e(get_setting('site_name', SITE_NAME)) ?>">
@@ -73,8 +77,20 @@ $themeAccent    = $hexOk(get_setting('theme_accent_color'));
         })();
     </script>
 
-    <link rel="icon" href="<?= e(asset('images/favicon.jpg')) ?>" type="image/jpeg">
-    <link rel="apple-touch-icon" href="<?= e(asset('images/favicon.jpg')) ?>">
+    <?php
+    /* Favicon / app icon come from Theme Settings when set, falling back to the
+       shipped asset. These were previously hardcoded, so uploading a favicon or
+       app icon through Theme Settings had no effect anywhere on the site. */
+    $themeIcon = trim((string) theme_get('brand.favicon'));
+    $themeApp  = trim((string) theme_get('brand.app_icon')) ?: $themeIcon;
+    $iconHref  = $themeIcon !== '' ? upload_url($themeIcon) : asset('images/favicon.jpg');
+    $appHref   = $themeApp  !== '' ? upload_url($themeApp)  : asset('images/favicon.jpg');
+    $iconType  = str_ends_with(strtolower($iconHref), '.png') ? 'image/png'
+               : (str_ends_with(strtolower($iconHref), '.webp') ? 'image/webp'
+               : (str_ends_with(strtolower($iconHref), '.svg') ? 'image/svg+xml' : 'image/jpeg'));
+    ?>
+    <link rel="icon" href="<?= e($iconHref) ?>" type="<?= e($iconType) ?>">
+    <link rel="apple-touch-icon" href="<?= e($appHref) ?>">
 
     <!-- Google Fonts (admin-selectable) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -89,6 +105,9 @@ $themeAccent    = $hexOk(get_setting('theme_accent_color'));
              that do not use this header (the standalone auth pages) still get
              it. Loading it here too would duplicate the request. */ ?>
     <link rel="stylesheet" href="<?= e(asset('css/blocks.css')) ?>">
+    <?php /* Design system loads last so its scales win over the accumulated
+             per-component radii and shadows in the stylesheets above. */ ?>
+    <link rel="stylesheet" href="<?= e(asset('css/design-system.css')) ?>">
 
     <?php /* Admin-authored custom code (trusted) */
     $customCss = (string) get_setting('custom_css', '');
@@ -101,8 +120,10 @@ $themeAccent    = $hexOk(get_setting('theme_accent_color'));
 
     <!-- Font Awesome (social icons only) — loaded non-render-blocking; the
          page is fully usable before (or without) it. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css"></noscript>
+    <?php /* Font Awesome removed: the entire 6.5.2 stylesheet was loaded from a
+             third-party CDN for a handful of social glyphs. Those are now inline
+             SVG (social_svg() in includes/helper.php), leaving lucide as the one
+             icon family — one less external request, one less CSP allowance. */ ?>
 
     <!-- Mark JS availability so CSS-only visitors keep scroll-reveal content visible -->
     <script>document.documentElement.classList.add('js');</script>
@@ -128,16 +149,21 @@ $themeAccent    = $hexOk(get_setting('theme_accent_color'));
     <div class="announcement-bar ann-premium<?= $annCustom ? ' ann-solid' : '' ?>" id="announcementBar"
          role="region" aria-label="Site announcement"
          data-ann-id="<?= (int) $announcement['id'] ?>"<?= $annStyle !== '' ? ' style="' . $annStyle . '"' : '' ?>>
-        <span class="ann-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
         <div class="ann-inner">
-            <span class="ann-badge"><?= lucide('sparkles') ?> <span>News</span></span>
             <span class="ann-text"><?= e($announcement['message']) ?></span>
             <?php if (!empty($announcement['link_url'])):
                 // Stored value may be a bare slug ("events") — resolve site-relative
                 // so it works from any page depth; absolute URLs pass through.
                 $annHref = preg_match('#^https?://#i', $announcement['link_url'])
                     ? $announcement['link_url'] : url(ltrim($announcement['link_url'], '/')); ?>
-                <a class="ann-cta" href="<?= e($annHref) ?>"><?= e($announcement['link_text'] ?: 'Learn more') ?> <?= lucide('arrow-right') ?></a>
+                <a class="ann-cta" href="<?= e($annHref) ?>"><?= e($announcement['link_text'] ?: 'Learn more') ?></a>
+                <span class="ann-doodle" aria-hidden="true">
+                    <svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.6"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 11c6-7 15-9 24-6 5 2 8 6 6 9-2 2-6 1-6-3 1-5 7-8 16-8"/>
+                        <path d="M38 3l4 0.2-0.6 4"/>
+                    </svg>
+                </span>
             <?php endif; ?>
         </div>
         <button class="ann-close" type="button" aria-label="Dismiss announcement" data-ann-close>&times;</button>

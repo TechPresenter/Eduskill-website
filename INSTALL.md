@@ -5,27 +5,25 @@
 1. **Copy** the project to your web root (`C:\xampp\htdocs\pwf` on XAMPP).
 2. **Start** Apache + MySQL (XAMPP Control Panel). Ensure `mod_rewrite`,
    `mod_headers`, `mod_deflate`, `mod_expires` are enabled (default on XAMPP).
-3. **Create + import the database.** The schema is built up as a numbered
-   migration chain and **every file must be applied, in order** — `schema.sql`
-   alone is only the original core and leaves ~100 later tables missing.
+3. **Create + import the database.** There is **one** SQL file:
+   `database/eduskill.sql`. It replaced the old 34-file migration chain
+   (`schema.sql`, `schema_v2`…`schema_v30`, `sample_data.sql` and two PHP
+   seeders), which had to be applied in exact numeric order and silently left
+   tables missing if you skipped one.
 
-   Order: `schema.sql` → `schema_v2.sql` … `schema_v24.sql` → `sample_data.sql`,
-   then the two PHP seeders. Every file is idempotent, so re-running is safe.
-
-   Via shell (this loops the whole chain in the correct numeric order):
    ```bash
-   C:\xampp\mysql\bin\mysql.exe -u root < database\schema.sql
-   for /L %i in (2,1,24) do C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v%i.sql
-   C:\xampp\mysql\bin\mysql.exe -u root pwf < database\sample_data.sql
-   C:\xampp\php\php.exe database\seed_v6.php
-   C:\xampp\php\php.exe database\seed_email.php
+   C:\xampp\mysql\bin\mysql.exe -u root -e "CREATE DATABASE pwf CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+   C:\xampp\mysql\bin\mysql.exe -u root pwf < database\eduskill.sql
    ```
-   (In PowerShell use `2..24 | % { cmd /c "C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v$_.sql" }`.)
 
-   In phpMyAdmin, import the same files in the same order — `schema.sql` first,
-   then `schema_v2` through `schema_v24` in ascending numeric order (note that
-   `schema_v10` comes after `schema_v9`, not after `schema_v1`), then
-   `sample_data.sql`.
+   In phpMyAdmin: create the database, click **into** it in the left sidebar,
+   then Import → `database/eduskill.sql`. (The file has no `USE` statement, so
+   it applies to whichever database is selected.)
+
+   The file has two sections. On an empty database run the whole thing —
+   Section 2 is idempotent and applies cleanly on top. On a database that
+   already holds real data, run **Section 2 only**; Section 1 begins every
+   table with `DROP TABLE IF EXISTS`.
 
    **Verify** before moving on — you should get 130 tables:
    ```
@@ -40,12 +38,12 @@
 1. **Upload** all files to `public_html/` (or a subfolder). Keep the folder
    structure intact.
 2. **Create a MySQL database + user** in cPanel and grant all privileges.
-3. **Import** the full migration chain (phpMyAdmin → Import), in the same order
-   as step A.3 — `schema.sql`, then `schema_v2` … `schema_v24` in ascending
-   numeric order, then `sample_data.sql`. Skipping any file leaves tables
-   missing and pages will fatal on first use. Omit `sample_data.sql` if you do
-   not want the demo content. Then run the two PHP seeders once (from SSH, or by
-   temporarily browsing to them and deleting them afterwards).
+3. **Import** `database/eduskill.sql` (phpMyAdmin → click into your database →
+   Import). One file, nothing to order and nothing to skip.
+
+   On a database that already holds real data, run **Section 2 only** — scroll
+   to the `SECTION 2` banner and paste from there into the SQL tab. Section 2
+   contains no `DROP`, `TRUNCATE` or `DELETE`.
 4. **Edit `config.php`:**
    ```php
    define('APP_ENV', 'production');           // hide errors, log them

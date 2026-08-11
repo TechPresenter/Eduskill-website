@@ -12,50 +12,50 @@
 /* 1. ---------------------------------------------------------------- TOKENS */
 :root {
     /* ---- Official EDUSKILL INDIA FOUNDATION brand palette ---- */
-    --primary:      #063566;   /* header, footer, nav, headings, primary buttons */
-    --secondary:    #084881;   /* hover, active nav, section bg, highlights      */
-    --green:        #58A42F;   /* success, impact numbers, donations, progress   */
-    --green-dark:   #308629;   /* green hover, environment / volunteer sections  */
-    --orange:       #E67B1D;   /* Donate Now, CTAs, badges, notifications        */
+    --primary:      #0B4E3D;   /* header, footer, nav, headings, primary buttons */
+    --secondary:    #174D3D;   /* hover, active nav, section bg, highlights      */
+    --green:        #2F8065;   /* success, impact numbers, donations, progress   */
+    --green-dark:   #1F5C48;   /* green hover, environment / volunteer sections  */
+    --orange:       #F15A24;   /* Donate Now, CTAs, badges, notifications        */
     --white:        #FDFEFE;
 
     /* ---- Semantic aliases (kept so existing components inherit the brand) ---- */
-    --brand:        #063566;
-    --brand-600:    #063566;
-    --brand-700:    #084881;
-    --brand-2:      #084881;
-    --accent:       #E67B1D;
-    --accent-2:     #F59E0B;
-    --success:      #58A42F;
-    --success-dark: #308629;
+    --brand:        #0B4E3D;
+    --brand-600:    #0B4E3D;
+    --brand-700:    #174D3D;
+    --brand-2:      #174D3D;
+    --accent:       #F15A24;
+    --accent-2:     #E8C52E;
+    --success:      #2F8065;
+    --success-dark: #1F5C48;
     --danger:       #DC2626;
-    --warning:      #E67B1D;
-    --info:         #084881;
+    --warning:      #F15A24;
+    --info:         #174D3D;
 
-    --grad-brand:   linear-gradient(135deg, #063566 0%, #084881 100%);
-    --grad-primary: linear-gradient(135deg, #063566 0%, #084881 100%);
-    --grad-green:   linear-gradient(135deg, #58A42F 0%, #308629 100%);
-    --grad-cta:     linear-gradient(135deg, #063566 0%, #58A42F 100%);
-    --grad-donate:  linear-gradient(135deg, #E67B1D 0%, #F59E0B 100%);
-    --grad-accent:  linear-gradient(135deg, #E67B1D 0%, #F59E0B 100%);
-    --grad-hero:    linear-gradient(135deg, rgba(6,53,102,.94) 0%, rgba(8,72,129,.88) 100%);
+    --grad-brand:   linear-gradient(135deg, #0B4E3D 0%, #174D3D 100%);
+    --grad-primary: linear-gradient(135deg, #0B4E3D 0%, #174D3D 100%);
+    --grad-green:   linear-gradient(135deg, #2F8065 0%, #1F5C48 100%);
+    --grad-cta:     linear-gradient(135deg, #0B4E3D 0%, #2F8065 100%);
+    --grad-donate:  linear-gradient(135deg, #F15A24 0%, #E8C52E 100%);
+    --grad-accent:  linear-gradient(135deg, #F15A24 0%, #E8C52E 100%);
+    --grad-hero:    linear-gradient(135deg, rgba(11,78,61,.94) 0%, rgba(23,77,61,.88) 100%);
     --grad-soft:    linear-gradient(180deg, #FFFFFF 0%, #F1F6FB 100%);
 
     --bg:           #FFFFFF;
     --bg-alt:       #F1F6FB;
     --surface:      #FDFEFE;
     --surface-2:    #F4F8FC;
-    --text:         #063566;
+    --text:         #0B4E3D;
     --text-soft:    #374151;
     --muted:        #6B7280;
     --border:       #E5E7EB;
     --border-soft:  #EEF2F7;
-    --ring:         rgba(8,72,129,.35);
+    --ring:         rgba(23,77,61,.35);
 
-    --shadow-sm:    0 1px 2px rgba(6,53,102,.07);
-    --shadow:       0 4px 16px rgba(6,53,102,.10);
-    --shadow-lg:    0 18px 40px rgba(6,53,102,.16);
-    --shadow-brand: 0 12px 30px rgba(6,53,102,.30);
+    --shadow-sm:    0 1px 2px rgba(11,78,61,.07);
+    --shadow:       0 4px 16px rgba(11,78,61,.10);
+    --shadow-lg:    0 18px 40px rgba(11,78,61,.16);
+    --shadow-brand: 0 12px 30px rgba(11,78,61,.30);
 
     --radius:       14px;
     --radius-sm:    10px;
@@ -86,12 +86,12 @@
     --brand-600:    #4E9BE0;
     --brand-700:    #7BB8EC;
     --brand-2:      #7BB8EC;
-    --green:        #7BC94F;
-    --success:      #7BC94F;
+    --green:        #4CA383;
+    --success:      #4CA383;
     --orange:       #F59440;
     --accent:       #F59440;
     --grad-soft:    linear-gradient(180deg, #041F3D 0%, #06294D 100%);
-    --grad-hero:    linear-gradient(135deg, rgba(4,31,61,.95) 0%, rgba(8,72,129,.90) 100%);
+    --grad-hero:    linear-gradient(135deg, rgba(4,31,61,.95) 0%, rgba(23,77,61,.90) 100%);
     --shadow-sm:    0 1px 2px rgba(0,0,0,.45);
     --shadow:       0 6px 20px rgba(0,0,0,.5);
     --shadow-lg:    0 20px 46px rgba(0,0,0,.6);
@@ -105,7 +105,7 @@
         --text: #EAF2FB; --text-soft: #C7D8EA; --muted: #93A9C2;
         --border: #0E4478; --border-soft: #0B3862;
         --brand: #4E9BE0; --brand-600: #4E9BE0; --brand-700: #7BB8EC; --brand-2: #7BB8EC;
-        --green: #7BC94F; --success: #7BC94F; --orange: #F59440; --accent: #F59440;
+        --green: #4CA383; --success: #4CA383; --orange: #F59440; --accent: #F59440;
         --grad-soft: linear-gradient(180deg, #041F3D 0%, #06294D 100%);
         --shadow: 0 6px 20px rgba(0,0,0,.5); --shadow-lg: 0 20px 46px rgba(0,0,0,.6);
         --ring: rgba(78,155,224,.5);
@@ -207,8 +207,8 @@ p  { margin: 0 0 1rem; }
 .btn:hover { transform: translateY(-2px); }
 .btn:active { transform: translateY(0); }
 .btn-primary { background: var(--grad-brand); color: #fff; box-shadow: var(--shadow-brand); }
-.btn-primary:hover { color: #fff; box-shadow: 0 16px 34px rgba(6,53,102,.4); }
-.btn-accent { background: var(--grad-accent); color: #fff; box-shadow: 0 12px 30px rgba(230,123,29,.32); }
+.btn-primary:hover { color: #fff; box-shadow: 0 16px 34px rgba(11,78,61,.4); }
+.btn-accent { background: var(--grad-accent); color: #fff; box-shadow: 0 12px 30px rgba(241,90,36,.32); }
 .btn-accent:hover { color: #fff; }
 .btn-secondary { background: var(--surface-2); color: var(--text); }
 .btn-outline { background: transparent; border-color: var(--brand-600); color: var(--brand-600); }
@@ -247,7 +247,16 @@ p  { margin: 0 0 1rem; }
 }
 .card-3d::before {
     content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity var(--transition);
-    background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 0%), rgba(6,53,102,.12), transparent 42%);
+    background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 0%), rgba(11,78,61,.12), transparent 42%);
+    /* Decorative sheen only — it must never take a click.
+       Being absolutely positioned with inset:0, this pseudo-element covers the
+       whole card and, as a positioned box, hit-tests ABOVE the card's static
+       in-flow children. Every form control inside a .card-3d was therefore
+       unclickable: the newsletter email field on /blogs looked and measured
+       perfectly normal (visible, enabled, pointer-events:auto) while
+       elementFromPoint over it returned the CARD. Tapping it did nothing, which
+       is why it read as "cannot type". */
+    pointer-events: none;
 }
 .card-3d:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
 .card-3d:hover::before { opacity: 1; }
@@ -266,13 +275,13 @@ p  { margin: 0 0 1rem; }
     width: 60px; height: 60px; border-radius: 16px; display: grid; place-items: center;
     font-size: 1.6rem; color: #fff; background: var(--grad-brand); box-shadow: var(--shadow-brand);
 }
-.icon-badge.accent { background: var(--grad-accent); box-shadow: 0 10px 24px rgba(230,123,29,.3); }
+.icon-badge.accent { background: var(--grad-accent); box-shadow: 0 10px 24px rgba(241,90,36,.3); }
 
 /* Badges / chips */
 .badge { display: inline-block; padding: .3rem .75rem; font-size: .72rem; font-weight: 700; border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: .04em; }
-.badge-brand { background: rgba(6,53,102,.12); color: var(--brand-600); }
-.badge-accent { background: rgba(230,123,29,.15); color: var(--accent-2); }
-.badge-success { background: rgba(88,164,47,.14); color: var(--success); }
+.badge-brand { background: rgba(11,78,61,.12); color: var(--brand-600); }
+.badge-accent { background: rgba(241,90,36,.15); color: var(--accent-2); }
+.badge-success { background: rgba(47,128,101,.14); color: var(--success); }
 .badge-danger { background: rgba(220,38,38,.12); color: var(--danger); }
 .badge-muted { background: var(--surface-2); color: var(--muted); }
 .chip { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .85rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-full); font-size: .82rem; color: var(--text-soft); }
@@ -304,10 +313,10 @@ p  { margin: 0 0 1rem; }
 
 /* Alerts */
 .alert { padding: 1rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 1rem; border: 1px solid transparent; font-size: .95rem; }
-.alert-success { background: rgba(88,164,47,.1); border-color: rgba(88,164,47,.3); color: #308629; }
+.alert-success { background: rgba(47,128,101,.1); border-color: rgba(47,128,101,.3); color: #1F5C48; }
 .alert-error, .alert-danger { background: rgba(220,38,38,.08); border-color: rgba(220,38,38,.3); color: #b91c1c; }
-.alert-warning { background: rgba(230,123,29,.1); border-color: rgba(230,123,29,.3); color: #9A5313; }
-.alert-info { background: rgba(8,72,129,.1); border-color: rgba(8,72,129,.3); color: #084881; }
+.alert-warning { background: rgba(241,90,36,.1); border-color: rgba(241,90,36,.3); color: #9A5313; }
+.alert-info { background: rgba(23,77,61,.1); border-color: rgba(23,77,61,.3); color: #174D3D; }
 
 /* Flash toast container */
 .flash-stack { position: fixed; top: calc(var(--header-h) + 12px); right: 16px; z-index: 1200; display: flex; flex-direction: column; gap: .6rem; max-width: 360px; }
@@ -359,7 +368,7 @@ p  { margin: 0 0 1rem; }
     -webkit-backdrop-filter: blur(16px) saturate(160%); border-bottom: 1px solid var(--border);
     transition: box-shadow var(--transition), background var(--transition);
 }
-:root[data-theme="dark"] .navbar { background: rgba(11,17,32,.72); }
+:root[data-theme="dark"] .navbar { background: color-mix(in srgb, var(--primary, #0B4E3D) 42%, rgba(0,0,0,.82)); }
 .navbar.is-scrolled { box-shadow: var(--shadow); }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 100%; gap: 1rem; }
 .nav-brand { display: flex; align-items: center; gap: .65rem; font-weight: 800; font-size: 1.15rem; color: var(--text); }
@@ -368,7 +377,7 @@ p  { margin: 0 0 1rem; }
 .nav-brand .brand-name small { display: block; font-size: .62rem; font-weight: 600; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
 .nav-menu { display: flex; align-items: center; gap: .35rem; list-style: none; }
 .nav-link { position: relative; padding: .55rem .85rem; font-weight: 600; font-size: .93rem; color: var(--text-soft); border-radius: var(--radius-sm); }
-.nav-link:hover, .nav-link.is-active { color: var(--brand-600); background: rgba(6,53,102,.08); }
+.nav-link:hover, .nav-link.is-active { color: var(--primary, #0B4E3D); background: color-mix(in srgb, var(--primary, #0B4E3D) 8%, transparent); }
 .nav-actions { display: flex; align-items: center; gap: .6rem; }
 
 .has-dropdown { position: relative; }
@@ -403,50 +412,70 @@ p  { margin: 0 0 1rem; }
 .drawer-overlay.is-open { opacity: 1; visibility: visible; }
 .drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
 
-/* ============================== PREMIUM NGO FOOTER ==============================
-   Deep brand navy with a soft green/orange aura, a gradient top rule and
-   generous spacing. Colours come from the official EDUSKILL palette.
+/* ============================== NGO FOOTER ======================================
+   The footer closes the page on the SAME brand field the hero opens it on:
+   a flat deep green carrying two very soft blooms (yellow, then gold) exactly
+   as .hx-panel does, so the top and bottom of every page read as one surface.
+
+   It was previously a navy field (#174D3D → #0B4E3D → #0B3A2E) with cool
+   blue-grey text, which put a completely different hue at the bottom of a page
+   whose hero is forest green. Every colour here now resolves through the Theme
+   Engine, so changing the brand colour moves the header, hero and footer
+   together instead of leaving the footer behind.
+
+   The footer-scoped tokens below are the only place footer colour is decided;
+   the rules that follow (and the refinement layer in ui.css) consume them.
    ============================================================================= */
 .footer {
-    position: relative; isolation: isolate; padding-top: 4.5rem; color: #C7D9EC;
+    /* Field */
+    --f-field:  var(--footer-bg, #0F4537);
+    --f-deep:   color-mix(in srgb, var(--footer-bg, #0F4537) 72%, #000);
+    /* Ink — warm neutrals, never blue-grey, so they sit on green */
+    --f-ink:    rgba(255,255,255,.74);
+    --f-ink-2:  rgba(255,255,255,.60);
+    --f-line:   rgba(255,255,255,.12);
+    --f-glass:  rgba(255,255,255,.055);
+    /* Accents lifted straight from the hero: yellow highlight, orange CTA */
+    --f-accent: var(--yellow, #FFE987);
+    --f-gold:   var(--gold, #E8C52E);
+    /* Button surfaces use the AA-safe deeper mix (white label 4.60:1) plus a
+       white inner hairline for their boundary; --f-flame stays full-strength for
+       decorative marks like the footer heart and the top rule, which need to
+       read against the green. */
+    --f-cta:    var(--accent-ink, #CA4C1E);
+    --f-flame:  var(--accent, #F15A24);
+
+    position: relative; isolation: isolate; padding-top: 4.5rem; color: var(--f-ink);
     background:
-        radial-gradient(900px circle at 12% 0%, rgba(88,164,47,.14), transparent 55%),
-        radial-gradient(760px circle at 88% 10%, rgba(230,123,29,.12), transparent 55%),
-        linear-gradient(165deg, #084881 0%, #063566 42%, #042A52 100%);
+        radial-gradient(72rem 40rem at 6% -8%,  color-mix(in srgb, var(--f-accent) 13%, transparent), transparent 62%),
+        radial-gradient(56rem 34rem at 94% 6%,  color-mix(in srgb, var(--f-gold) 9%, transparent),   transparent 60%),
+        linear-gradient(180deg, var(--primary, #0B4E3D) 0%, var(--f-field) 48%, var(--f-deep) 100%);
 }
-/* Gradient hairline across the very top of the footer */
-.footer::before {
-    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--secondary) 30%, var(--green) 65%, var(--orange));
-}
-/* Subtle dot texture for depth */
-.footer::after {
-    content: ""; position: absolute; inset: 0; z-index: -1; opacity: .5; pointer-events: none;
-    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.06) 1px, transparent 0);
-    background-size: 26px 26px;
-}
+/* The top rule is the .footer-topline element (in flow, styled below). A second
+   absolutely-positioned ::before hairline used to sit on top of it at the same
+   3px — two rules stacked, one invisible. */
 .footer h4 {
     color: #fff; font-size: 1.05rem; margin-bottom: 1.2rem; position: relative; padding-bottom: .6rem;
 }
 .footer h4::after {
-    content: ""; position: absolute; left: 0; bottom: 0; width: 34px; height: 3px; border-radius: 3px;
-    background: linear-gradient(90deg, var(--green), var(--orange));
+    content: ""; position: absolute; left: 0; bottom: 0; width: 32px; height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--f-accent), var(--f-gold));
 }
-.footer a { color: #B7CCE2; transition: color var(--transition), transform var(--transition); }
+.footer a { color: var(--f-ink); transition: color var(--transition); }
 .footer a:hover { color: #fff; }
 .footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1.4fr; gap: 2.5rem; }
 .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: .3rem; }
-.footer-brand p { color: #A8C0D8; font-size: .95rem; }
-.footer-contact li { display: flex; gap: .6rem; align-items: flex-start; color: #B7CCE2; font-size: .92rem; margin-bottom: .6rem; }
-.footer-contact li svg { color: var(--green); flex: 0 0 auto; }
+.footer-brand p { color: var(--f-ink-2); font-size: .95rem; }
+.footer-contact li { display: flex; gap: .6rem; align-items: flex-start; color: var(--f-ink); font-size: .92rem; margin-bottom: .6rem; }
+.footer-contact li svg { color: var(--f-accent); flex: 0 0 auto; }
 .newsletter-form { display: flex; gap: .5rem; margin-top: .9rem; }
 .newsletter-form input {
     flex: 1; min-width: 0; padding: .75rem 1rem; border-radius: var(--radius-full);
     border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.07); color: #fff;
-    backdrop-filter: blur(8px); transition: border-color var(--transition), background var(--transition);
+    transition: border-color var(--transition), background var(--transition);
 }
-.newsletter-form input::placeholder { color: #8FAAC6; }
-.newsletter-form input:focus { outline: none; border-color: var(--green); background: rgba(255,255,255,.12); }
+.newsletter-form input::placeholder { color: rgba(255,255,255,.48); }
+.newsletter-form input:focus { outline: none; border-color: var(--f-accent); background: rgba(255,255,255,.12); }
 @media (max-width: 480px) {
     .newsletter-form { flex-wrap: wrap; }
     .newsletter-form input { flex-basis: 160px; }
@@ -454,27 +483,29 @@ p  { margin: 0 0 1rem; }
 .social-links { display: flex; gap: .6rem; margin-top: 1.1rem; }
 .social-links a {
     width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%;
-    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: #D6E4F2;
-    transition: all var(--transition);
+    background: var(--f-glass); border: 1px solid var(--f-line); color: rgba(255,255,255,.86);
+    transition: background var(--transition), color var(--transition),
+                border-color var(--transition), transform var(--transition);
 }
 .social-links a:hover {
-    background: var(--grad-green); border-color: transparent; color: #fff;
-    transform: translateY(-3px); box-shadow: 0 10px 22px -8px rgba(88,164,47,.6);
+    background: var(--f-accent); border-color: transparent; color: var(--primary, #0B4E3D);
+    transform: translateY(-2px);
 }
 /* Trust / credential strip */
 .footer-trust {
     display: flex; flex-wrap: wrap; gap: .7rem 1.6rem; margin-top: 2.2rem; padding-top: 1.5rem;
-    border-top: 1px solid rgba(255,255,255,.12); font-size: .85rem; color: #B7CCE2;
+    border-top: 1px solid var(--f-line); font-size: .85rem; color: var(--f-ink);
 }
 .footer-trust span { display: inline-flex; align-items: center; gap: .45rem; }
-.footer-trust svg { color: var(--green); width: 1.05em; height: 1.05em; }
+.footer-trust svg { color: var(--f-accent); width: 1.05em; height: 1.05em; }
 .footer-bottom {
-    border-top: 1px solid rgba(255,255,255,.12); margin-top: 2.5rem; padding: 1.5rem 0;
-    text-align: center; font-size: .85rem; color: #9DB6CF; background: rgba(4,32,61,.45);
+    border-top: 1px solid var(--f-line); margin-top: 2.5rem; padding: 1.5rem 0;
+    text-align: center; font-size: .85rem; color: var(--f-ink-2);
+    background: color-mix(in srgb, var(--f-deep) 82%, #000);
 }
-.footer-bottom a { color: #B7CCE2; }
-.footer-bottom a:hover { color: var(--orange); }
-.footer-heart { color: var(--orange); display: inline-flex; vertical-align: -.15em; }
+.footer-bottom a { color: var(--f-ink-2); }
+.footer-bottom a:hover { color: #fff; }
+.footer-heart { color: var(--f-flame); display: inline-flex; vertical-align: -.15em; }
 
 .back-to-top {
     position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; border-radius: 50%;
@@ -522,7 +553,7 @@ p  { margin: 0 0 1rem; }
 .gallery-item { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; cursor: pointer; }
 .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
 .gallery-item:hover img { transform: scale(1.08); }
-.gallery-item::after { content: "🔍"; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(6,53,102,.55); color: #fff; font-size: 1.6rem; opacity: 0; transition: opacity var(--transition); }
+.gallery-item::after { content: "🔍"; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(11,78,61,.55); color: #fff; font-size: 1.6rem; opacity: 0; transition: opacity var(--transition); }
 .gallery-item:hover::after { opacity: 1; }
 
 /* Lightbox */
@@ -571,7 +602,7 @@ p  { margin: 0 0 1rem; }
 .shadow { box-shadow: var(--shadow); }
 .list-check { list-style: none; display: flex; flex-direction: column; gap: .7rem; }
 .list-check li { position: relative; padding-left: 1.9rem; color: var(--text-soft); }
-.list-check li::before { content: "✓"; position: absolute; left: 0; top: 0; width: 1.35rem; height: 1.35rem; background: rgba(88,164,47,.14); color: var(--success); border-radius: 50%; display: grid; place-items: center; font-size: .8rem; font-weight: 800; }
+.list-check li::before { content: "✓"; position: absolute; left: 0; top: 0; width: 1.35rem; height: 1.35rem; background: rgba(47,128,101,.14); color: var(--success); border-radius: 50%; display: grid; place-items: center; font-size: .8rem; font-weight: 800; }
 
 /* Prose (blog / page content) */
 .prose { color: var(--text-soft); line-height: 1.8; font-size: 1.05rem; }
@@ -605,29 +636,35 @@ p  { margin: 0 0 1rem; }
    10. PREMIUM HEADER TOP-BAR + ANIMATED FOOTER (design upgrade)
    ============================================================================ */
 
-/* --- Top utility bar above the navbar --- */
+/* --- Top utility bar above the navbar ---
+   A still strip in the deepest step of the brand green, so the header stack
+   reads top-to-bottom as: contact strip (dark green) → navbar (white) → hero
+   (brand green). It previously ran a 200%-wide navy gradient panning forever
+   above the fold, which both fought the green hero for hue and never stopped
+   costing paint. Colour comes from --primary so it tracks the Theme Engine. */
 .topbar-utility {
-    background: linear-gradient(90deg, #084881 0%, #063566 40%, #084881 100%);
-    background-size: 200% 100%;
-    color: #eaf2ff;
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 84%, #000);
+    color: rgba(255,255,255,.82);
     font-size: .82rem;
-    animation: tuShimmer 12s linear infinite;
     position: relative;
     z-index: 901;
 }
 @keyframes tuShimmer { 0% { background-position: 0 0; } 100% { background-position: 200% 0; } }
 .topbar-utility-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 40px; }
 .tu-left, .tu-right { display: flex; align-items: center; gap: 1rem; }
-.tu-left a, .tu-right a { color: #eaf2ff; display: inline-flex; align-items: center; gap: .4rem; font-weight: 500; }
+.tu-left a, .tu-right a { color: rgba(255,255,255,.82); display: inline-flex; align-items: center; gap: .4rem; font-weight: 500; }
 .tu-left a:hover, .tu-right a:hover { color: #fff; }
-.tu-sep { width: 1px; height: 16px; background: rgba(255,255,255,.35); }
-.tu-note { display: inline-flex; align-items: center; gap: .4rem; opacity: .95; font-weight: 600; }
+/* Direct children only — the social pills inside .tu-right keep their own colour. */
+.tu-left > a svg, .tu-right > a svg { color: var(--yellow, #FFE987); }
+.tu-sep { width: 1px; height: 16px; background: rgba(255,255,255,.22); }
+.tu-note { display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; color: rgba(255,255,255,.72); }
 .tu-social { display: flex; gap: .35rem; }
 .tu-social a {
     width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%;
-    background: rgba(255,255,255,.16); color: #fff; font-size: .8rem; transition: all var(--transition);
+    background: rgba(255,255,255,.10); color: rgba(255,255,255,.88); font-size: .8rem;
+    transition: background var(--transition), color var(--transition);
 }
-.tu-social a:hover { background: #fff; color: var(--brand-700); transform: translateY(-2px) scale(1.08); }
+.tu-social a:hover { background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D); }
 @media (max-width: 860px) { .tu-note, .tu-hide-sm { display: none; } }
 @media (max-width: 560px) { .topbar-utility { font-size: .74rem; } .tu-left { gap: .6rem; } }
 @media (max-width: 480px) {
@@ -640,11 +677,11 @@ p  { margin: 0 0 1rem; }
 
 /* --- Stylish animated CTA (used in navbar) --- */
 .btn-glow {
-    position: relative; background: linear-gradient(120deg, #E67B1D, #E67B1D, #ef4444, #E67B1D);
+    position: relative; background: linear-gradient(120deg, #F15A24, #F15A24, #ef4444, #F15A24);
     background-size: 300% 100%; color: #fff; border: 0; animation: btnGlow 6s ease infinite;
-    box-shadow: 0 8px 22px rgba(230,123,29,.4);
+    box-shadow: 0 8px 22px rgba(241,90,36,.4);
 }
-.btn-glow:hover { color: #fff; transform: translateY(-2px) scale(1.03); box-shadow: 0 14px 30px rgba(230,123,29,.5); }
+.btn-glow:hover { color: #fff; transform: translateY(-2px) scale(1.03); box-shadow: 0 14px 30px rgba(241,90,36,.5); }
 @keyframes btnGlow { 0%,100% { background-position: 0 50%; } 50% { background-position: 100% 50%; } }
 .btn-glow .heart { display: inline-block; animation: pulseHeart 1.4s ease-in-out infinite; }
 @keyframes pulseHeart { 0%,100% { transform: scale(1); } 50% { transform: scale(1.25); } }
@@ -658,107 +695,29 @@ p  { margin: 0 0 1rem; }
 .nav-link:hover::before, .nav-link.is-active::before { transform: scaleX(1); }
 
 /* =============================================================================
-   PREMIUM ANIMATED FOOTER
+   FOOTER — structural bits only
+   -----------------------------------------------------------------------------
+   Colour lives in the `.footer` token block above and the refinement layer in
+   ui.css. What used to be here was a second full navy paint job (mesh + four
+   animated aurora blobs + a panning rainbow top border) that the ui.css layer
+   then painted over again — three stacked treatments of the same surface.
    ============================================================================ */
-.footer.footer-premium {
-    position: relative; overflow: hidden;
-    background:
-        radial-gradient(900px circle at 12% 0%, rgba(6,53,102,.42), transparent 45%),
-        radial-gradient(800px circle at 88% 20%, rgba(8,72,129,.30), transparent 45%),
-        radial-gradient(700px circle at 60% 100%, rgba(230,123,29,.18), transparent 50%),
-        linear-gradient(165deg, #084881 0%, #063566 42%, #042A52 100%);
-    color: #C7D9EC;
-}
-/* Animated floating colour blobs */
-.footer-premium .footer-aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
-.footer-premium .footer-aurora span {
-    position: absolute; border-radius: 50%; filter: blur(60px); opacity: .5; mix-blend-mode: screen;
-    animation: auroraFloat 16s ease-in-out infinite;
-}
-.footer-premium .footer-aurora span:nth-child(1) { width: 360px; height: 360px; left: -80px; top: -60px; background: #063566; animation-delay: 0s; }
-.footer-premium .footer-aurora span:nth-child(2) { width: 300px; height: 300px; right: -60px; top: 20px; background: #084881; animation-delay: -4s; }
-.footer-premium .footer-aurora span:nth-child(3) { width: 320px; height: 320px; left: 40%; bottom: -120px; background: #308629; animation-delay: -8s; }
-.footer-premium .footer-aurora span:nth-child(4) { width: 220px; height: 220px; right: 25%; bottom: -60px; background: #E67B1D; opacity: .30; animation-delay: -12s; }
-@keyframes auroraFloat {
-    0%,100% { transform: translate(0,0) scale(1); }
-    33% { transform: translate(30px,-24px) scale(1.12); }
-    66% { transform: translate(-24px,18px) scale(.94); }
-}
-/* Animated gradient top border */
+.footer.footer-premium { position: relative; overflow: hidden; }
+
+/* Top rule — the one accent line, static, in the hero's yellow → gold → orange. */
 .footer-premium .footer-topline {
-    height: 4px; width: 100%;
-    background: linear-gradient(90deg, #E67B1D, #4ca832, #084881, #063566, #E67B1D);
-    background-size: 300% 100%; animation: tuShimmer 8s linear infinite; position: relative; z-index: 2;
+    height: 3px; width: 100%; position: relative; z-index: 2;
+    background: linear-gradient(90deg, var(--f-accent) 0%, var(--f-gold) 42%, var(--f-flame) 100%);
 }
 .footer-premium .container, .footer-premium .footer-bottom { position: relative; z-index: 2; }
 
-/* Newsletter — glassy glowing */
-.footer-premium .newsletter-cta {
-    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
-    border-radius: var(--radius-lg); padding: 1.5rem; backdrop-filter: blur(8px); margin-bottom: 2.5rem;
-    display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.5rem; align-items: center;
-}
-.footer-premium .newsletter-cta h3 { color: #fff; margin-bottom: .35rem; }
-.footer-premium .newsletter-cta p { color: #B7CCE2; margin: 0; font-size: .92rem; }
 .footer-premium .newsletter-form { margin: 0; }
-.footer-premium .newsletter-form input {
-    background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.2); color: #fff;
-    transition: all var(--transition);
-}
-.footer-premium .newsletter-form input:focus {
-    outline: none; border-color: #7BC94F; box-shadow: 0 0 0 4px rgba(52,211,153,.25), 0 0 22px rgba(20,83,45,.45);
-    background: rgba(255,255,255,.16);
-}
-.footer-premium .newsletter-form input::placeholder { color: #9ec2ad; }
-.footer-premium .newsletter-form .btn { animation: btnGlow 6s ease infinite; background: linear-gradient(120deg,#063566,#084881,#308629,#063566); background-size: 300% 100%; box-shadow: 0 8px 22px rgba(20,83,45,.5); }
-
-/* Footer links — no markers; hover = brighten + bold + soft glow */
-.footer-premium .footer-col ul a {
-    position: relative; display: inline-block; padding: .05rem 0;
-    color: #A9BDD4; font-weight: 500;
-    transition: color .22s ease, text-shadow .22s ease, font-weight .22s ease;
-}
-.footer-premium .footer-col ul a::before,
-.footer-premium .footer-col ul a::after { content: none !important; }
-.footer-premium .footer-col ul a:hover,
-.footer-premium .footer-col ul a:focus-visible {
-    color: #fff; font-weight: 700;
-    text-shadow: 0 0 10px rgba(255,255,255,.55), 0 0 22px rgba(88,164,47,.45);
-}
 .footer-premium .footer-col li { margin-bottom: .18rem; }
 .footer-premium h4 { position: relative; padding-bottom: .7rem; }
-.footer-premium h4::after {
-    content: ""; position: absolute; left: 0; bottom: 0; width: 40px; height: 3px; border-radius: 3px;
-    background: linear-gradient(90deg, #7BC94F, #E67B1D);
-}
-
-/* Social buttons — gradient ring, glow on hover */
-.footer-premium .social-links a {
-    position: relative; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
-    color: #d6ebdd; overflow: hidden; transition: all var(--transition);
-}
-.footer-premium .social-links a::after {
-    content: ""; position: absolute; inset: 0; background: linear-gradient(135deg,#063566,#084881); opacity: 0; transition: opacity var(--transition); z-index: -1;
-}
-.footer-premium .social-links a:hover {
-    color: #fff; transform: translateY(-4px) scale(1.1); border-color: transparent;
-    box-shadow: 0 10px 26px rgba(6,53,102,.5);
-}
-.footer-premium .social-links a:hover::after { opacity: 1; }
-
-.footer-premium .footer-contact li { color: #B7CCE2; }
-.footer-premium .footer-bottom { border-top: 1px solid rgba(255,255,255,.1); }
-.footer-premium .footer-bottom a { color: #cdd9f0; }
-.footer-premium .footer-bottom a:hover { color: #fff; }
-
-@media (max-width: 768px) {
-    .footer-premium .newsletter-cta { grid-template-columns: 1fr; text-align: center; }
-    .footer-premium .newsletter-cta .newsletter-form { justify-content: center; }
-}
 
 /* =============================================================================
    EDUSKILL INDIA FOUNDATION — brand button & link specification
-   Primary #063566 · Secondary #084881 · Green #58A42F/#308629 · Orange #E67B1D
+   Primary #0B4E3D · Secondary #174D3D · Green #2F8065/#1F5C48 · Orange #F15A24
    ============================================================================= */
 .btn-primary            { background: var(--primary); color: #fff; border-color: var(--primary); }
 .btn-primary:hover      { background: var(--secondary); border-color: var(--secondary); color: #fff; }
@@ -767,17 +726,19 @@ p  { margin: 0 0 1rem; }
 .btn-success            { background: var(--green); color: #fff; border-color: var(--green); }
 .btn-success:hover      { background: var(--green-dark); border-color: var(--green-dark); }
 .btn-donate,
-.btn-orange             { background: var(--orange); color: #fff; border-color: var(--orange);
-                          box-shadow: 0 10px 26px -10px rgba(230,123,29,.55); }
+.btn-orange             { background: var(--accent-ink); color: #fff; border-color: transparent; }
 .btn-donate:hover,
-.btn-orange:hover       { background: var(--grad-donate); color: #fff; transform: translateY(-2px);
-                          box-shadow: 0 16px 34px -12px rgba(230,123,29,.65); }
+.btn-orange:hover       { background: color-mix(in srgb, var(--accent) 74%, #000); color: #fff; transform: translateY(-2px); }
 .btn-white              { background: var(--white); color: var(--primary); }
 .btn-white:hover        { background: var(--white); color: var(--secondary); }
 
-/* Donate links/buttons anywhere in the nav or hero pick up the CTA orange */
-a[href*="donate"].btn-primary { background: var(--orange); border-color: var(--orange); }
-a[href*="donate"].btn-primary:hover { background: var(--grad-donate); }
+/* Any link whose href mentions donate picks up the CTA colour wherever it sits.
+   This is the most specific button rule on the site — `a[href*="donate"].btn-primary`
+   is (0,2,1), so it outranked the design-system's `.on-dark .btn-primary` and
+   forced full-strength --orange back onto every donate button, taking their white
+   labels to 3.37:1. It resolves through --accent-ink now like the rest. */
+a[href*="donate"].btn-primary { background: var(--accent-ink); border-color: transparent; }
+a[href*="donate"].btn-primary:hover { background: color-mix(in srgb, var(--accent) 74%, #000); }
 
 /* Headings + links follow the brand blues */
 h1, h2, h3, h4, h5, h6  { color: var(--primary); }

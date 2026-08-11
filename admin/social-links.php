@@ -166,7 +166,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Icon</th><th>Platform</th><th>URL</th><th>Status</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Icon</th><th>Platform</th><th>URL</th><th>Status</th><th>Order</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
@@ -178,7 +178,7 @@ include __DIR__ . '/partials/head.php';
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('social-links?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('social-links')) ?>" data-confirm="Delete this social link permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('social-links')) ?>" data-confirm="Delete this social link permanently?" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -193,7 +193,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('link') ?></div>No social links yet. <a href="<?= e(admin_url('social-links?action=create')) ?>">Add your first link</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('link') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No social links match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No link has that platform name or URL. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('social-links')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('social-links?action=create')) ?>"><?= lucide('plus') ?> Add your first link</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No social links yet</p>
+                                <p class="es-text">These are the icons in the site footer and header. Each one needs a platform and a full https:// URL.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('social-links?action=create')) ?>"><?= lucide('plus') ?> Add your first link</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

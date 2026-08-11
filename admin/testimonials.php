@@ -184,7 +184,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Photo</th><th>Name</th><th>Message</th><th>Rating</th><th>Status</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Photo</th><th>Name</th><th>Message</th><th>Rating</th><th>Status</th><th>Order</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
@@ -200,7 +200,7 @@ include __DIR__ . '/partials/head.php';
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('testimonials?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('testimonials')) ?>" data-confirm="Delete this testimonial permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('testimonials')) ?>" data-confirm="Delete this testimonial permanently?" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -215,7 +215,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('message-square') ?></div>No testimonials yet. <a href="<?= e(admin_url('testimonials?action=create')) ?>">Add your first testimonial</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('message-square') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No testimonials match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No testimonial has that name or message. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('testimonials')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('testimonials?action=create')) ?>"><?= lucide('plus') ?> Add your first testimonial</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No testimonials yet</p>
+                                <p class="es-text">Testimonials are the quotes shown on the homepage and the about page. Each one carries a name, a photo and a rating.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('testimonials?action=create')) ?>"><?= lucide('plus') ?> Add your first testimonial</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

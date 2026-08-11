@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
             labels: ['Enrolled', 'Active', 'Completed', 'Dropped'],
             datasets: [{
                 data: [<?= (int) $statusData['enrolled'] ?>, <?= (int) $statusData['active'] ?>, <?= (int) $statusData['completed'] ?>, <?= (int) $statusData['dropped'] ?>],
-                backgroundColor: ['#084881', '#58A42F', '#94a3b8', '#ef4444'],
+                backgroundColor: ['#174D3D', '#2F8065', '#94a3b8', '#ef4444'],
             }]
         },
         options: { plugins: { legend: { position: 'bottom' } }, cutout: '62%' }

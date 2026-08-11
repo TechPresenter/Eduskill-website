@@ -1,0 +1,2520 @@
+/* =============================================================================
+   EDUSKILL DESIGN SYSTEM
+   -----------------------------------------------------------------------------
+   Loads last, on purpose. The stylesheets before it accumulated 186 distinct
+   box-shadows and radii spread across 8px/9px/10px/11px/12px/14px/16px next to
+   the radius tokens, plus 20 overlapping .btn-* variants. Rewriting all of that
+   in place would touch hundreds of declarations with no way to verify each one;
+   this layer instead defines the scales once and normalises the components that
+   actually carry the brand.
+
+   Colour comes from the Theme Engine (--primary, --accent, --yellow, --gold,
+   --border, --text...), so everything here follows the admin's palette.
+   ========================================================================== */
+
+:root {
+    /* ---- Elevation: five steps, all one hue family, all soft ------------- */
+    --elev-1: 0 1px 2px rgba(11, 45, 35, .06);
+    --elev-2: 0 2px 8px -2px rgba(11, 45, 35, .10);
+    --elev-3: 0 8px 24px -8px rgba(11, 45, 35, .16);
+    --elev-4: 0 18px 44px -16px rgba(11, 45, 35, .22);
+    --elev-5: 0 32px 70px -28px rgba(11, 45, 35, .30);
+
+    /* ---- Radius: "generous but not excessive" per the brief -------------- */
+    --r-xs: 6px;
+    --r-sm: 10px;
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-xl: 28px;
+    --r-pill: 999px;
+
+    /* ---- Motion --------------------------------------------------------- */
+    --ease-out: cubic-bezier(.22, 1, .36, 1);
+    --dur-fast: .18s;
+    --dur: .3s;
+    --dur-slow: .6s;
+
+    /* ---- Accent ink -------------------------------------------------------
+       The brand CTA orange (#F15A24) is a 3.37:1 pair with white — and, being
+       symmetric, also 3.37:1 as text on white. Both fail WCAG AA for normal
+       text, and the accent was used for both: white button labels AND small
+       uppercase eyebrow/label text. One step deeper (84% toward black, ≈#CA4C1E)
+       clears 4.60:1 in both directions while still reading as the same orange.
+
+       Full-strength --accent stays in use for large display type, icons, rules
+       and for button surfaces sitting on the dark green field, where the deeper
+       mix would lose its edge against the background (2.10:1 vs 3.23:1). */
+    --accent-ink: color-mix(in srgb, var(--accent, #F15A24) 84%, #000);
+
+    /* ---- Ivory ------------------------------------------------------------
+       #FEFEF1 is the warm off-white in the brand palette, and seven components
+       here reach for it (.impact-bar, .mv-card.is-accent, .fc-media,
+       .featured-story, .gal-frame, .portal-roles, and the table empty state).
+       It was declared NOWHERE in the project — every one of those was running
+       on its inline `var(--ivory, #FEFEF1)` fallback, which renders correctly
+       but means the Theme Engine could never reach any of them.
+
+       It is NOT aliased onto --surface-2. --surface-2 resolves to #F4F8FC on
+       the public site (tailwind.css:47, and theme.php's `color.surface_2`
+       default), a cool blue-grey that is not in the palette — pointing ivory at
+       it would take seven warm surfaces off-brand. Declared here as the
+       baseline, and registered as `color.ivory` in theme.php so the Theme
+       Engine's block (which loads after this file) can override it. */
+    --ivory: #FEFEF1;
+}
+
+/* =============================================================================
+   1. SECTION RHYTHM & HEADINGS
+   ========================================================================== */
+.section { padding-block: var(--section-y, clamp(3.5rem, 7vw, 7rem)); }
+
+/* Eyebrow — small uppercase label above a heading. */
+.eyebrow {
+    display: inline-flex; align-items: center; gap: .6rem;
+    font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent-ink); margin-bottom: .85rem;
+}
+.eyebrow::before {
+    content: ""; width: 26px; height: 2px; flex: none; border-radius: 2px;
+    background: currentColor;
+}
+.eyebrow.is-plain::before { display: none; }
+
+.section-head { max-width: 46rem; margin-bottom: clamp(2rem, 4vw, 3.25rem); }
+.section-head.is-centered { margin-inline: auto; text-align: center; }
+.section-head.is-centered .eyebrow { justify-content: center; }
+.section-title { margin: 0 0 .75rem; color: var(--text, #151818); text-wrap: balance; }
+.section-subtitle {
+    margin: 0; color: var(--muted, #4B6754); font-size: 1.05rem; line-height: 1.75;
+    max-width: 52ch;
+}
+.section-head.is-centered .section-subtitle { margin-inline: auto; }
+
+/* =============================================================================
+   2. BUTTONS
+   Two roles carry weight — solid accent for donate/act, outline for everything
+   else. The remaining legacy variants are normalised to the same geometry so
+   they stop looking like six different design languages on one page.
+   ========================================================================== */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
+    padding: .8rem 1.5rem; border-radius: var(--r-pill);
+    font-family: inherit; font-size: .95rem; font-weight: 700; line-height: 1.2;
+    letter-spacing: .005em; text-decoration: none; cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: transform var(--dur-fast) var(--ease-out),
+                box-shadow var(--dur) var(--ease-out),
+                background-color var(--dur) var(--ease-out),
+                border-color var(--dur) var(--ease-out),
+                color var(--dur) var(--ease-out);
+}
+.btn svg { width: 1.05em; height: 1.05em; transition: transform var(--dur) var(--ease-out); }
+.btn:hover  { transform: translateY(-2px); }
+.btn:hover svg:last-child { transform: translateX(3px); }   /* arrow slide */
+.btn:active { transform: translateY(0); }
+.btn:focus-visible {
+    outline: 2px solid var(--primary, #0B4E3D); outline-offset: 3px;
+}
+.btn[disabled], .btn.is-disabled {
+    opacity: .55; cursor: not-allowed; transform: none; box-shadow: none;
+}
+.btn.is-loading { position: relative; color: transparent !important; pointer-events: none; }
+.btn.is-loading::after {
+    content: ""; position: absolute; inset: 0; margin: auto; width: 1.1em; height: 1.1em;
+    border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%;
+    color: #fff; animation: ds-spin .7s linear infinite;
+}
+@keyframes ds-spin { to { transform: rotate(1turn); } }
+
+/* Primary action — reserved for Donate / Support / Join per the brand rules. */
+.btn-primary, .btn-donate, .btn-accent, .btn-orange, .btn-glow, .btn-grad, .btn-3d {
+    background: var(--accent-ink); color: #fff; border-color: transparent;
+    box-shadow: var(--elev-2);
+}
+.btn-primary:hover, .btn-donate:hover, .btn-accent:hover, .btn-orange:hover,
+.btn-glow:hover, .btn-grad:hover, .btn-3d:hover {
+    background: color-mix(in srgb, var(--accent, #F15A24) 74%, #000);
+    color: #fff; box-shadow: var(--elev-4);
+}
+/* On the dark green field the same deep fill only reaches 2.10:1 against the
+   background, which would leave the control without an edge. The boundary is
+   carried by a 1px white inner hairline instead (white on green is 9.67:1), so
+   the fill stays the AA-safe --accent-ink and BOTH criteria are met: 4.60:1 for
+   the label, and a clearly delineated component. Using full-strength --accent
+   here would flip it the other way — a visible edge but a 3.37:1 label. */
+.on-dark .btn-primary, .on-dark .btn-donate, .on-dark .btn-glow,
+.footer .btn-primary, .footer .btn-donate, .footer .btn-glow,
+.hx .btn-primary, .hx .btn-donate, .hx .btn-glow {
+    background: var(--accent-ink);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.34), var(--elev-2);
+}
+.on-dark .btn-primary:hover, .on-dark .btn-donate:hover, .on-dark .btn-glow:hover,
+.footer .btn-primary:hover, .footer .btn-donate:hover, .footer .btn-glow:hover,
+.hx .btn-primary:hover, .hx .btn-donate:hover, .hx .btn-glow:hover {
+    background: color-mix(in srgb, var(--accent, #F15A24) 74%, #000);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.48), var(--elev-4);
+}
+
+/* Secondary — brand green, solid. */
+.btn-secondary, .btn-info, .btn-success {
+    background: var(--primary, #0B4E3D); color: #fff; border-color: transparent;
+    box-shadow: var(--elev-2);
+}
+.btn-secondary:hover, .btn-info:hover, .btn-success:hover {
+    background: var(--secondary, #174D3D); color: #fff; box-shadow: var(--elev-4);
+}
+
+/* Tertiary — outline. */
+.btn-outline, .btn-ghost {
+    background: transparent; color: var(--primary, #0B4E3D);
+    border-color: var(--border, #C1CCB3);
+}
+.btn-outline:hover, .btn-ghost:hover {
+    background: var(--primary, #0B4E3D); color: #fff; border-color: var(--primary, #0B4E3D);
+}
+.btn-white {
+    background: #fff; color: var(--primary, #0B4E3D); border-color: transparent;
+    box-shadow: var(--elev-2);
+}
+.btn-white:hover { box-shadow: var(--elev-4); }
+
+/* On dark fields (green sections, footer, hero) an outline button must invert. */
+.on-dark .btn-outline, .on-dark .btn-ghost,
+.footer .btn-outline, .hx .btn-outline {
+    color: #fff; border-color: rgba(255,255,255,.45);
+}
+.on-dark .btn-outline:hover, .on-dark .btn-ghost:hover,
+.footer .btn-outline:hover, .hx .btn-outline:hover {
+    background: #fff; color: var(--primary, #0B4E3D); border-color: #fff;
+}
+
+.btn-sm { padding: .55rem 1.1rem; font-size: .86rem; }
+.btn-lg { padding: 1rem 2rem; font-size: 1.02rem; }
+.btn-block { display: flex; width: 100%; }
+.btn-icon { padding: .65rem; aspect-ratio: 1; border-radius: var(--r-pill); }
+
+/* =============================================================================
+   3. CARDS
+   Editorial rather than SaaS: restrained rounding, hairline border, elevation
+   only on hover, and the image doing the emotional work.
+   ========================================================================== */
+.card, .pcard, .glass-card {
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-lg);
+    box-shadow: none;
+    transition: transform var(--dur) var(--ease-out),
+                box-shadow var(--dur) var(--ease-out),
+                border-color var(--dur) var(--ease-out);
+}
+.card:hover, .pcard:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--elev-4);
+    border-color: color-mix(in srgb, var(--primary, #0B4E3D) 28%, transparent);
+}
+/* Media inside a card: clip and zoom gently on hover. */
+.card-media, .pcard-media {
+    overflow: hidden; border-radius: var(--r-md);
+}
+.card-media img, .pcard-media img {
+    display: block; width: 100%; height: 100%; object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-out);
+}
+.card:hover .card-media img, .pcard:hover .pcard-media img { transform: scale(1.045); }
+.card-title, .pcard-title { color: var(--text, #151818); }
+.card-text,  .pcard-text  { color: var(--muted, #4B6754); line-height: 1.7; }
+
+/* =============================================================================
+   4. BADGES / CHIPS
+   ========================================================================== */
+.badge, .chip, .pcard-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .3rem .75rem; border-radius: var(--r-pill);
+    font-size: .76rem; font-weight: 700; letter-spacing: .02em;
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 10%, transparent);
+    color: var(--primary, #0B4E3D); border: 0;
+}
+.badge-accent { background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D); }
+.badge-danger { background: color-mix(in srgb, var(--danger, #DC2626) 12%, transparent); color: var(--danger, #DC2626); }
+
+/* .pcard-badge is the odd one out in that list: premium.css floats it ON a
+   photograph over a dark veil, so its ink is white, not the primary that suits a
+   light surface. Grouping it above was quietly stealing that — `.pcard-badge`
+   (0,1,0) here loads after premium's `color: #fff` at the same specificity, so
+   the pill's label was rendering brand green on its fill (2.10:1 on the live
+   variant). Re-declared after the group so the later rule is the correct one.
+   White is 4.60:1 on --accent-ink (is-live) and 4.78:1 on --success (is-funded). */
+.pcard-badge, .pcard-badge.is-live, .pcard-badge.is-funded { color: #fff; }
+
+/* =============================================================================
+   5. FORMS — visible focus, honest states
+   ========================================================================== */
+.form-control, .field-float input, .field-float select, .field-float textarea,
+input[type="text"], input[type="email"], input[type="tel"], input[type="password"],
+input[type="number"], input[type="date"], input[type="search"], select, textarea {
+    border-radius: var(--r-sm);
+    border: 1.5px solid var(--border, #C1CCB3);
+    background: var(--surface, #fff);
+    color: var(--text, #151818);
+    transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+}
+.form-control:focus, .field-float input:focus, .field-float select:focus,
+.field-float textarea:focus, input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary, #0B4E3D);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #0B4E3D) 16%, transparent);
+}
+input[aria-invalid="true"], .field-error input, .is-invalid {
+    border-color: var(--danger, #DC2626);
+}
+:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; }
+
+/* =============================================================================
+   6. LINKS — animated underline
+   ========================================================================== */
+.link-underline {
+    color: var(--primary, #0B4E3D); text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1.5px; background-repeat: no-repeat; background-position: 0 100%;
+    transition: background-size var(--dur) var(--ease-out);
+}
+.link-underline:hover { background-size: 100% 1.5px; }
+
+/* =============================================================================
+   7. REDUCED MOTION — honour the OS setting everywhere in this layer
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .btn, .btn svg, .card, .pcard, .card-media img, .pcard-media img, .link-underline {
+        transition: none !important;
+    }
+    .btn:hover, .card:hover, .pcard:hover { transform: none; }
+    .card:hover .card-media img, .pcard:hover .pcard-media img { transform: none; }
+    .btn.is-loading::after { animation: none; }
+}
+
+/* =============================================================================
+   8. IMPACT BAR — the metrics strip directly beneath the hero
+   ========================================================================== */
+.impact-bar {
+    background: var(--ivory, #FEFEF1);
+    border-bottom: 1px solid var(--border, #C1CCB3);
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+.ib-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+}
+.ib-stat {
+    display: grid; justify-items: center; text-align: center; gap: .3rem;
+    padding-inline: .5rem; position: relative;
+}
+/* Hairline separators between metrics rather than boxes around them. */
+.ib-stat + .ib-stat::before {
+    content: ""; position: absolute; left: calc(clamp(1rem, 3vw, 2.5rem) / -2);
+    top: 12%; bottom: 12%; width: 1px; background: var(--border, #C1CCB3);
+}
+.ib-ico {
+    display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-pill);
+    background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D); margin-bottom: .35rem;
+}
+.ib-ico svg { width: 19px; height: 19px; }
+/* Oversized numerals — the brief's "large numerical statistics". */
+.ib-num {
+    font-family: var(--font-head, inherit);
+    font-size: clamp(2.1rem, 4.4vw, 3.4rem); font-weight: 800; line-height: 1;
+    letter-spacing: -.03em; color: var(--primary, #0B4E3D);
+    font-variant-numeric: tabular-nums;
+}
+.ib-suffix { color: var(--accent, #F15A24); }
+.ib-label {
+    font-size: .92rem; font-weight: 600; color: var(--muted, #4B6754);
+    letter-spacing: .01em;
+}
+.ib-trust {
+    list-style: none; margin: clamp(1.75rem, 3vw, 2.5rem) 0 0; padding: 0;
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: .6rem clamp(1rem, 3vw, 2.25rem);
+    border-top: 1px solid var(--border, #C1CCB3); padding-top: 1.35rem;
+}
+.ib-trust li {
+    display: inline-flex; align-items: center; gap: .45rem;
+    font-size: .86rem; font-weight: 600; color: var(--muted, #4B6754);
+}
+.ib-trust svg { width: 16px; height: 16px; color: var(--success, #2F8065); }
+
+/* Tablet: 2x2 keeps the numbers large instead of shrinking them to fit one row. */
+@media (max-width: 860px) {
+    .ib-grid { grid-template-columns: repeat(2, 1fr); row-gap: 2rem; }
+    .ib-stat:nth-child(odd)::before { display: none; }
+}
+@media (max-width: 460px) {
+    .ib-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem .75rem; }
+    .ib-stat::before { display: none !important; }
+    .ib-num { font-size: clamp(1.75rem, 9vw, 2.3rem); }
+    .ib-trust { gap: .5rem 1rem; }
+    .ib-trust li { font-size: .8rem; }
+}
+
+/* =============================================================================
+   9. MISSION — editorial split with progress indicators
+   ========================================================================== */
+.mission-grid {
+    display: grid; grid-template-columns: 1.15fr .85fr;
+    gap: clamp(2rem, 5vw, 4.5rem); align-items: start;
+}
+.mission-text { color: var(--muted, #4B6754); font-size: 1.06rem; line-height: 1.8; max-width: 54ch; }
+
+/* Progress indicators. The fill is animated by width so it can start at 0 and
+   grow on entry; transform would distort the rounded cap. */
+.focus-bars { list-style: none; margin: clamp(1.75rem, 3vw, 2.5rem) 0 0; padding: 0; display: grid; gap: 1.1rem; }
+.fb-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .45rem; }
+.fb-label { font-weight: 700; font-size: .93rem; color: var(--text, #151818); }
+.fb-pct { font-weight: 800; font-size: .86rem; color: var(--accent-ink); font-variant-numeric: tabular-nums; }
+.fb-track {
+    display: block; height: 8px; border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 10%, transparent); overflow: hidden;
+}
+.fb-fill {
+    display: block; height: 100%; width: 0; border-radius: inherit;
+    background: linear-gradient(90deg, var(--primary, #0B4E3D), var(--success, #2F8065));
+    transition: width 1.1s var(--ease-out);
+}
+.reveal.is-visible .fb-fill, .is-visible .fb-fill { width: var(--pct, 0%); }
+/* No-JS: start-at-zero is an ANIMATION premise, so it has to be gated the same
+   way the reveal system's `opacity: 0` is — tailwind.css:578 scopes that to
+   `html.js .reveal`, and includes/header.php:125 adds `js` to <html> from a
+   script. Without that class nothing ever adds `.is-visible`, so `width: 0`
+   above was permanent: the mission block rendered its labels and its "85%" over
+   four empty tracks. (prefers-reduced-motion users were already covered by the
+   block at the end of this section, which sets the width unconditionally.) */
+html:not(.js) .fb-fill { width: var(--pct, 0%); transition: none; }
+
+/* Mission / Vision pair */
+.mission-aside { display: grid; gap: 1.15rem; }
+.mv-card {
+    background: var(--surface, #fff); border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-lg); padding: clamp(1.5rem, 2.6vw, 2rem);
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+}
+.mv-card:hover { transform: translateY(-4px); box-shadow: var(--elev-4); }
+.mv-card.is-accent { background: var(--ivory, #FEFEF1); }
+.mv-ico {
+    display: grid; place-items: center; width: 46px; height: 46px; border-radius: var(--r-md);
+    background: var(--primary, #0B4E3D); color: #fff; margin-bottom: 1rem;
+}
+.mv-card.is-accent .mv-ico { background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D); }
+.mv-ico svg { width: 21px; height: 21px; }
+.mv-title { margin: 0 0 .5rem; color: var(--text, #151818); }
+.mv-text { margin: 0; color: var(--muted, #4B6754); line-height: 1.75; }
+
+@media (max-width: 900px) {
+    .mission-grid { grid-template-columns: 1fr; }
+    .mission-aside { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 620px) {
+    .mission-aside { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .fb-fill { transition: none; width: var(--pct, 0%); }
+    .mv-card { transition: none; }
+    .mv-card:hover { transform: none; }
+}
+
+/* =============================================================================
+   10. FOCUS AREAS — five cards, editorial rather than a uniform 3-col grid
+   The first card spans two columns on desktop so the row reads as a composition
+   instead of five identical tiles.
+   ========================================================================== */
+.focus-section { background: var(--bg, #fff); }
+.focus-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    gap: clamp(1rem, 2vw, 1.5rem);
+}
+.focus-card {
+    grid-column: span 2;
+    display: flex; flex-direction: column; overflow: hidden;
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-lg);
+    transition: transform var(--dur) var(--ease-out),
+                box-shadow var(--dur) var(--ease-out),
+                border-color var(--dur) var(--ease-out);
+}
+/* First two cards take half a row each — the asymmetry the brief asks for. */
+.focus-card:nth-child(1), .focus-card:nth-child(2) { grid-column: span 3; }
+
+.focus-card:hover {
+    transform: translateY(-5px); box-shadow: var(--elev-4);
+    border-color: color-mix(in srgb, var(--primary, #0B4E3D) 30%, transparent);
+}
+.fc-media { overflow: hidden; aspect-ratio: 16 / 9; background: var(--ivory, #FEFEF1); }
+.focus-card:nth-child(1) .fc-media, .focus-card:nth-child(2) .fc-media { aspect-ratio: 21 / 9; }
+.fc-media img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform var(--dur-slow) var(--ease-out);
+}
+.focus-card:hover .fc-media img { transform: scale(1.05); }
+
+.fc-body { padding: clamp(1.25rem, 2.2vw, 1.75rem); display: flex; flex-direction: column; flex: 1; }
+.fc-ico {
+    display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--r-md);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 10%, transparent);
+    color: var(--primary, #0B4E3D); margin-bottom: .9rem;
+    transition: transform var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+}
+.fc-ico svg { width: 21px; height: 21px; }
+.focus-card:hover .fc-ico {
+    transform: translateY(-3px) rotate(-5deg);
+    background: var(--yellow, #FFE987);
+}
+.fc-label {
+    font-size: .74rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent-ink); margin-bottom: .4rem;
+}
+.fc-title { margin: 0 0 .5rem; }
+/* Stretched link: the whole card is clickable, but the accessible name and the
+   focus ring stay on the real anchor rather than a div with a click handler. */
+.fc-link { color: var(--text, #151818); text-decoration: none; }
+.fc-link::after { content: ""; position: absolute; inset: 0; }
+.focus-card { position: relative; }
+.fc-link:focus-visible { outline: none; }
+.focus-card:focus-within {
+    outline: 2px solid var(--primary, #0B4E3D); outline-offset: 3px;
+}
+.fc-text { margin: 0 0 1.1rem; color: var(--muted, #4B6754); line-height: 1.7; font-size: .96rem; }
+.fc-more {
+    margin-top: auto; display: inline-flex; align-items: center; gap: .4rem;
+    font-weight: 700; font-size: .88rem; color: var(--primary, #0B4E3D);
+}
+.fc-more svg { width: 1em; height: 1em; transition: transform var(--dur) var(--ease-out); }
+.focus-card:hover .fc-more svg { transform: translateX(4px); }
+
+@media (max-width: 1000px) {
+    .focus-grid { grid-template-columns: repeat(4, 1fr); }
+    .focus-card, .focus-card:nth-child(1), .focus-card:nth-child(2) { grid-column: span 2; }
+    .focus-card:nth-child(5) { grid-column: span 4; }
+    .focus-card:nth-child(5) .fc-media { aspect-ratio: 21 / 9; }
+}
+@media (max-width: 640px) {
+    .focus-grid { grid-template-columns: 1fr; }
+    .focus-card, .focus-card:nth-child(n) { grid-column: span 1; }
+    .fc-media, .focus-card:nth-child(n) .fc-media { aspect-ratio: 16 / 9; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .focus-card, .fc-media img, .fc-ico, .fc-more svg { transition: none; }
+    .focus-card:hover { transform: none; }
+    .focus-card:hover .fc-media img,
+    .focus-card:hover .fc-ico,
+    .focus-card:hover .fc-more svg { transform: none; }
+}
+
+/* =============================================================================
+   11. MEGA MENU
+   Rebuilt on the brand tokens: an ivory panel of icon-led links beside a green
+   "get involved" rail. Previously it inherited whatever the older stylesheets
+   had accumulated and sat off-palette after the rebrand.
+   ========================================================================== */
+.mega-menu {
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-lg);
+    box-shadow: var(--elev-5);
+    padding: clamp(1.1rem, 1.6vw, 1.6rem);
+    display: grid; grid-template-columns: 1fr 1fr .8fr;
+    gap: clamp(1rem, 2vw, 2rem);
+    overflow: hidden;
+}
+.mega-grid { display: contents; }                 /* let columns join the parent grid */
+.mega-col { display: grid; align-content: start; gap: .15rem; }
+
+.mega-link {
+    display: grid; grid-template-columns: auto 1fr; align-items: start; gap: .75rem;
+    padding: .6rem .7rem; border-radius: var(--r-sm);
+    text-decoration: none; color: var(--text, #151818);
+    transition: background-color var(--dur-fast) var(--ease-out);
+}
+.mega-link:hover, .mega-link:focus-visible {
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 7%, transparent);
+}
+.mega-link:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 1px; }
+.mega-link .mi {
+    display: grid; place-items: center; width: 34px; height: 34px; flex: none;
+    border-radius: var(--r-xs);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 9%, transparent);
+    color: var(--primary, #0B4E3D);
+    transition: transform var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+}
+.mega-link .mi svg { width: 17px; height: 17px; }
+.mega-link:hover .mi { transform: translateY(-2px); background: var(--yellow, #FFE987); }
+.mega-link .mtxt { display: grid; gap: .1rem; min-width: 0; }
+.mega-link .mtxt strong { font-size: .93rem; font-weight: 700; line-height: 1.3; }
+.mega-link .mtxt small {
+    font-size: .78rem; color: var(--muted, #4B6754); line-height: 1.45;
+    overflow: hidden; text-overflow: ellipsis;
+}
+
+/* The green rail. */
+.mega-feature {
+    background: var(--primary, #0B4E3D); color: #fff;
+    border-radius: var(--r-md); padding: clamp(1.1rem, 1.6vw, 1.4rem);
+    display: flex; flex-direction: column; gap: .6rem; align-self: stretch;
+}
+.mf-badge {
+    display: inline-flex; align-items: center; gap: .4rem; align-self: flex-start;
+    font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--yellow, #FFE987);
+}
+.mf-badge svg { width: 14px; height: 14px; }
+.mf-title { font-size: 1.02rem; font-weight: 800; line-height: 1.3; color: #fff; }
+.mf-copy { font-size: .82rem; line-height: 1.6; color: rgba(255,255,255,.82); }
+.mf-actions { margin-top: auto; display: flex; flex-direction: column; gap: .55rem; align-items: flex-start; }
+.mf-link {
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-size: .84rem; font-weight: 700; color: var(--yellow, #FFE987); text-decoration: none;
+}
+.mf-link svg { width: 1em; height: 1em; transition: transform var(--dur) var(--ease-out); }
+.mf-link:hover svg { transform: translateX(3px); }
+.mf-link:focus-visible { outline: 2px solid var(--yellow, #FFE987); outline-offset: 3px; border-radius: 4px; }
+
+/* Entrance — short and subtle; the panel is already a big surface.
+   The X translation MUST be repeated: premium.css centres the panel with
+   `left:50%; transform: translateX(-50%)`, and transform is a single property —
+   writing only translateY() here would drop the centring and shove the panel
+   half its own width to the right. */
+.has-mega .mega-menu {
+    opacity: 0; visibility: hidden;
+    transform: translateX(-50%) translateY(-6px);
+    transition: opacity .18s var(--ease-out), transform .18s var(--ease-out), visibility .18s;
+}
+.has-mega:hover .mega-menu, .has-mega:focus-within .mega-menu {
+    opacity: 1; visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 1100px) {
+    .mega-menu { grid-template-columns: 1fr 1fr; }
+    .mega-feature { grid-column: 1 / -1; flex-direction: row; align-items: center; flex-wrap: wrap; }
+    .mf-actions { margin-top: 0; flex-direction: row; align-items: center; margin-left: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .has-mega .mega-menu { transition: none; }
+    .mega-link .mi, .mf-link svg { transition: none; }
+    .mega-link:hover .mi, .mf-link:hover svg { transform: none; }
+}
+
+/* =============================================================================
+   11. CTA BANDS — the donate / volunteer pair
+   -----------------------------------------------------------------------------
+   Two flat brand fields rather than two gradients. `.is-green` carries white
+   type and the orange donate ask; `.is-yellow` is the warm invitation band from
+   the brand rules — sunshine yellow field, forest-green type — where a white
+   button would vanish (1.2:1) and an orange one would sit at 2.4:1, so the
+   controls are green instead.
+   ========================================================================== */
+.cta-band {
+    display: flex; flex-direction: column; align-items: flex-start;
+    padding: clamp(1.75rem, 3.5vw, 2.75rem);
+    border-radius: var(--r-lg);
+    border: 1px solid transparent;
+}
+.cta-band h2 { margin: 0 0 .75rem; text-wrap: balance; }
+/* `color: inherit` is load-bearing. tailwind.css styles the ELEMENTS directly —
+   `p { color: var(--text-soft) }` and `h1..h6 { color: var(--primary) }` — and an
+   element's own colour rule beats a colour inherited from .cta-band, so the copy
+   painted dark brown on the green field (1.40:1) until this pinned it. */
+.cta-band p  { margin: 0; line-height: 1.75; max-width: 42ch; color: inherit; }
+.cta-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+
+.cta-band.is-green  { background: var(--primary, #0B4E3D); color: rgba(255,255,255,.86); }
+.cta-band.is-green h2 { color: #fff; }
+
+.cta-band.is-yellow { background: var(--yellow, #FFE987); color: var(--secondary, #174D3D); }
+.cta-band.is-yellow h2 { color: var(--primary, #0B4E3D); }
+/* The default outline border (--border, a pale sage) is invisible on yellow. */
+.cta-band.is-yellow .btn-outline {
+    color: var(--primary, #0B4E3D);
+    border-color: color-mix(in srgb, var(--primary, #0B4E3D) 45%, transparent);
+}
+.cta-band.is-yellow .btn-outline:hover {
+    background: var(--primary, #0B4E3D); color: #fff; border-color: var(--primary, #0B4E3D);
+}
+
+@media (max-width: 860px) {
+    .cta-actions .btn { flex: 1 1 auto; justify-content: center; }
+}
+
+/* =============================================================================
+   12. BUTTON INK GUARDS
+   -----------------------------------------------------------------------------
+   Containers that colour their links by element or container selector outrank a
+   button's own `color`, because `.nav-drawer a` (0,2,0) and `.footer a` (0,2,0)
+   are more specific than `.btn-primary` (0,1,0). The drawer's Donate button was
+   rendering --text-soft brown on orange (1.54:1) for exactly this reason. Any
+   filled button inside those regions keeps its white label.
+   ========================================================================== */
+.nav-drawer a.btn-primary, .nav-drawer a.btn-donate, .nav-drawer a.btn-glow,
+.nav-drawer a.btn-secondary, .nav-drawer a.btn-success,
+.footer a.btn-primary, .footer a.btn-donate, .footer a.btn-glow,
+.footer a.btn-secondary, .footer a.btn-success,
+.cta-band a.btn-primary, .cta-band a.btn-donate, .cta-band a.btn-secondary {
+    color: #fff;
+}
+.nav-drawer a.btn-white, .footer a.btn-white, .cta-band a.btn-white {
+    color: var(--primary, #0B4E3D);
+}
+.cta-band a.btn-outline { color: var(--primary, #0B4E3D); }
+.cta-band a.btn-outline:hover { color: #fff; }
+
+/* =============================================================================
+   13. MOBILE — deliberate, not a stacked desktop
+   -----------------------------------------------------------------------------
+   Touch targets first: every control that a thumb has to hit gets at least a
+   44px box, even where the visible mark stays small. Measured before this pass,
+   the announcement dismiss was 26x26, the drawer close 33x38 and the top-bar
+   social pills 28x28.
+   ========================================================================== */
+@media (max-width: 820px) {
+    /* Dismiss / close controls: 26px mark inside a 44px target. */
+    .announcement-bar.ann-premium .ann-close {
+        width: 44px; height: 44px;
+        background: none; border: 0;
+    }
+    .announcement-bar.ann-premium .ann-close::before {
+        content: ""; position: absolute; inset: 9px; border-radius: 50%;
+        border: 1px solid color-mix(in srgb, var(--ann-fg) 40%, transparent);
+        background: color-mix(in srgb, var(--ann-fg) 7%, transparent);
+    }
+    .announcement-bar.ann-premium .ann-close:hover { background: none; }
+    .announcement-bar.ann-premium .ann-close:hover::before {
+        background: color-mix(in srgb, var(--ann-fg) 16%, transparent);
+    }
+    .drawer-close { width: 44px; height: 44px; }
+    .nav-toggle, .theme-toggle, .nav-icon-btn { width: 44px; height: 44px; }
+
+    /* Top-bar socials: 28px circle, 44px target. */
+    .tu-social a { width: 44px; height: 44px; background: none; position: relative; }
+    .tu-social a::before {
+        content: ""; position: absolute; inset: 8px; border-radius: 50%;
+        background: rgba(255,255,255,.10); transition: background var(--dur) var(--ease-out);
+    }
+    .tu-social a:hover { background: none; }
+    .tu-social a:hover::before { background: var(--yellow, #FFE987); }
+    .tu-social a svg { position: relative; z-index: 1; }
+
+    /* Full-width CTAs — a half-width button beside another is under 44px of
+       comfortable reach on a 375px screen. */
+    .cta-actions { width: 100%; }
+    .cta-actions .btn { width: 100%; }
+
+    /* Decorative layers off: each was a viewport-scale blur repainting on a
+       phone GPU for an effect largely hidden behind centred copy. */
+    .pn-blob, .section-partners .pn-blob { display: none; }
+}
+
+/* Section rhythm tightens on a phone rather than keeping desktop air. */
+@media (max-width: 640px) {
+    :root { --section-y: clamp(2.5rem, 9vw, 3.5rem); }
+    .section-head { margin-bottom: clamp(1.5rem, 6vw, 2rem); }
+    /* Large numerals stay large — the brief's hierarchy depends on them. */
+    .ib-num { font-size: clamp(1.9rem, 10vw, 2.6rem); }
+    .cta-band { padding: 1.5rem 1.25rem; }
+}
+
+/* =============================================================================
+   12. FEATURED STORY — one large photograph carrying a single narrative
+   ========================================================================== */
+.featured-story { background: var(--ivory, #FEFEF1); }
+.fs-grid {
+    display: grid; grid-template-columns: 1.05fr .95fr;
+    gap: clamp(2rem, 5vw, 4.5rem); align-items: center;
+}
+.fs-media {
+    position: relative; overflow: hidden; border-radius: var(--r-xl);
+    box-shadow: var(--elev-4);
+}
+.fs-media img {
+    display: block; width: 100%; height: 100%; aspect-ratio: 4 / 3;
+    object-fit: cover; transition: transform 1.2s var(--ease-out);
+}
+.featured-story:hover .fs-media img { transform: scale(1.03); }
+/* A yellow rule anchoring the image, echoing the highlight used in the hero. */
+.fs-media::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px;
+    background: var(--yellow, #FFE987);
+}
+.fs-text { color: var(--muted, #4B6754); font-size: 1.06rem; line-height: 1.8; margin: 0 0 1.5rem; }
+.fs-metrics {
+    display: flex; flex-wrap: wrap; gap: 1.75rem; margin: 0 0 1.75rem; padding: 1.1rem 0 0;
+    border-top: 1px solid var(--border, #C1CCB3);
+}
+.fs-metrics div { display: grid; gap: .15rem; }
+.fs-metrics dt {
+    font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent-ink, #CA4C1E);
+}
+.fs-metrics dd { margin: 0; font-size: 1.02rem; font-weight: 700; color: var(--text, #151818); }
+
+@media (max-width: 900px) {
+    .fs-grid { grid-template-columns: 1fr; }
+    .fs-media img { aspect-ratio: 16 / 10; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .fs-media img { transition: none; }
+    .featured-story:hover .fs-media img { transform: none; }
+}
+
+/* Drawer close: `.nav-drawer .drawer-head [data-drawer-close]` (0,3,0) in
+   premium.css pins 38x38 and outranks a bare `.drawer-close`, so the control
+   measured 33x38 on a phone. Matched specificity, and the white-on-white fill
+   that rule carries is dropped — the drawer head is a light surface. */
+.nav-drawer .drawer-head [data-drawer-close] {
+    width: 44px; height: 44px;
+    /* The head is a flex row with the brand lockup beside it; without this the
+       button is a shrinkable flex item and a long brand name squeezed it to
+       37.8px wide however large the declared width was. */
+    flex: 0 0 auto; min-width: 44px;
+    background: transparent;
+    border: 1px solid var(--border, #C1CCB3);
+    color: var(--text, #151818);
+}
+.nav-drawer .drawer-head [data-drawer-close]:hover {
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 8%, transparent);
+    border-color: var(--primary, #0B4E3D); color: var(--primary, #0B4E3D);
+}
+
+/* Compact buttons keep their compact look but reach a 44px target on touch. */
+@media (max-width: 820px) {
+    .btn-sm { min-height: 44px; padding-block: .7rem; }
+    .hx-dot { width: 44px !important; height: 44px !important; }
+}
+
+/* Brand lockup on a phone: "EDUSKILL INDIA FOUNDATION" broke onto three lines at
+   1.18rem/375px, pushing the navbar to nearly twice its height before any content
+   was reached. Two lines at a smaller size, with the logo scaled to match. */
+@media (max-width: 560px) {
+    .navbar .nav-brand { gap: .5rem; }
+    .navbar .nav-brand .brand-logo { height: 38px; width: 38px; }
+    .navbar .nav-brand .brand-name {
+        font-size: .95rem; line-height: 1.18; letter-spacing: -.01em;
+        max-width: 9.5em;
+    }
+}
+@media (max-width: 390px) {
+    .navbar .nav-brand .brand-name { font-size: .88rem; max-width: 8.5em; }
+    .navbar .nav-brand .brand-logo { height: 34px; width: 34px; }
+}
+
+/* =============================================================================
+   14. FIELD GALLERY — masonry wall
+   -----------------------------------------------------------------------------
+   Multi-column rather than a grid of spans: `columns` gives true masonry, so the
+   wall never leaves a hole no matter how many albums are published, while the
+   cycling aspect ratios supply the large / small / tall / wide variety a
+   repetitive grid can't. The previous version was `repeat(auto-fill, minmax(220px,1fr))`
+   with `aspect-ratio: 1` on every tile — six identical squares — and its hover
+   state was a magnifying-glass emoji over a flat green wash.
+   ========================================================================== */
+.gal-wall {
+    columns: 3;
+    column-gap: clamp(.6rem, 1.4vw, 1rem);
+}
+.gal-frame {
+    position: relative; display: block; overflow: hidden;
+    margin-bottom: clamp(.6rem, 1.4vw, 1rem);
+    border-radius: var(--r-md);
+    break-inside: avoid; -webkit-column-break-inside: avoid;
+    text-decoration: none;
+    background: var(--ivory, #FEFEF1);
+}
+/* Four crops, cycled. Frame 1 of every six is the tall anchor of its column. */
+.gal-frame              { aspect-ratio: 1 / 1; }
+.gal-frame:nth-child(6n + 1) { aspect-ratio: 4 / 5; }
+.gal-frame:nth-child(6n + 3) { aspect-ratio: 4 / 3; }
+.gal-frame:nth-child(6n + 4) { aspect-ratio: 3 / 4; }
+.gal-frame:nth-child(6n + 6) { aspect-ratio: 16 / 10; }
+
+.gal-frame img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform var(--dur-slow) var(--ease-out);
+}
+.gal-frame:hover img, .gal-frame:focus-visible img { transform: scale(1.04); }
+
+/* Veil: a bottom-weighted scrim so the caption is legible over any photograph
+   (white on the darkest stop is 12.9:1) without flattening the whole image. */
+.gal-veil {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to top,
+        color-mix(in srgb, var(--primary, #0B4E3D) 88%, #000) 0%,
+        color-mix(in srgb, var(--primary, #0B4E3D) 55%, transparent) 34%,
+        transparent 68%);
+    opacity: .55;
+    transition: opacity var(--dur) var(--ease-out);
+}
+.gal-frame:hover .gal-veil, .gal-frame:focus-visible .gal-veil { opacity: .92; }
+
+.gal-cap {
+    position: absolute; inset: auto 0 0 0;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: .75rem;
+    padding: clamp(.75rem, 1.6vw, 1.1rem);
+    color: #fff; font-weight: 700; font-size: .95rem; line-height: 1.35;
+}
+.gal-cap-txt {
+    /* Rests just below its final position and rises on hover — the caption is
+       always readable, the motion only sharpens it. */
+    transform: translateY(3px);
+    transition: transform var(--dur) var(--ease-out);
+}
+.gal-frame:hover .gal-cap-txt, .gal-frame:focus-visible .gal-cap-txt { transform: none; }
+.gal-cap-ico {
+    flex: none; display: grid; place-items: center;
+    width: 34px; height: 34px; border-radius: var(--r-pill);
+    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.42);
+    opacity: 0; transform: translate(-4px, 4px);
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out),
+                background var(--dur) var(--ease-out);
+}
+.gal-cap-ico svg { width: 16px; height: 16px; }
+.gal-frame:hover .gal-cap-ico, .gal-frame:focus-visible .gal-cap-ico { opacity: 1; transform: none; }
+.gal-frame:hover .gal-cap-ico { background: rgba(255,255,255,.28); }
+.gal-frame:focus-visible { outline: 3px solid var(--yellow, #FFE987); outline-offset: 2px; }
+
+@media (max-width: 900px) { .gal-wall { columns: 2; } }
+@media (max-width: 480px) {
+    /* One column on a phone: two columns of masonry at 320px gives 150px-wide
+       photographs, too small for faces to read. The caption icon is always shown
+       because there is no hover on touch. */
+    .gal-wall { columns: 1; }
+    .gal-frame, .gal-frame:nth-child(n) { aspect-ratio: 4 / 3; }
+    .gal-cap-ico { opacity: 1; transform: none; }
+    .gal-cap-txt { transform: none; }
+    .gal-veil { opacity: .8; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gal-frame img, .gal-veil, .gal-cap-txt, .gal-cap-ico { transition: none; }
+    .gal-frame:hover img, .gal-frame:focus-visible img { transform: none; }
+}
+
+/* Lightbox figure + caption. The image previously sat as a bare child of the
+   flex container with an empty alt and no label, so an opened photograph
+   announced nothing; it now carries its album title visibly and in alt text. */
+.lightbox-figure {
+    margin: 0; display: flex; flex-direction: column; align-items: center; gap: .9rem;
+    max-width: 92vw;
+}
+.lightbox-figure img { max-height: 80vh; }
+.lightbox-caption {
+    color: #fff; font-size: .95rem; font-weight: 600; text-align: center;
+    max-width: 60ch; line-height: 1.5;
+    padding: .5rem .9rem; border-radius: var(--r-pill);
+    background: rgba(255,255,255,.10);
+}
+.lightbox-caption[hidden] { display: none; }
+.lightbox-close, .lightbox-nav { cursor: pointer; }
+.lightbox-close:focus-visible, .lightbox-nav:focus-visible {
+    outline: 2px solid var(--yellow, #FFE987); outline-offset: 3px;
+}
+@media (max-width: 640px) {
+    .lightbox { padding: 1rem; }
+    .lightbox-nav { width: 44px; height: 44px; font-size: 1.6rem; }
+    .lightbox-nav.prev { left: 8px; } .lightbox-nav.next { right: 8px; }
+    .lightbox-close { top: 10px; right: 14px; width: 44px; height: 44px; }
+    .lightbox-figure img { max-height: 68vh; }
+}
+
+/* =============================================================================
+   13. MEMBER ACCOUNT — profile / membership / giving / security
+   ========================================================================== */
+.acct-grid { display: grid; grid-template-columns: 260px 1fr; gap: clamp(1.25rem, 3vw, 2.25rem); align-items: start; }
+.acct-card {
+    background: var(--surface, #fff); border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-lg); padding: clamp(1.25rem, 2.4vw, 1.9rem); margin-bottom: 1.25rem;
+}
+.acct-h { margin: 0 0 1.15rem; font-size: 1.15rem; color: var(--text, #151818); }
+
+/* Sidebar identity block */
+.acct-me { display: grid; justify-items: center; text-align: center; gap: .2rem; }
+.acct-avatar { border-radius: var(--r-pill); object-fit: cover; border: 3px solid var(--yellow, #FFE987); }
+.acct-avatar.lg { width: 96px; height: 96px; }
+.acct-name { font-size: 1.02rem; margin-top: .6rem; color: var(--text, #151818); }
+.acct-mail { font-size: .82rem; color: var(--muted, #4B6754); word-break: break-all; }
+
+.acct-nav { display: grid; gap: .2rem; }
+.acct-tab {
+    display: flex; align-items: center; gap: .65rem; padding: .7rem .85rem;
+    border-radius: var(--r-sm); text-decoration: none; font-weight: 600; font-size: .93rem;
+    color: var(--text, #151818);
+    transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.acct-tab svg { width: 18px; height: 18px; color: var(--muted, #4B6754); }
+.acct-tab:hover { background: color-mix(in srgb, var(--primary, #0B4E3D) 7%, transparent); }
+.acct-tab.is-active { background: var(--primary, #0B4E3D); color: #fff; }
+.acct-tab.is-active svg { color: var(--yellow, #FFE987); }
+.acct-tab:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; }
+
+/* Forms */
+.acct-form label, .acct-photo label { display: grid; gap: .35rem; font-weight: 600; font-size: .88rem; color: var(--text, #151818); }
+.acct-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.acct-row-3 { grid-template-columns: repeat(3, 1fr); }
+.acct-form .req { color: var(--danger, #DC2626); }
+.acct-photo { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+
+/* Fact lists (membership, activity) */
+.acct-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.1rem; margin: 0 0 1.4rem; }
+.acct-facts dt {
+    font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted, #4B6754); margin-bottom: .2rem;
+}
+.acct-facts dd { margin: 0; font-weight: 700; color: var(--text, #151818); }
+
+.acct-actions { display: flex; flex-wrap: wrap; gap: .7rem; }
+.acct-total { color: var(--muted, #4B6754); margin: 0 0 1rem; }
+.acct-empty { color: var(--muted, #4B6754); line-height: 1.75; margin: 0 0 1.25rem; }
+.acct-table .ta-r { text-align: right; }
+
+@media (max-width: 860px) {
+    .acct-grid { grid-template-columns: 1fr; }
+    .acct-nav { grid-auto-flow: column; overflow-x: auto; gap: .4rem; padding-bottom: .35rem; }
+    .acct-tab { white-space: nowrap; }
+    .acct-row, .acct-row-3 { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .acct-tab { transition: none; } }
+
+/* =============================================================================
+   14. DONATION TIERS — a considered ask, not a checkout
+   ========================================================================== */
+.donate-band { background: var(--bg-alt, #F8FCF8); }
+.dt-grid {
+    list-style: none; margin: 0 0 clamp(1.75rem, 3vw, 2.5rem); padding: 0;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(.9rem, 2vw, 1.4rem);
+}
+.dt-card {
+    display: flex; flex-direction: column; align-items: flex-start;
+    background: var(--surface, #fff); border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-lg); padding: clamp(1.25rem, 2.2vw, 1.65rem);
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out),
+                border-color var(--dur) var(--ease-out);
+}
+.dt-card:hover {
+    transform: translateY(-4px); box-shadow: var(--elev-4);
+    border-color: color-mix(in srgb, var(--accent, #F15A24) 40%, transparent);
+}
+.dt-ico {
+    display: grid; place-items: center; width: 42px; height: 42px; border-radius: var(--r-md);
+    background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D); margin-bottom: .9rem;
+}
+.dt-ico svg { width: 20px; height: 20px; }
+.dt-amount {
+    font-family: var(--font-head, inherit); font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+    font-weight: 800; line-height: 1; letter-spacing: -.02em;
+    color: var(--primary, #0B4E3D); font-variant-numeric: tabular-nums;
+}
+.dt-title {
+    font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent-ink, #CA4C1E); margin: .35rem 0 .55rem;
+}
+.dt-impact { margin: 0 0 1.15rem; color: var(--muted, #4B6754); font-size: .92rem; line-height: 1.65; }
+.dt-cta { margin-top: auto; }
+
+.dt-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+    border-top: 1px solid var(--border, #C1CCB3); padding-top: 1.4rem;
+}
+.dt-trust { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .55rem 1.5rem; }
+.dt-trust li {
+    display: inline-flex; align-items: center; gap: .45rem;
+    font-size: .87rem; font-weight: 600; color: var(--muted, #4B6754);
+}
+.dt-trust svg { width: 16px; height: 16px; color: var(--success, #2F8065); }
+
+@media (max-width: 900px) { .dt-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) {
+    .dt-grid { grid-template-columns: 1fr; }
+    .dt-foot { flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dt-card { transition: none; }
+    .dt-card:hover { transform: none; }
+}
+
+/* =============================================================================
+   15. PORTAL CHOOSER — two doors, clearly labelled
+   ========================================================================== */
+.portal-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1rem, 2.5vw, 1.75rem); margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+.portal-card {
+    display: flex; flex-direction: column; align-items: flex-start;
+    border-radius: var(--r-xl); padding: clamp(1.6rem, 3vw, 2.4rem);
+    border: 1px solid var(--border, #C1CCB3); background: var(--surface, #fff);
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+}
+.portal-card:hover { transform: translateY(-4px); box-shadow: var(--elev-4); }
+.portal-card.is-dark {
+    background: var(--primary, #0B4E3D); border-color: transparent; color: #fff;
+}
+.pc-ico {
+    display: grid; place-items: center; width: 52px; height: 52px; border-radius: var(--r-md);
+    background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D); margin-bottom: 1.1rem;
+}
+.pc-ico svg { width: 24px; height: 24px; }
+.pc-label {
+    font-size: .74rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent-ink, #CA4C1E); margin-bottom: .4rem;
+}
+.portal-card.is-dark .pc-label { color: var(--yellow, #FFE987); }
+.pc-title { margin: 0 0 .6rem; color: var(--text, #151818); }
+.portal-card.is-dark .pc-title { color: #fff; }
+.pc-text { margin: 0 0 .9rem; color: var(--muted, #4B6754); line-height: 1.7; }
+.portal-card.is-dark .pc-text { color: rgba(255,255,255,.82); }
+.pc-note {
+    display: inline-flex; align-items: center; gap: .45rem; margin: 0 0 1.5rem;
+    font-size: .84rem; font-weight: 600; color: var(--muted, #4B6754);
+}
+.portal-card.is-dark .pc-note { color: rgba(255,255,255,.72); }
+.pc-note svg { width: 15px; height: 15px; }
+.pc-cta { margin-top: auto; }
+.pc-links { margin: .9rem 0 0; font-size: .87rem; color: var(--muted, #4B6754); }
+.pc-links a { color: var(--primary, #0B4E3D); font-weight: 700; text-decoration: none; }
+.pc-links a:hover { text-decoration: underline; }
+
+/* Role reference */
+.portal-roles {
+    background: var(--ivory, #FEFEF1); border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-lg); padding: clamp(1.4rem, 2.6vw, 2rem);
+}
+.pr-h { display: flex; align-items: center; gap: .55rem; margin: 0 0 .4rem; font-size: 1.05rem; }
+.pr-h svg { width: 19px; height: 19px; color: var(--accent, #F15A24); }
+.pr-sub { margin: 0 0 1.25rem; color: var(--muted, #4B6754); font-size: .94rem; }
+.pr-list {
+    list-style: none; margin: 0 0 1.25rem; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .75rem 1.5rem;
+}
+.pr-list li {
+    display: grid; gap: .15rem; padding-left: .9rem; border-left: 3px solid var(--yellow, #FFE987);
+}
+.pr-list strong { font-size: .93rem; color: var(--text, #151818); }
+.pr-list span { font-size: .85rem; color: var(--muted, #4B6754); line-height: 1.55; }
+.pr-foot { margin: 0; font-size: .9rem; color: var(--muted, #4B6754); }
+
+@media (max-width: 780px) { .portal-grid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) {
+    .portal-card { transition: none; }
+    .portal-card:hover { transform: none; }
+}
+
+/* =============================================================================
+   16. PAGE HERO — the masthead includes/header.php emits for every inner page
+   -----------------------------------------------------------------------------
+   Markup (header.php, when a page sets $page_hero):
+
+       <section class="page-hero"><div class="container">
+           <nav class="breadcrumb"><ol>…</ol></nav>
+           <h1>…</h1>
+           <p class="lead text-white" style="opacity:.92;max-width:640px">…</p>
+       </div></section>
+
+   ~35 pages render it, and this layer had no rule for it at all — it was still
+   painting tailwind.css's two-stop `--grad-brand` with a 700px radial white
+   sheen thrown across the top right. It now speaks the same language as
+   .cta-band.is-green: ONE flat brand field, white display type, a softened
+   white lead, and the brand-yellow rule that closes .fs-media anchoring the
+   bottom edge so the hero hands off to the page with a mark the system already
+   uses. Geometry is untouched — .container still owns the inline padding.
+   ========================================================================== */
+/* The yellow closing rule is a BORDER, not a pseudo-element.
+   -----------------------------------------------------------------------------
+   It was `.page-hero::after { inset: auto 0 0 0; height: 4px }`, chosen to beat
+   tailwind.css:322's `.page-hero::after { inset: 0 }` sheen. That guard works
+   against tailwind, which loads earlier — but ::after is a single element per
+   hero, the cascade resolves per PROPERTY, and two pages declare their own
+   `.page-hero::after` in a body <style> block, i.e. LATER in document order:
+
+     · career.php:193          `inset: 0` + two radials + mix-blend-mode:screen
+     · about.php:87            background only, relying on tailwind's `inset: 0`
+
+   Each kept its own `background` and inherited `height: 4px` from here. On
+   career.php that made top/bottom/height all resolved — over-constrained, so
+   `bottom` was dropped and its sheen painted as a 4px strip across the TOP of a
+   297px hero. On about.php the inherited `inset: auto 0 0 0` pinned the sheen to
+   a 4px strip at the BOTTOM of a 303px hero. And on both pages the page's own
+   `background` won, so the yellow rule disappeared entirely.
+
+   A border cannot be over-constrained and cannot be captured by a page rule
+   that only means to decorate, so ::after goes back to being free for page
+   decoration — which also restores tailwind's default sheen on the ~26 plain
+   heroes that never wanted it removed. #FFE987 on #0B4E3D is 7.95:1. */
+.page-hero {
+    position: relative;
+    background: var(--primary, #0B4E3D);
+    color: rgba(255, 255, 255, .86);                /* 7.61:1 on #0B4E3D */
+    padding-block: clamp(2.75rem, 5.5vw, 4.5rem) clamp(2.5rem, 5vw, 4rem);
+    border-bottom: 4px solid var(--yellow, #FFE987);
+    overflow: hidden;
+}
+.page-hero > .container { position: relative; z-index: 1; }
+
+/* One step above .section-title on the scale — this is the page's h1. */
+.page-hero h1 {
+    margin: .65rem 0 0;
+    font-family: var(--font-head, inherit);
+    font-size: clamp(2rem, 4.4vw, 3.15rem);
+    font-weight: 800; line-height: 1.08; letter-spacing: -.025em;
+    color: #fff;                                     /* 9.67:1 */
+    text-wrap: balance;
+}
+/* Lead paragraph. Pages pass `class="lead text-white"` with an inline
+   `opacity:.92`, so the ink is pinned to solid white and the inline opacity does
+   the softening — the composite is 8.46:1. Without the inline it stays 9.67:1.
+   `.page-hero .lead` (0,2,0) is what beats tailwind's `.lead { color:
+   var(--text-soft) }`, which was painting the subtitle dark brown on green. */
+.page-hero .lead,
+.page-hero > .container > p {
+    margin: .9rem 0 0;
+    font-size: clamp(1rem, 1.5vw, 1.12rem); line-height: 1.7;
+    color: #fff;
+    max-width: 52ch;
+}
+.page-hero .eyebrow { color: var(--yellow, #FFE987); }   /* 7.95:1 — accent-ink is 2.10:1 here */
+
+/* Breadcrumb. tailwind stacks two opacities on the trail links — `li` at .85
+   and `a` at another .85 — which multiplies out to .72 and 5.89:1. Pinned to
+   single fixed alphas so the values are the ones stated. */
+.page-hero .breadcrumb { margin: 0; }
+.page-hero .breadcrumb ol { gap: .45rem; font-size: .84rem; }
+.page-hero .breadcrumb li {
+    color: rgba(255, 255, 255, .82); font-weight: 600;    /* 7.08:1 */
+}
+.page-hero .breadcrumb li:not(:first-child)::before { content: "/"; opacity: .5; }
+.page-hero .breadcrumb a {
+    color: rgba(255, 255, 255, .88); opacity: 1;          /* 7.88:1 */
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+}
+.page-hero .breadcrumb a:hover { color: var(--yellow, #FFE987); }   /* 7.95:1 */
+.page-hero .breadcrumb [aria-current="page"] { color: #fff; font-weight: 700; }
+.page-hero .breadcrumb a:focus-visible {
+    outline: 2px solid var(--yellow, #FFE987); outline-offset: 3px; border-radius: 3px;
+}
+
+/* A badge/chip on the green field: the default (primary tint on primary) would
+   be invisible, so it inverts to a white veil — white on it is 6.60:1. */
+.page-hero .badge, .page-hero .chip {
+    background: rgba(255, 255, 255, .14); color: #fff;
+    border: 1px solid rgba(255, 255, 255, .30);
+}
+
+@media (max-width: 640px) {
+    /* A phone gets a masthead, not a shrunk desktop one: less air above and
+       below, and an h1 that stops at ~2.1rem so a five-word page title still
+       reads as two lines rather than four. */
+    .page-hero { padding-block: 2rem 1.75rem; }
+    .page-hero h1 { font-size: clamp(1.6rem, 8vw, 2.1rem); letter-spacing: -.02em; }
+    .page-hero .lead, .page-hero > .container > p { font-size: .98rem; line-height: 1.65; margin-top: .7rem; }
+    .page-hero .breadcrumb ol { gap: .35rem; font-size: .78rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .page-hero .breadcrumb a { transition: none; }
+}
+
+/* =============================================================================
+   17. BRAND BAND — .section-brand, the impact / closing-ask strip
+   -----------------------------------------------------------------------------
+   ~25 inner pages wrap a counter strip or a closing CTA in
+   `.section .section-brand`, which still resolved to tailwind's two-stop
+   `--grad-brand`, so every one of those bands was a gradient where the new
+   system wants a flat field. Flattened to the field .cta-band.is-green uses.
+
+   The ink is pinned rather than inherited for the same reason .cta-band's copy
+   is: tailwind.css colours the ELEMENTS — `h1..h6 { color: var(--primary) }`
+   and `a { color: var(--brand-600) }` — and an element's own colour rule beats
+   a colour inherited from an ancestor, so headings were rendering brand green
+   on brand green (1:1) and links likewise.
+   ========================================================================== */
+.section-brand {
+    background: var(--primary, #0B4E3D);
+    color: rgba(255, 255, 255, .86);                 /* 7.61:1 */
+}
+.section-brand h1, .section-brand h2, .section-brand h3,
+.section-brand h4, .section-brand h5, .section-brand h6,
+.section-brand .section-title,
+.section-brand .counter-value, .section-brand .counter-label,
+.section-brand dt, .section-brand strong, .section-brand b {
+    color: #fff;                                      /* 9.67:1 */
+}
+.section-brand p, .section-brand li, .section-brand dd, .section-brand small,
+.section-brand .lead, .section-brand .section-subtitle,
+.section-brand .ib-label, .section-brand .fb-label {
+    color: rgba(255, 255, 255, .86);                  /* 7.61:1 */
+}
+.section-brand .eyebrow, .section-brand .fb-pct {
+    color: var(--yellow, #FFE987);                    /* 7.95:1 */
+}
+/* Body links only — scoped so a light card inside the band keeps its own green
+   links instead of turning yellow. */
+.section-brand p a, .section-brand li a, .section-brand .section-subtitle a {
+    color: var(--yellow, #FFE987); text-decoration: underline; text-underline-offset: .18em;
+}
+
+/* ---- A light card inside the band -------------------------------------------
+   .glass-card is a 55%-white veil. Over a white page it reads as a card; over
+   the brand green it composites to a mid-tone (≈#91AFA8), and the card's own
+   muted body copy lands at 2.65:1 on that — a failure that predates this pass.
+   causes.php nests a four-up glass grid in its impact band, so inside a brand
+   field the veil goes near-opaque and becomes a real surface: muted copy is
+   5.65:1 on it and a heading 16.1:1. color-mix on --surface rather than a
+   literal so it still flips with the theme.
+   Then the ink is handed back, because the softened white above would otherwise
+   paint that card's text white-on-white. Element-qualified descendants are
+   deliberate: `.section-brand .card-text` (0,2,0) would LOSE to
+   `.section-brand p` (0,2,1) for a <p class="card-text">. */
+.section-brand .glass-card {
+    background: color-mix(in srgb, var(--surface, #fff) 94%, transparent);
+    border-color: color-mix(in srgb, var(--border, #C1CCB3) 70%, transparent);
+}
+.section-brand .card, .section-brand .glass-card, .section-brand .pcard { color: var(--text, #151818); }
+.section-brand .card p,  .section-brand .card li,  .section-brand .card small,
+.section-brand .glass-card p, .section-brand .glass-card li, .section-brand .glass-card small,
+.section-brand .pcard p, .section-brand .pcard li, .section-brand .pcard small {
+    color: var(--muted, #4B6754);                     /* 5.65:1 */
+}
+.section-brand .card h1, .section-brand .card h2, .section-brand .card h3,
+.section-brand .card h4, .section-brand .card strong, .section-brand .card b,
+.section-brand .glass-card h1, .section-brand .glass-card h2, .section-brand .glass-card h3,
+.section-brand .glass-card h4, .section-brand .glass-card strong, .section-brand .glass-card b,
+.section-brand .pcard h1, .section-brand .pcard h2, .section-brand .pcard h3,
+.section-brand .pcard h4, .section-brand .pcard strong, .section-brand .pcard b {
+    color: var(--text, #151818);                      /* 16.1:1 */
+}
+
+/* Counter tiles read as a glass veil on the field, not as white cards. */
+.section-brand .counter-item {
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .22);
+    border-radius: var(--r-lg);
+    box-shadow: none;
+}
+.section-brand .counter-item:hover {
+    background: rgba(255, 255, 255, .16);
+    border-color: rgba(255, 255, 255, .34);
+    box-shadow: var(--elev-4);
+}
+.section-brand .icon-badge, .section-brand .ib-ico {
+    background: rgba(255, 255, 255, .16); color: #fff;   /* 6.60:1 */
+}
+
+/* =============================================================================
+   18. CONTROLS ON THE TWO GREEN FIELDS
+   -----------------------------------------------------------------------------
+   §2 already inverts buttons for `.on-dark`, `.footer` and `.hx`. The two
+   fields added above are the same situation — an outline button's default
+   --border (pale sage) is nearly invisible on green, and a filled Donate button
+   needs the white inner hairline for its edge (see the note in §2).
+   ========================================================================== */
+.page-hero .btn-outline, .page-hero .btn-ghost,
+.section-brand .btn-outline, .section-brand .btn-ghost {
+    color: #fff; border-color: rgba(255, 255, 255, .45);
+}
+.page-hero .btn-outline:hover, .page-hero .btn-ghost:hover,
+.section-brand .btn-outline:hover, .section-brand .btn-ghost:hover {
+    background: #fff; color: var(--primary, #0B4E3D); border-color: #fff;
+}
+.page-hero .btn-primary, .page-hero .btn-donate, .page-hero .btn-glow,
+.section-brand .btn-primary, .section-brand .btn-donate, .section-brand .btn-glow {
+    background: var(--accent-ink);                    /* 4.60:1 label */
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .34), var(--elev-2);
+}
+.page-hero .btn-primary:hover, .page-hero .btn-donate:hover, .page-hero .btn-glow:hover,
+.section-brand .btn-primary:hover, .section-brand .btn-donate:hover, .section-brand .btn-glow:hover {
+    background: color-mix(in srgb, var(--accent, #F15A24) 74%, #000);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .48), var(--elev-4);
+}
+.page-hero a.btn-white, .section-brand a.btn-white { color: var(--primary, #0B4E3D); }
+.page-hero .btn:focus-visible, .section-brand .btn:focus-visible {
+    outline: 2px solid var(--yellow, #FFE987); outline-offset: 3px;
+}
+
+/* =============================================================================
+   16. MEGA MENU — one icon-led column, one panel, every breakpoint
+   No sidebar, no off-canvas, no multi-column grid. The panel drops beneath the
+   header on desktop and fills the viewport width below it on smaller screens.
+   ========================================================================== */
+.mm-trigger {
+    display: inline-flex; align-items: center; gap: .55rem;
+    padding: .6rem 1.05rem; border-radius: var(--r-pill);
+    background: transparent; border: 1.5px solid var(--border, #C1CCB3);
+    color: var(--primary, #0B4E3D); font: inherit; font-weight: 700; font-size: .92rem;
+    cursor: pointer; min-height: 44px;                 /* touch target */
+    transition: background-color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.mm-trigger:hover { background: var(--primary, #0B4E3D); border-color: var(--primary, #0B4E3D); color: #fff; }
+.mm-trigger:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 3px; }
+.mm-bars { display: grid; gap: 3px; width: 17px; }
+.mm-bars i {
+    display: block; height: 2px; border-radius: 2px; background: currentColor;
+    transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out);
+}
+.mm-bars i:nth-child(2) { width: 70%; }
+.mm-trigger[aria-expanded="true"] .mm-bars i:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+.mm-trigger[aria-expanded="true"] .mm-bars i:nth-child(2) { opacity: 0; }
+.mm-trigger[aria-expanded="true"] .mm-bars i:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+
+.mm-scrim {
+    position: fixed; inset: 0; z-index: 940; background: rgba(11, 45, 35, .45);
+    opacity: 0; transition: opacity var(--dur) var(--ease-out);
+}
+.mm-scrim.is-open { opacity: 1; }
+
+.mm-panel {
+    position: absolute; left: 0; right: 0; top: 100%; z-index: 950;
+    background: var(--surface, #fff);
+    border-top: 1px solid var(--border, #C1CCB3);
+    box-shadow: var(--elev-5);
+    max-height: calc(100vh - var(--header-h, 74px));
+    overflow-y: auto; overscroll-behavior: contain;
+    opacity: 0; transform: translateY(-8px);
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+}
+.mm-panel.is-open { opacity: 1; transform: translateY(0); }
+.mm-inner { padding-block: clamp(1.25rem, 2.5vw, 2rem); }
+
+/* Group label inside the single column */
+.mm-group {
+    margin: 1.4rem 0 .5rem; font-size: .72rem; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink, #CA4C1E);
+}
+.mm-group:first-child { margin-top: 0; }
+.mm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .15rem; }
+
+.mm-link {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .9rem;
+    padding: .7rem .85rem; border-radius: var(--r-sm); min-height: 44px;
+    text-decoration: none; color: var(--text, #151818);
+    border-left: 3px solid transparent;
+    transition: background-color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out);
+}
+.mm-link:hover { background: color-mix(in srgb, var(--primary, #0B4E3D) 7%, transparent); }
+.mm-link:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: -2px; }
+.mm-link.is-active {
+    background: color-mix(in srgb, var(--yellow, #FFE987) 45%, transparent);
+    border-left-color: var(--accent, #F15A24);
+}
+.mm-ico {
+    display: grid; place-items: center; width: 38px; height: 38px; flex: none;
+    border-radius: var(--r-xs);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 9%, transparent);
+    color: var(--primary, #0B4E3D);
+    transition: transform var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+}
+.mm-ico svg { width: 18px; height: 18px; }
+.mm-link:hover .mm-ico { transform: translateY(-2px); background: var(--yellow, #FFE987); }
+.mm-link.is-active .mm-ico { background: var(--primary, #0B4E3D); color: var(--yellow, #FFE987); }
+.mm-txt { display: grid; gap: .1rem; min-width: 0; }
+.mm-txt strong { font-size: .96rem; font-weight: 700; line-height: 1.3; }
+.mm-txt small { font-size: .8rem; color: var(--muted, #4B6754); line-height: 1.45; }
+.mm-arrow { color: var(--muted, #4B6754); opacity: 0; transform: translateX(-4px); transition: all var(--dur) var(--ease-out); }
+.mm-arrow svg { width: 16px; height: 16px; display: block; }
+.mm-link:hover .mm-arrow, .mm-link:focus-visible .mm-arrow { opacity: 1; transform: translateX(0); }
+
+.mm-cta { margin-top: 1.5rem; width: 100%; }
+
+/* Desktop: keep the column readable rather than stretched across 1200px. */
+@media (min-width: 861px) {
+    .mm-inner { max-width: 640px; }
+    .mm-cta { width: auto; }
+}
+/* Tablet / mobile: full width, larger targets, description hidden to keep it scannable. */
+@media (max-width: 860px) {
+    .mm-trigger-txt { display: none; }
+    .mm-trigger { padding: .6rem .7rem; }
+    .mm-panel { max-height: calc(100vh - var(--header-h, 74px)); }
+    .mm-link { min-height: 52px; padding: .8rem .75rem; }
+    .mm-txt strong { font-size: 1rem; }
+}
+@media (max-width: 520px) { .mm-txt small { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .mm-panel, .mm-scrim, .mm-link, .mm-ico, .mm-arrow, .mm-bars i { transition: none; }
+    .mm-link:hover .mm-ico { transform: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   16b. HORIZONTAL BAR — the primary pages stay visible across the header on PC
+   The panel below carries the full list (portals included) at every breakpoint.
+   -------------------------------------------------------------------------- */
+.mm-nav { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 1rem; }
+
+.mm-bar {
+    display: none;                 /* desktop only — see the min-width query */
+    list-style: none; margin: 0; padding: 0;
+    flex: 1 1 auto; min-width: 0;
+    align-items: center; justify-content: space-between; gap: .15rem;
+}
+.mm-bar-link {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .55rem .7rem; border-radius: var(--r-sm);
+    text-decoration: none; white-space: nowrap;
+    font-weight: 600; font-size: .9rem; color: var(--text, #151818);
+    border-bottom: 2px solid transparent;
+    transition: background-color var(--dur-fast) var(--ease-out),
+                color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out);
+}
+.mm-bar-link:hover { background: color-mix(in srgb, var(--primary, #0B4E3D) 8%, transparent); color: var(--primary, #0B4E3D); }
+.mm-bar-link:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; }
+.mm-bar-link.is-active { color: var(--primary, #0B4E3D); border-bottom-color: var(--accent, #F15A24); }
+.mm-bar-ico { display: inline-grid; place-items: center; color: var(--muted, #4B6754); transition: color var(--dur-fast) var(--ease-out); }
+.mm-bar-ico svg { width: 17px; height: 17px; display: block; }
+.mm-bar-link:hover .mm-bar-ico, .mm-bar-link.is-active .mm-bar-ico { color: var(--accent, #F15A24); }
+
+/* The panel spans the full header width; its column is centred inside it. */
+.mm-panel .mm-inner { max-width: var(--container, 1200px); margin-inline: auto; }
+
+@media (min-width: 1024px) {
+    .mm-bar { display: flex; }
+    /* With the bar visible the trigger becomes the "everything else" affordance. */
+    .mm-trigger { flex: none; }
+    .mm-trigger-txt { display: inline; }
+    /* Full-width panel: three tracks so 17 links do not become a long scroll,
+       while each track is still a single column of icon links. */
+    .mm-panel .mm-inner {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        column-gap: clamp(1.5rem, 3vw, 3rem); align-items: start;
+    }
+    .mm-panel .mm-group { grid-row: 1; margin-top: 0; }
+    .mm-panel .mm-group:nth-of-type(1) { grid-column: 1; }
+    .mm-panel .mm-group:nth-of-type(2) { grid-column: 2; }
+    .mm-panel .mm-group:nth-of-type(3) { grid-column: 3; }
+    .mm-panel .mm-list { grid-row: 2; }
+    .mm-panel .mm-list:nth-of-type(1) { grid-column: 1; }
+    .mm-panel .mm-list:nth-of-type(2) { grid-column: 2; }
+    .mm-panel .mm-list:nth-of-type(3) { grid-column: 3; }
+    .mm-cta { grid-row: 3; grid-column: 1 / -1; justify-self: start; margin-top: 1.5rem; }
+}
+@media (max-width: 1023px) {
+    .mm-nav { flex: 0 0 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .mm-bar-link, .mm-bar-ico { transition: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   16c. HORIZONTAL BAR — fit guarantees
+   Nine labelled items (~990px) + brand (~300px) + actions (~250px) overflow a
+   1200px container, so the labels only appear once there is genuinely room for
+   them. Between 1024 and 1279px the bar is icon-only with the label exposed to
+   assistive tech and as a tooltip; below 1024px the bar gives way to the panel.
+   Nothing is ever allowed to wrap or scroll sideways.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+    .mm-bar { flex-wrap: nowrap; overflow: visible; }
+    .mm-bar-link { padding: .5rem .55rem; font-size: .86rem; }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+    /* Icon-only: keep the accessible name, drop the visible text. */
+    .mm-bar-link > span:not(.mm-bar-ico) {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+    .mm-bar-link { padding: .55rem .6rem; }
+    .mm-bar-ico svg { width: 19px; height: 19px; }
+}
+@media (min-width: 1280px) {
+    .mm-bar-link { padding: .55rem .7rem; font-size: .9rem; }
+}
+/* The header row itself must never produce a horizontal scrollbar. */
+.navbar .nav-inner { min-width: 0; }
+.mm-nav, .mm-bar { min-width: 0; }
+
+/* -----------------------------------------------------------------------------
+   16d. HEADER FIT — stop the trigger colliding with the nav
+   The header row inherits .container's 1200px cap, but brand (~330px) + nine
+   labelled links (~830px) + the action cluster (~300px) needs ~1460px. Past the
+   cap the flex items overflowed and the Menu button was painted on top of
+   Gallery/Contact. The header band is full-bleed anyway, so its inner row is
+   allowed a wider measure than body copy, and every child is made shrinkable so
+   overflow can never resolve as an overlap.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+    .navbar .nav-inner {
+        max-width: min(1560px, 100% - 2.5rem);
+        gap: clamp(.75rem, 1.6vw, 1.75rem);
+    }
+    .navbar .nav-brand { flex: 0 1 auto; min-width: 0; }
+    .navbar .nav-actions { flex: 0 0 auto; }
+
+    /* The bar owns the free space and is the only thing allowed to shrink. */
+    .mm-nav  { flex: 1 1 auto; min-width: 0; gap: .5rem; }
+    .mm-bar  { flex: 1 1 auto; min-width: 0; justify-content: center; gap: .1rem; }
+    .mm-bar-link { flex: 0 1 auto; min-width: 0; }
+
+    /* Compact trigger: with nine links visible the word "Menu" is redundant and
+       it was ~55px of the overflow. The button keeps its accessible name. */
+    .mm-trigger { flex: 0 0 auto; padding: .55rem .65rem; }
+    .mm-trigger-txt {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+}
+
+/* Icons: reserve the box before lucide swaps <i data-lucide> for an <svg>, so
+   the row never reflows on hydration and the glyph is never zero-sized. */
+.mm-bar-ico { width: 18px; height: 18px; flex: none; }
+.mm-bar-ico > i, .mm-bar-ico > svg { width: 100%; height: 100%; display: block; }
+.mm-ico { flex: none; }
+.mm-ico > i, .mm-ico > svg { width: 18px; height: 18px; display: block; }
+
+/* -----------------------------------------------------------------------------
+   16e. LABEL THRESHOLD — measured, not guessed
+   Nine icon+label links need ~110px each (~990px). With brand, the action
+   cluster, the trigger and gaps that is ~1620px of row, which only exists above
+   roughly a 1500px viewport. Below that the bar stays icon-only: still nine
+   visible destinations, still one click, and it cannot collide. The earlier
+   1280px threshold looked fine at 1920px and overlapped at 1440px.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) and (max-width: 1499px) {
+    .mm-bar-link > span:not(.mm-bar-ico) {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+    .mm-bar-link { padding: .55rem .6rem; }
+    .mm-bar-ico { width: 20px; height: 20px; }
+    .mm-bar { justify-content: center; gap: .25rem; }
+}
+@media (min-width: 1500px) {
+    .mm-bar-link { padding: .55rem .6rem; font-size: .88rem; gap: .4rem; }
+    .mm-bar { gap: .1rem; }
+}
+/* The brand was ~330px because the full name wraps to two lines. Trim it on
+   desktop so the saving goes to the navigation instead. */
+@media (min-width: 1024px) {
+    .navbar .nav-brand { font-size: 1rem; max-width: 260px; }
+    .navbar .nav-brand img { height: 38px; }
+}
+
+/* -----------------------------------------------------------------------------
+   16f. LABELLED STATE — tightened to the measured budget
+   The row affords ~99px per link at 1560px. At .88rem with a 6px gap and an
+   18px icon, "Campaigns" wanted ~106px, so the labels never actually fit and
+   the threshold alone would not have saved it. Trimming the type, gap, icon and
+   padding brings the widest label to ~93px, inside the budget with headroom.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1500px) {
+    .mm-bar-link {
+        font-size: .82rem; letter-spacing: -.005em;
+        gap: .3rem; padding: .5rem .45rem;
+    }
+    .mm-bar-ico { width: 16px; height: 16px; }
+    .mm-bar-ico > i, .mm-bar-ico > svg { width: 16px; height: 16px; }
+}
+
+/* -----------------------------------------------------------------------------
+   16g. MIXED NAV — six labelled top-level entries, four with mega dropdowns
+   Six items at ~120px average is ~720px, comfortably inside the ~824px the
+   header row affords, so the labels stay visible at every desktop width instead
+   of collapsing to icon-only.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+    .mm-bar { display: flex; justify-content: center; gap: .15rem; }
+    .mm-item { position: relative; }
+
+    /* Labels are always visible now — undo the earlier icon-only collapse. */
+    .mm-bar-link > span:not(.mm-bar-ico) {
+        position: static; width: auto; height: auto; padding: 0; margin: 0;
+        overflow: visible; clip: auto; white-space: nowrap;
+    }
+    .mm-bar-link {
+        background: none; border: 0; font: inherit; cursor: pointer;
+        font-size: .88rem; font-weight: 600; gap: .38rem; padding: .55rem .6rem;
+    }
+    .mm-caret { display: inline-grid; place-items: center; opacity: .6; }
+    .mm-caret svg { width: 14px; height: 14px; display: block; transition: transform var(--dur) var(--ease-out); }
+    .mm-bar-link[aria-expanded="true"] .mm-caret svg { transform: rotate(180deg); }
+    .mm-bar-link[aria-expanded="true"] { background: color-mix(in srgb, var(--primary, #0B4E3D) 8%, transparent); }
+
+    /* The dropdown: full-width band under the header, single icon column. */
+    .mm-drop {
+        position: fixed; left: 0; right: 0; z-index: 950;
+        background: var(--surface, #fff);
+        border-top: 1px solid var(--border, #C1CCB3);
+        box-shadow: var(--elev-5);
+        opacity: 0; transform: translateY(-8px);
+        transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+    }
+    .mm-drop.is-open { opacity: 1; transform: translateY(0); }
+    .mm-drop-inner { padding-block: clamp(1.25rem, 2vw, 1.9rem); }
+    .mm-drop-head {
+        display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .85rem;
+        padding-bottom: .9rem; margin-bottom: .6rem;
+        border-bottom: 1px solid var(--border, #C1CCB3);
+    }
+    .mm-drop-ico {
+        display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-sm);
+        background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D);
+    }
+    .mm-drop-ico svg { width: 19px; height: 19px; }
+    .mm-drop-head strong { display: block; font-size: 1rem; color: var(--text, #151818); }
+    .mm-drop-head small { display: block; font-size: .84rem; color: var(--muted, #4B6754); }
+    .mm-drop-all {
+        display: inline-flex; align-items: center; gap: .35rem; white-space: nowrap;
+        font-size: .85rem; font-weight: 700; color: var(--primary, #0B4E3D); text-decoration: none;
+    }
+    .mm-drop-all svg { width: 15px; height: 15px; transition: transform var(--dur) var(--ease-out); }
+    .mm-drop-all:hover svg { transform: translateX(3px); }
+    .mm-drop-list {
+        list-style: none; margin: 0; padding: 0;
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: .1rem .75rem;
+    }
+
+    /* Desktop hides the mobile trigger and accordion entirely. */
+    .mm-trigger, .mm-panel, .mm-scrim { display: none !important; }
+}
+
+/* Mobile / tablet: accordion inside the one full-width panel. */
+@media (max-width: 1023px) {
+    .mm-bar { display: none; }
+    .mm-drop { display: none !important; }
+}
+.mm-acc { border-bottom: 1px solid var(--border, #C1CCB3); }
+.mm-acc:last-of-type { border-bottom: 0; }
+.mm-acc-head {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .9rem;
+    width: 100%; padding: .9rem .75rem; min-height: 52px;
+    background: none; border: 0; font: inherit; text-align: left; cursor: pointer;
+    color: var(--text, #151818);
+}
+.mm-acc-head:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: -2px; }
+.mm-acc-head .mm-caret svg { width: 18px; height: 18px; transition: transform var(--dur) var(--ease-out); }
+.mm-acc-head[aria-expanded="true"] .mm-caret svg { transform: rotate(180deg); }
+.mm-acc-body { list-style: none; margin: 0 0 .6rem; padding: 0 0 0 .9rem; display: grid; gap: .1rem; }
+.mm-acc-solo { border-bottom: 1px solid var(--border, #C1CCB3); }
+
+@media (prefers-reduced-motion: reduce) {
+    .mm-drop, .mm-caret svg, .mm-drop-all svg, .mm-acc-head .mm-caret svg { transition: none; }
+}
+
+/* =============================================================================
+   17. PORTAL SIDEBAR — slide-out drawer of every sign-in destination
+   Separate from the header navigation (which has no sidebar by design): this is
+   a single-purpose drawer so the eight role portals have one organised home at
+   every screen size.
+   ========================================================================== */
+.ps-trigger {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .55rem 1rem; min-height: 44px; border-radius: var(--r-pill);
+    background: transparent; border: 1.5px solid var(--border, #C1CCB3);
+    color: var(--primary, #0B4E3D); font: inherit; font-weight: 700; font-size: .88rem;
+    cursor: pointer; white-space: nowrap;
+    transition: background-color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.ps-trigger svg { width: 17px; height: 17px; }
+.ps-trigger:hover { background: var(--primary, #0B4E3D); border-color: var(--primary, #0B4E3D); color: #fff; }
+.ps-trigger:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 3px; }
+
+.ps-scrim {
+    position: fixed; inset: 0; z-index: 1200; background: rgba(11, 45, 35, .5);
+    opacity: 0; transition: opacity var(--dur) var(--ease-out);
+}
+.ps-scrim.is-open { opacity: 1; }
+
+.ps-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 1210;
+    width: min(400px, 92vw);
+    display: flex; flex-direction: column;
+    background: var(--surface, #fff);
+    border-left: 1px solid var(--border, #C1CCB3);
+    box-shadow: -24px 0 60px -30px rgba(4, 26, 18, .55);
+    transform: translateX(100%);
+    transition: transform .32s var(--ease-out);
+    overscroll-behavior: contain;
+}
+.ps-drawer.is-open { transform: translateX(0); }
+
+.ps-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    padding: 1.35rem 1.35rem .9rem;
+    background: var(--primary, #0B4E3D); color: #fff;
+}
+.ps-eyebrow {
+    margin: 0 0 .2rem; font-size: .7rem; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--yellow, #FFE987);
+}
+.ps-title { margin: 0; font-size: 1.3rem; color: #fff; }
+.ps-close {
+    flex: none; display: grid; place-items: center; width: 40px; height: 40px;
+    border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,.28);
+    background: rgba(255,255,255,.1); color: #fff; cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-out);
+}
+.ps-close:hover { background: rgba(255,255,255,.22); }
+.ps-close:focus-visible { outline: 2px solid var(--yellow, #FFE987); outline-offset: 2px; }
+.ps-close svg { width: 19px; height: 19px; }
+
+.ps-note {
+    display: flex; align-items: flex-start; gap: .5rem; margin: 0;
+    padding: .75rem 1.35rem; font-size: .8rem; line-height: 1.5;
+    color: var(--muted, #4B6754); background: var(--ivory, #FEFEF1);
+    border-bottom: 1px solid var(--border, #C1CCB3);
+}
+.ps-note svg { width: 15px; height: 15px; flex: none; margin-top: .1rem; color: var(--accent, #F15A24); }
+
+.ps-nav { flex: 1 1 auto; overflow-y: auto; padding: .5rem .75rem 1rem; }
+.ps-group {
+    margin: 1rem 0 .35rem .6rem; font-size: .7rem; font-weight: 700;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--accent-ink, #CA4C1E);
+}
+.ps-group:first-child { margin-top: .5rem; }
+
+.ps-link {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .8rem;
+    padding: .75rem .65rem; min-height: 56px;          /* touch-friendly */
+    border-radius: var(--r-sm); text-decoration: none; color: var(--text, #151818);
+    border-left: 3px solid transparent;
+    transition: background-color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out);
+}
+.ps-link:hover, .ps-link:active { background: color-mix(in srgb, var(--primary, #0B4E3D) 8%, transparent); border-left-color: var(--accent, #F15A24); }
+.ps-link:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: -2px; }
+.ps-ico {
+    display: grid; place-items: center; width: 40px; height: 40px; flex: none;
+    border-radius: var(--r-xs);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 9%, transparent);
+    color: var(--primary, #0B4E3D);
+    transition: transform var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+}
+.ps-ico > i, .ps-ico > svg { width: 19px; height: 19px; display: block; }
+.ps-link:hover .ps-ico { transform: translateY(-2px); background: var(--yellow, #FFE987); }
+.ps-txt { display: grid; gap: .1rem; min-width: 0; }
+.ps-txt strong { font-size: .95rem; font-weight: 700; }
+.ps-txt small { font-size: .78rem; color: var(--muted, #4B6754); line-height: 1.4; }
+.ps-arrow { color: var(--muted, #4B6754); opacity: .5; transition: all var(--dur) var(--ease-out); }
+.ps-arrow svg { width: 16px; height: 16px; display: block; }
+.ps-link:hover .ps-arrow { opacity: 1; transform: translateX(3px); }
+
+.ps-foot { padding: 1rem 1.35rem 1.35rem; border-top: 1px solid var(--border, #C1CCB3); }
+.ps-help { margin: .7rem 0 0; font-size: .8rem; color: var(--muted, #4B6754); text-align: center; }
+.ps-help a { color: var(--primary, #0B4E3D); font-weight: 700; }
+
+@media (max-width: 560px) {
+    .ps-drawer { width: 100vw; border-left: 0; }
+    .ps-trigger-txt { display: none; }
+    .ps-trigger { padding: .55rem .7rem; }
+    .ps-link { min-height: 60px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ps-drawer, .ps-scrim, .ps-link, .ps-ico, .ps-arrow { transition: none; }
+    .ps-link:hover .ps-ico, .ps-link:hover .ps-arrow { transform: none; }
+}
+
+/* =============================================================================
+   18. MOBILE TOP BAR — redesigned for small screens
+   The bar previously degraded badly: the email collapsed to a bare unlabelled
+   icon, the tagline and socials competed for a 360px row, and hiding our own
+   language switch exposed Google's raw gadget underneath. It is now a two-part
+   row — contact on the left, language on the right — with real touch targets.
+   ========================================================================== */
+@media (max-width: 860px) {
+    .topbar-utility { font-size: .8rem; }
+    .topbar-utility-inner {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: .5rem; min-height: 44px; padding-block: .3rem;
+    }
+
+    /* Left: phone is the useful mobile action; email becomes an icon button with
+       an accessible name rather than a naked glyph next to nothing. */
+    .tu-left { display: flex; align-items: center; gap: .35rem; min-width: 0; }
+    .tu-left a {
+        display: inline-flex; align-items: center; gap: .35rem;
+        min-height: 38px; padding: .25rem .45rem; border-radius: var(--r-sm);
+        white-space: nowrap;
+    }
+    .tu-left a:first-child {                 /* email: icon-only, still tappable */
+        width: 38px; justify-content: center; padding: 0;
+        background: rgba(255,255,255,.10);
+    }
+    .tu-sep { display: none; }
+    .tu-hide-sm { display: none; }
+
+    /* Right: language switch only. The tagline and social row need width the
+       bar does not have on a phone, and both live in the footer already. */
+    .tu-right { display: flex; align-items: center; gap: .4rem; margin-left: auto; }
+    .tu-note, .tu-social { display: none; }
+
+    .gt-switch {
+        display: inline-flex !important; align-items: center; gap: .35rem;
+        min-height: 38px; padding: .3rem .6rem; border-radius: var(--r-pill);
+        background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22);
+    }
+    .gt-switch .gt-ico svg { width: 15px; height: 15px; }
+    .gt-switch select, .gt-switch button { font-size: .8rem; }
+
+    /* Google's own gadget must never be what the visitor sees. */
+    .goog-te-gadget, .goog-te-gadget-simple { display: none !important; }
+}
+
+@media (max-width: 400px) {
+    /* Very small: phone number only, plus the language pill. */
+    .tu-left a:not(:first-child) span { display: none; }
+    .topbar-utility-inner { gap: .35rem; }
+}
+
+/* =============================================================================
+   19. TOP BAR — premium, legible, brand-coloured
+   The bar sat on the same forest green as the hero with low-contrast white,
+   so the address, number and language control all read as faint grey marks.
+   It now uses the DEEP green as its own field, warm ivory type, and a gold
+   rule beneath — a distinct band rather than a dim extension of the header.
+   ========================================================================== */
+.topbar-utility {
+    background: var(--brand-green-dark, #0F4537);
+    color: #FEFEF1;
+    border-bottom: 2px solid var(--gold, #E8C52E);
+    font-size: .84rem;
+    position: relative; z-index: 2;
+}
+.topbar-utility-inner { min-height: 46px; }
+
+/* Contact links: ivory at full strength, gold icons, real hover feedback. */
+.tu-left a, .tu-right a {
+    color: #FEFEF1; text-decoration: none; font-weight: 600;
+    border-radius: var(--r-sm);
+    transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+.tu-left a:hover, .tu-right a:hover { color: var(--yellow, #FFE987); }
+.tu-left a:focus-visible, .tu-right a:focus-visible {
+    outline: 2px solid var(--yellow, #FFE987); outline-offset: 2px;
+}
+.tu-left a svg, .tu-left a svg.lucide { color: var(--yellow, #FFE987); }
+.tu-sep { background: rgba(255,255,255,.28); width: 1px; height: 16px; }
+
+/* Tagline: readable, not a whisper. */
+.tu-note { color: rgba(254,254,241,.86); font-weight: 500; }
+.tu-dot { background: var(--gold, #E8C52E); opacity: .9; }
+
+/* Social chips: gold on hover, brand green glyph — legible at 30px. */
+.tu-social a {
+    background: rgba(255,255,255,.14); color: #FEFEF1;
+    border: 1px solid rgba(255,255,255,.18);
+}
+.tu-social a:hover { background: var(--yellow, #FFE987); color: var(--brand-green-dark, #0F4537); border-color: transparent; }
+
+/* Language switch: a proper pill so it reads as a control, not stray text. */
+.gt-switch {
+    background: rgba(255,255,255,.14) !important;
+    border: 1px solid rgba(255,255,255,.24) !important;
+    border-radius: var(--r-pill) !important;
+    padding: .3rem .7rem !important;
+    color: #FEFEF1 !important;
+    transition: background-color var(--dur-fast) var(--ease-out);
+}
+.gt-switch:hover { background: rgba(255,255,255,.22) !important; }
+.gt-switch, .gt-switch * { color: #FEFEF1 !important; }
+.gt-switch .gt-ico svg { color: var(--yellow, #FFE987) !important; }
+.goog-te-gadget-simple .goog-te-menu-value span { color: #FEFEF1 !important; }
+
+/* Dark theme: keep the band distinct from the page behind it. */
+:root[data-theme="dark"] .topbar-utility { background: #07211A; }
+
+/* =============================================================================
+   20. FLOATING MINI SEARCH
+   The search used to expand inline inside .nav-actions, which squeezed the
+   header on desktop and had nowhere to go on a phone. It now lifts out into a
+   centred floating bar beneath the header with its own scrim, so the field is
+   large, the results panel has room, and the header layout never moves.
+   ========================================================================== */
+.nav-search { position: static; }
+
+/* Scrim — drawn by the wrapper so no extra markup is needed. */
+.nav-search.is-open::before {
+    content: ""; position: fixed; inset: 0; z-index: 1150;
+    background: rgba(11, 45, 35, .42);
+    animation: nsFade .18s var(--ease-out) both;
+}
+@keyframes nsFade { from { opacity: 0 } to { opacity: 1 } }
+
+.nav-search.is-open .nav-search-box {
+    position: fixed; z-index: 1160;
+    top: calc(var(--header-h, 74px) + 18px);
+    left: 50%; transform: translateX(-50%);
+    width: min(680px, calc(100vw - 2rem));
+    display: flex; align-items: center; gap: .5rem;
+    padding: .5rem .5rem .5rem .95rem;
+    background: var(--surface, #fff);
+    border: 1.5px solid var(--primary, #0B4E3D);
+    border-radius: var(--r-pill);
+    box-shadow: 0 24px 60px -24px rgba(4, 26, 18, .5);
+    animation: nsRise .22s var(--ease-out) both;
+}
+@keyframes nsRise {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.nav-search.is-open .nsb-ico { color: var(--primary, #0B4E3D); }
+.nav-search.is-open .nsb-ico svg { width: 19px; height: 19px; }
+.nav-search.is-open .nav-search-box input {
+    flex: 1 1 auto; min-width: 0; border: 0; background: none; outline: none;
+    /* 16px minimum: below this iOS Safari zooms the page on focus. */
+    font-size: 1rem; font-family: inherit; color: var(--text, #151818);
+    padding: .55rem 0;
+}
+.nav-search.is-open .nav-search-box input::placeholder { color: var(--muted, #4B6754); }
+
+.nav-search.is-open .nsb-mic,
+.nav-search.is-open .nsb-clear {
+    flex: none; display: grid; place-items: center;
+    width: 40px; height: 40px; border-radius: var(--r-pill);
+    border: 0; cursor: pointer;
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 8%, transparent);
+    color: var(--primary, #0B4E3D);
+    transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.nav-search.is-open .nsb-mic:hover,
+.nav-search.is-open .nsb-clear:hover { background: var(--yellow, #FFE987); }
+.nav-search.is-open .nsb-mic:focus-visible,
+.nav-search.is-open .nsb-clear:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; }
+.nav-search.is-open .nsb-mic svg,
+.nav-search.is-open .nsb-clear svg { width: 18px; height: 18px; }
+
+/* Listening state: unmistakable, and it pulses only while actually recording. */
+.nav-search.is-open .nsb-mic.is-listening {
+    background: var(--accent, #F15A24); color: #fff;
+    animation: nsPulse 1.2s ease-in-out infinite;
+}
+@keyframes nsPulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent, #F15A24) 55%, transparent); }
+    50%      { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent, #F15A24) 0%, transparent); }
+}
+
+/* Results float directly under the bar, matching its width. */
+.nav-search.is-open .nav-search-panel {
+    position: fixed; z-index: 1160;
+    top: calc(var(--header-h, 74px) + 18px + 60px);
+    left: 50%; transform: translateX(-50%);
+    width: min(680px, calc(100vw - 2rem));
+    right: auto;
+    border-radius: var(--r-lg);
+    box-shadow: 0 24px 60px -24px rgba(4, 26, 18, .5);
+    max-height: min(60vh, 480px); overflow-y: auto; overscroll-behavior: contain;
+}
+
+@media (max-width: 560px) {
+    .nav-search.is-open .nav-search-box,
+    .nav-search.is-open .nav-search-panel { width: calc(100vw - 1.25rem); }
+    .nav-search.is-open .nav-search-box { top: calc(var(--header-h, 74px) + 10px); }
+    .nav-search.is-open .nav-search-panel { top: calc(var(--header-h, 74px) + 10px + 58px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .nav-search.is-open::before,
+    .nav-search.is-open .nav-search-box { animation: none; }
+    .nav-search.is-open .nsb-mic.is-listening { animation: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   21. OVERLAY STACKING LADDER
+   .navbar is position:sticky with z-index:900 AND backdrop-filter, so it both
+   creates a stacking context and becomes the containing block for any fixed
+   descendant. The mega overlays are therefore rendered at end-of-body (see
+   includes/footer.php) rather than inside the header. This block puts every
+   overlay on one explicit ladder so nothing can sit on top of a modal again —
+   the cookie banner previously outranked the portal drawer at 1250 vs 1210.
+   -------------------------------------------------------------------------- */
+.mm-scrim   { z-index: 1100; }
+.mm-drop    { z-index: 1110; }
+.mm-panel   { z-index: 1110; }
+.nav-search.is-open::before        { z-index: 1150; }
+.nav-search.is-open .nav-search-box,
+.nav-search.is-open .nav-search-panel { z-index: 1160; }
+.ps-scrim   { z-index: 1200; }
+.ps-drawer  { z-index: 1210; }
+/* Consent sits BELOW the modals it would otherwise cover, but above the page. */
+.cookie-consent { z-index: 1050 !important; }
+
+/* -----------------------------------------------------------------------------
+   22. HEADER FIT v2 — seven entries, measured properly this time
+   The earlier budget assumed SIX top-level items; the tree actually has seven
+   (Home, About Us, Programs, Media, Support Us, Portals, Contact), so the row
+   overran and the search control painted over "Contact". Three savings, in
+   order of how much room they return:
+     brand   ~290 -> ~190px  (it was wrapping to two lines)
+     nav     tighter padding + gap
+     actions compact icon buttons
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+    /* --- Brand: one line, never two. Two lines cost width AND height. --- */
+    .navbar .nav-brand {
+        flex: 0 0 auto; max-width: 190px; gap: .5rem;
+        font-size: .92rem; line-height: 1.15;
+    }
+    .navbar .nav-brand img { height: 34px; width: auto; }
+    /* (brand clamp removed — it truncated the organisation name; see block 23) */
+
+    /* --- Nav: tighter, centred, allowed to shrink before anything else. --- */
+    .navbar .nav-inner { gap: .6rem; }
+    .mm-nav { flex: 1 1 auto; min-width: 0; gap: .35rem; justify-content: center; }
+    .mm-bar { flex: 0 1 auto; min-width: 0; gap: 0; justify-content: center; }
+    .mm-bar-link {
+        padding: .5rem .4rem; gap: .28rem;
+        font-size: .84rem; letter-spacing: -.008em;
+    }
+    .mm-bar-ico { width: 16px; height: 16px; }
+    .mm-bar-ico > i, .mm-bar-ico > svg { width: 16px; height: 16px; }
+    .mm-caret svg { width: 12px; height: 12px; }
+
+    /* --- Actions: compact, and never squeezed by the nav. --- */
+    .navbar .nav-actions { flex: 0 0 auto; gap: .35rem; }
+    .navbar .nav-search-trigger,
+    .navbar .theme-toggle { width: 38px; height: 38px; flex: none; }
+    .ps-trigger { padding: .45rem .8rem; font-size: .84rem; }
+    .navbar .nav-actions .btn { padding: .5rem .85rem; font-size: .84rem; }
+}
+
+/* 1024-1360px is the tightest desktop band: drop the nav labels rather than let
+   anything overlap. The accessible name stays in the DOM. */
+@media (min-width: 1024px) and (max-width: 1360px) {
+    .mm-bar-txt {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+    .mm-bar-link { padding: .5rem .55rem; }
+    .mm-bar-ico, .mm-bar-ico > i, .mm-bar-ico > svg { width: 19px; height: 19px; }
+    .ps-trigger .ps-trigger-txt { display: none; }
+    .ps-trigger { padding: .45rem .6rem; }
+}
+
+/* -----------------------------------------------------------------------------
+   23. BRAND WORDMARK — the full name, set properly
+   The previous rule clamped .brand-name to two lines with overflow:hidden to
+   save header width, which truncated the organisation's own name to
+   "EDUSKILL INDIA…". An NGO's name is the one string on the page that must
+   never be elided. It now wraps deliberately onto two tight lines at a width
+   chosen so the break falls after "INDIA", with no ellipsis at any size.
+   -------------------------------------------------------------------------- */
+.navbar .nav-brand {
+    display: flex; align-items: center; gap: .55rem;
+    text-decoration: none; min-width: 0;
+}
+.navbar .nav-brand .brand-name {
+    /* Undo the clamp — this is what produced the ellipsis. */
+    display: block; -webkit-line-clamp: none; -webkit-box-orient: horizontal;
+    overflow: visible; text-overflow: clip; white-space: normal;
+
+    font-family: var(--font-head, inherit);
+    font-weight: 800;
+    font-size: clamp(.78rem, .62rem + .35vw, .95rem);
+    line-height: 1.12;
+    letter-spacing: -.005em;
+    color: var(--primary, #0B4E3D);
+    text-wrap: balance;                 /* splits "EDUSKILL INDIA / FOUNDATION" evenly */
+}
+/* The kicker: small, quiet, uppercase — it should never compete with the name. */
+.navbar .nav-brand .brand-name small {
+    display: block; margin-top: .12rem;
+    font-size: .58rem; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted, #4B6754);
+    white-space: nowrap;
+}
+
+@media (min-width: 1024px) {
+    /* Wide enough for the natural two-line break, no clamp, no ellipsis. */
+    .navbar .nav-brand { flex: 0 0 auto; max-width: 210px; }
+    .navbar .nav-brand img { height: 40px; width: auto; }
+}
+/* The tightest desktop band already drops the nav labels; drop the kicker too
+   so the wordmark keeps its full name rather than losing characters. */
+@media (min-width: 1024px) and (max-width: 1360px) {
+    .navbar .nav-brand { max-width: 168px; }
+    .navbar .nav-brand .brand-name small { display: none; }
+}
+@media (max-width: 1023px) {
+    .navbar .nav-brand { max-width: min(60vw, 260px); }
+    .navbar .nav-brand img { height: 38px; }
+}
+@media (max-width: 420px) {
+    .navbar .nav-brand .brand-name { font-size: .74rem; }
+    .navbar .nav-brand .brand-name small { display: none; }
+}
+
+/* =============================================================================
+   24. AUTH CARD — one design, contextual wording
+   Every portal shares this card; only the badge and copy change. Deliberately
+   no split-screen imagery, no marketing rail, no sidebar: a sign-in page has
+   one job, and decoration beside the form only competes with it on a phone.
+   ========================================================================== */
+.auth-shell { background: var(--bg-alt, #F8FCF8); min-height: 100vh; }
+.auth-main  { display: grid; place-items: center; padding: clamp(1.25rem, 4vw, 3rem) 1.25rem; min-height: 100vh; }
+.auth-box   { width: 100%; max-width: 452px; }
+
+.auth-logo {
+    display: flex; align-items: center; justify-content: center; gap: .6rem;
+    margin-bottom: 1.35rem; text-decoration: none;
+    font-family: var(--font-head, inherit); font-weight: 800; font-size: 1rem;
+    color: var(--primary, #0B4E3D); text-align: center;
+}
+.auth-logo img { width: 46px; height: 46px; object-fit: contain; }
+
+.auth-box .card.auth-card {
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-xl);
+    padding: clamp(1.6rem, 4vw, 2.4rem);
+    box-shadow: var(--elev-4);
+    /* A single hairline of brand colour along the top — enough to feel
+       considered without a decorative panel competing with the fields. */
+    border-top: 3px solid var(--primary, #0B4E3D);
+}
+
+.auth-head { text-align: center; margin-bottom: 1.6rem; }
+.auth-badge {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .35rem .85rem; margin-bottom: .9rem;
+    border-radius: var(--r-pill);
+    background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D);
+    font-size: .74rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+}
+.auth-badge svg { width: 14px; height: 14px; }
+.auth-title {
+    margin: 0 0 .4rem; font-size: clamp(1.5rem, 1.2rem + 1.2vw, 1.9rem);
+    line-height: 1.2; letter-spacing: -.02em; color: var(--text, #151818);
+}
+.auth-blurb { margin: 0; color: var(--muted, #4B6754); font-size: .95rem; line-height: 1.6; }
+
+/* Fields: 16px minimum so iOS Safari never zooms the page on focus. */
+.auth-box .card.auth-card .field-float input,
+.auth-box .card.auth-card .form-control {
+    width: 100%; min-height: 48px; font-size: 1rem;
+    border-radius: var(--r-sm); border: 1.5px solid var(--border, #C1CCB3);
+    background: var(--surface, #fff);
+}
+.auth-box .card.auth-card .field-float input:focus,
+.auth-box .card.auth-card .form-control:focus {
+    border-color: var(--primary, #0B4E3D);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #0B4E3D) 16%, transparent);
+    outline: none;
+}
+.auth-box .card.auth-card .btn-block, .auth-box .card.auth-card button[type="submit"] { min-height: 50px; font-size: 1rem; }
+
+/* Portal switcher — the escape hatch for someone at the wrong door. */
+.auth-switch {
+    margin-top: 1.5rem; padding-top: 1.15rem;
+    border-top: 1px solid var(--border, #C1CCB3); text-align: center;
+}
+.auth-switch p { margin: 0 0 .6rem; font-size: .8rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted, #4B6754); }
+.auth-switch-list { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; }
+.auth-switch-list a {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .4rem .7rem; border-radius: var(--r-pill);
+    border: 1px solid var(--border, #C1CCB3);
+    font-size: .8rem; font-weight: 600; text-decoration: none;
+    color: var(--text, #151818); background: var(--surface, #fff);
+    transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.auth-switch-list a svg { width: 14px; height: 14px; color: var(--muted, #4B6754); }
+.auth-switch-list a:hover { background: var(--primary, #0B4E3D); border-color: var(--primary, #0B4E3D); color: #fff; }
+.auth-switch-list a:hover svg { color: var(--yellow, #FFE987); }
+.auth-switch-list a:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; }
+.auth-switch-list a.is-current { background: var(--primary, #0B4E3D); border-color: var(--primary, #0B4E3D); color: #fff; }
+.auth-switch-list a.is-current svg { color: var(--yellow, #FFE987); }
+
+@media (max-width: 480px) {
+    .auth-box .card.auth-card { padding: 1.4rem 1.15rem; border-radius: var(--r-lg); }
+    .auth-switch-list a { font-size: .76rem; padding: .35rem .6rem; }
+}
+
+/* =============================================================================
+   25. TOUCH ERGONOMICS — measured, not guessed
+   =============================================================================
+   Both rules below fix defects found by measuring the rendered page in headless
+   Chrome at 320/375/390/768px, not by reading the stylesheet. Raw counts were
+   large (193 findings on the member pages alone) but collapsed to 14 unique
+   defects in two families, which is what this section addresses.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   25.1  iOS Safari zoom on input focus.
+   Safari zooms the whole viewport when a focused form control has a font-size
+   below 16px, then leaves the page zoomed — the user has to pinch back out
+   after every field. Measured offenders ranged from 13.33px (the browser
+   default for <select>, which inherits nothing) up to 15.68px (0.98rem), so
+   they LOOKED intentional and were all just under the threshold.
+   16px is a floor, not a design choice: it only applies on touch-sized
+   viewports, so desktop typography is untouched.
+   -------------------------------------------------------------------------- */
+@media (max-width: 820px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]),
+    select,
+    textarea,
+    .form-control,
+    .form-select,
+    .form-textarea,
+    .cs-phone {
+        /* !important, deliberately and narrowly.
+           The first version listed the bare element selectors plus .form-control
+           and .form-select, and it left 52 controls untouched: `.form-textarea`
+           (0,1,0) outranks `textarea` (0,0,1), and several fields are targeted by
+           ID — `select#plan_id`, `input#email` — which no class selector can beat.
+           Chasing that with ever-longer selectors would be a losing game against
+           every future ID rule.
+           This is a hard accessibility floor on touch viewports, not a style
+           preference: below 16px, iOS Safari zooms the page on focus and leaves
+           it zoomed. Nothing should be allowed to override it, so say so. */
+        font-size: 16px !important;
+    }
+}
+
+/* -----------------------------------------------------------------------------
+   25.2  Footer legal links were 23px tall.
+   Six links (Privacy, Terms, Refund, Disclaimer, Cookies, Sitemap) rendered at
+   40-66 x 23px — under half the 44x44 minimum, sitting side by side, which is
+   how you mis-tap "Refund" when you wanted "Terms".
+   Padding is added VERTICALLY only and the row gap is reduced to compensate, so
+   the footer does not grow. The separator "·" is positioned against the link
+   box (right: -.65rem), so horizontal padding would push it away from the text
+   — hence padding-block rather than shorthand padding.
+   -------------------------------------------------------------------------- */
+@media (max-width: 820px) {
+    .footer-legal { gap: .1rem 1.1rem; }
+    .footer-legal a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding-block: .35rem;
+    }
+}
+
+/* -----------------------------------------------------------------------------
+   25.3  Card action links ("View project →", "Apply for this →").
+   These measured 20-23px tall — just under the WCAG 2.2 AA minimum of 24x24.
+   They carry their colour and weight in an inline style attribute, so there was
+   no hook to reach them from CSS until they were given this class; the inline
+   style is deliberately left alone, so nothing about the design changes.
+   inline-flex + a small vertical pad lifts the touch box over 24px and lets the
+   trailing arrow icon centre against the text instead of sitting on the
+   baseline. Desktop is untouched.
+   -------------------------------------------------------------------------- */
+.link-action { display: inline-flex; align-items: center; gap: .35rem; }
+
+@media (max-width: 820px) {
+    .link-action { min-height: 32px; padding-block: .25rem; }
+}
+
+/* -----------------------------------------------------------------------------
+   25.4  Mobile navigation: left drawer, not a dropdown.
+   The panel was `position:absolute; top:100%` — a full-width sheet that dropped
+   from under the header and animated on translateY. Two problems: it pushed the
+   viewport around on open, and on a tall phone the list ran past the fold with
+   nothing anchoring it.
+   Below 1024px (where .mm-bar is hidden and .mm-trigger is the only navigation)
+   it is now a proper left drawer: fixed to the viewport, full height, sliding in
+   from the left edge over the scrim. Desktop is untouched — the horizontal
+   .mm-bar still owns >=1024px and this block never applies there.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+    .mm-panel {
+        position: fixed;
+        top: 0; bottom: 0; left: 0; right: auto;
+        width: min(88vw, 380px);
+        max-height: none;
+        height: 100dvh;
+        /* NO z-index here — deliberately.
+           Section 21 above is the single overlay stacking ladder: scrim 1100,
+           panel 1110. This block sits later in the file, so the "z-index: 960"
+           it used to declare quietly won and put the panel UNDERNEATH its own
+           scrim. The drawer still animated and still looked right, so it read as
+           working — but every tap landed on the scrim, which closes the menu, so
+           no menu item could be clicked at all. Leave the ladder to own this. */
+        border-top: 0;
+        border-right: 1px solid var(--border, #C1CCB3);
+        border-radius: 0;
+        opacity: 1;                       /* a drawer slides; it does not fade */
+        transform: translateX(-100%);
+        transition: transform var(--dur) var(--ease-out);
+        /* The PANEL must not scroll. It is a flex column — fixed head, scrolling
+           .mm-inner, fixed foot (section 25.7). Leaving overflow-y:auto here as
+           well created two competing scroll containers: the whole panel scrolled
+           AND the middle did, so the pinned footer rode over the list. Measured
+           with every accordion expanded: the "Programs" row at y=679 hit-tested
+           as .mm-cta-row — the footer was sitting on top of it and swallowing
+           the tap. One scroll container, in the middle, is the whole fix. */
+        overflow: hidden;
+        overscroll-behavior: contain;
+        /* clear the notch and the home indicator on iOS */
+        padding-top: env(safe-area-inset-top);
+        padding-left: env(safe-area-inset-left);
+    }
+    .mm-panel.is-open { transform: translateX(0); opacity: 1; }
+
+    /* The inner wrapper was centring itself against the page container width;
+       inside a 380px drawer it just needs its own padding. */
+    .mm-panel .mm-inner {
+        max-width: none;
+        margin-inline: 0;
+        padding-inline: 1.15rem;
+    }
+}
+
+@media (max-width: 1023px) and (prefers-reduced-motion: reduce) {
+    .mm-panel { transition: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   25.5  Sticky asides must not pin on a single-column layout.
+   Fifteen pages give a sidebar an INLINE `position:sticky; top:90-100px`. Beside
+   a main column that is right. Collapsed to one column on a phone it is not: the
+   "sidebar" becomes a full-width card hundreds of pixels tall, pins near the top,
+   and every following section scrolls underneath it.
+   Measured on /account at 390px before this rule: the profile card froze at
+   top=100 from scrollY 442 while the membership card reached top=721 — an 18px
+   overlap that grew with scrolling. That is the reported "content overlapping".
+   !important is required, not preferred: the declaration it has to beat is an
+   inline style attribute, which outranks every normal author rule. Desktop is
+   untouched — above 1024px the inline rule still applies exactly as before, so
+   each page keeps its own 90px or 100px offset.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+    .sticky-aside {
+        position: static !important;
+        top: auto !important;
+    }
+}
+
+/* -----------------------------------------------------------------------------
+   25.6  Scroll-reveal must not move interactive content.
+   .reveal (tailwind.css) fades AND slides: `opacity:0; transform:translateY(28px)`
+   over .7s, cleared by an IntersectionObserver. Fading is harmless. Sliding is
+   not: while the transform runs, the element is still moving, so a tap lands
+   where the control WILL be rather than where it is. Measured on the newsletter
+   card at /blogs — mid-transition (opacity 0.72) elementFromPoint over the email
+   field returned the CARD, not the input. On a phone you scroll the form into
+   view and tap straight away, which is exactly that window: the field appears to
+   ignore you, which is the reported "cannot type".
+   Keep the fade, drop the movement, but only for blocks that actually contain a
+   control — decorative cards keep the full effect.
+   -------------------------------------------------------------------------- */
+/* WITHDRAWN. This block used to force `transform: none !important` on any
+   .reveal containing a control, on the theory that the 28px slide moved tap
+   targets mid-animation. The slide is real, but it was NOT the bug: the
+   newsletter field was blocked by `.card-3d::before`, an absolutely-positioned
+   decorative overlay with no pointer-events:none (fixed in tailwind.css). That
+   is a permanent block, not a .7s window, and it explains the symptom fully.
+   Disabling a designed animation across the site to work around a different
+   defect would have been a visible change made for the wrong reason, so the
+   override is gone and only the real cause is fixed. */
+
+/* -----------------------------------------------------------------------------
+   25.7  MOBILE DRAWER — head, items, foot.
+   The panel gained a brand header, an active-page state and a footer (sign in /
+   donate / contact) but had no styling for any of it, so the brand name ran into
+   the close button, the logo sat unaligned, and the phone and email collided on
+   one line against the panel edge. This section is that styling.
+   Scoped to the drawer breakpoint; the desktop dropdown is untouched.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+
+    .mm-panel { display: flex; flex-direction: column; }
+
+    /* ---- head ---------------------------------------------------------- */
+    .mm-head {
+        display: flex; align-items: center; gap: .75rem;
+        padding: 1rem 1rem 1rem 1.15rem;
+        border-bottom: 1px solid var(--border, #C1CCB3);
+        background: var(--bg-alt, #F8FCF8);
+        position: sticky; top: 0; z-index: 2;   /* stays while the list scrolls */
+    }
+    .mm-brand {
+        display: flex; align-items: center; gap: .6rem;
+        min-width: 0;                            /* lets the name shrink, not overflow */
+        text-decoration: none; color: inherit; flex: 1;
+    }
+    .mm-brand-logo {
+        width: 34px; height: 34px; flex: none;
+        border-radius: 8px; object-fit: contain; background: #fff;
+    }
+    .mm-brand-name {
+        font-family: var(--font-heading, inherit);
+        font-weight: 800; font-size: .82rem; line-height: 1.22;
+        letter-spacing: .01em; color: var(--primary, #0B4E3D);
+        /* Two lines maximum. The full name is 24 characters and was running
+           under the close button on a 320px screen. */
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .mm-close {
+        flex: none; width: 40px; height: 40px;
+        display: inline-grid; place-items: center;
+        border-radius: 10px; cursor: pointer;
+        background: var(--surface, #fff);
+        border: 1px solid var(--border, #C1CCB3);
+        color: var(--muted, #4B6754);
+        transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+    }
+    .mm-close:hover { background: var(--primary, #0B4E3D); border-color: var(--primary, #0B4E3D); color: #fff; }
+    .mm-close:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; }
+    .mm-close svg { width: 20px; height: 20px; }
+
+    /* ---- body ---------------------------------------------------------- */
+    .mm-panel .mm-inner {
+        flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain;
+        padding: .6rem .9rem 1rem;
+    }
+
+    /* Entrance stagger. --i is set per row in megamenu.php. Cheap, and it gives
+       the drawer a sense of arriving rather than appearing. */
+    .mm-panel.is-open .mm-acc-solo,
+    .mm-panel.is-open .mm-acc {
+        animation: mm-row-in .32s var(--ease-out, cubic-bezier(.2,.7,.3,1)) both;
+        animation-delay: calc(var(--i, 0) * 38ms + 60ms);
+    }
+    @keyframes mm-row-in {
+        from { opacity: 0; transform: translateX(-10px); }
+        to   { opacity: 1; transform: none; }
+    }
+
+    /* Current page. mega_is_active() already knew this; the drawer just never
+       showed it. */
+    .mm-acc-solo.is-active,
+    .mm-acc.is-active > .mm-acc-head {
+        background: var(--yellow-soft, #FEFEF1);
+        box-shadow: inset 3px 0 0 var(--accent, #F15A24);
+        border-radius: 10px;
+    }
+    .mm-acc-solo.is-active .mm-txt strong,
+    .mm-acc.is-active > .mm-acc-head .mm-txt strong { color: var(--accent-ink, #CA4C1E); }
+    .mm-link.is-active .mm-txt strong { color: var(--accent-ink, #CA4C1E); font-weight: 800; }
+
+    /* ---- foot ---------------------------------------------------------- */
+    .mm-foot {
+        flex: none;
+        border-top: 1px solid var(--border, #C1CCB3);
+        padding: .9rem 1.15rem calc(.9rem + env(safe-area-inset-bottom));
+        background: var(--bg-alt, #F8FCF8);
+        display: grid; gap: .8rem;
+    }
+    .mm-cta-row { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+    .mm-cta-half { width: 100%; justify-content: center; min-height: 46px; padding-inline: .5rem; }
+
+    /* Phone and email were sharing one line and touching the panel edge. One per
+       row, icon in its own column, and the address may ellipsis rather than
+       force the panel wider. */
+    .mm-contact { display: grid; gap: .1rem; }
+    .mm-contact a {
+        display: grid; grid-template-columns: 18px 1fr; align-items: center; gap: .6rem;
+        min-height: 40px; padding: .3rem .1rem;
+        font-size: .82rem; color: var(--muted, #4B6754); text-decoration: none;
+    }
+    .mm-contact a:hover { color: var(--primary, #0B4E3D); }
+    .mm-contact a:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px; border-radius: 6px; }
+    .mm-contact svg { width: 16px; height: 16px; color: var(--primary, #0B4E3D); }
+    .mm-contact span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+@media (max-width: 1023px) and (prefers-reduced-motion: reduce) {
+    .mm-panel.is-open .mm-acc-solo,
+    .mm-panel.is-open .mm-acc { animation: none; }
+}

@@ -35,7 +35,7 @@ if (is_post() && post('_do') === 'save') {
         'event_date'   => post('event_date'),
         'end_date'     => post('end_date') ?: null,
         'category'     => clean(post('category', '')),
-        'color'        => clean(post('color', '#063566')) ?: '#063566',
+        'color'        => clean(post('color', '#0B4E3D')) ?: '#0B4E3D',
         'is_recurring' => post('is_recurring') ? 1 : 0,
         'status'       => post('status') ? 1 : 0,
     ];
@@ -115,7 +115,7 @@ if ($action === 'create' || $action === 'edit') {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Accent Colour</label>
-                    <input class="form-control" type="color" name="color" value="<?= e($row['color'] ?? '#063566') ?>" style="height:48px;">
+                    <input class="form-control" type="color" name="color" value="<?= e($row['color'] ?? '#0B4E3D') ?>" style="height:48px;">
                 </div>
             </div>
 
@@ -167,7 +167,7 @@ include __DIR__ . '/partials/head.php';
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
                         <td>
-                            <span class="pill" style="background:<?= e($r['color'] ?: '#063566') ?>;color:#fff;">&nbsp;</span>
+                            <span class="pill" style="background:<?= e($r['color'] ?: '#0B4E3D') ?>;color:#fff;">&nbsp;</span>
                             <strong><?= e($r['title']) ?></strong>
                         </td>
                         <td>

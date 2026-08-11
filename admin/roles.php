@@ -244,7 +244,7 @@ include __DIR__ . '/partials/head.php';
 <?php $enf = function_exists('rbac_enforcement_on') && rbac_enforcement_on(); ?>
 <div class="panel" style="margin-bottom:1rem;"><div class="panel-body" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;">
     <div style="display:flex;align-items:center;gap:.85rem;">
-        <span style="width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:var(--grad-brand-soft,rgba(6,53,102,.12));color:var(--brand-600);"><?= lucide('shield-check') ?></span>
+        <span style="width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:var(--grad-brand-soft,rgba(11,78,61,.12));color:var(--brand-600);"><?= lucide('shield-check') ?></span>
         <div>
             <strong>Role permission enforcement</strong>
             <span class="pill <?= $enf ? 'pill-green' : 'pill-gray' ?>" style="margin-left:.4rem;"><?= $enf ? 'On' : 'Off' ?></span>

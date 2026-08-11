@@ -9,6 +9,24 @@ Options -Indexes +FollowSymLinks
 DirectoryIndex index.php
 
 # -----------------------------------------------------------------------------
+# No trailing path segments after a script name.
+#
+# By default Apache truncates the path at the deepest component that exists and
+# hands the remainder to the script as PATH_INFO, so /about.php/junk returned 200
+# and served the real About page — as did /index.php/junk, /contact.php/a/b/c and
+# every other page, at unlimited distinct URLs. That is duplicate content, an
+# unbounded cache-key surface, and it is the same truncation that turned the
+# clean-URL guard below into a 10-redirect 500 (see the note there).
+#
+# Safe to switch off here: nothing in this codebase reads PATH_INFO or
+# ORIG_PATH_INFO (grep -rn PATH_INFO over *.php returns nothing), and no rewrite
+# rule feeds path segments to a script — email-track.php and document.php both
+# take ordinary query parameters. Every pretty URL goes through an explicit
+# RewriteRule instead.
+# -----------------------------------------------------------------------------
+AcceptPathInfo Off
+
+# -----------------------------------------------------------------------------
 # Never serve developer/config files that live in the web root.
 # README.md, INSTALL.md and TESTING.md are unlinked but were fetchable with a
 # plain GET — INSTALL.md documents the deployment layout and DB setup steps.
@@ -16,6 +34,69 @@ DirectoryIndex index.php
 # mod_rewrite is unavailable.
 # -----------------------------------------------------------------------------
 <FilesMatch "\.(md|markdown|sql|log|ini|yml|yaml|lock|json|dist|bak|old|orig|save|swp|sh)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# -----------------------------------------------------------------------------
+# The config files, denied in the AUTHZ phase.
+#
+# There is already a "RewriteRule ^config\.php$ - [F,L]" below, and it does not
+# work: mod_rewrite's per-directory ruleset runs in the fixup phase, and for any
+# path ending in .php the clean-URL redirect further down matched first, so
+# /config.php answered 301 -> /config instead of 403. The request still ended on
+# the 404 page and no credentials were ever served, but the rule everyone would
+# point at as "the protection" was not the thing doing the protecting.
+#
+# <Files> is evaluated during authorization, before mod_rewrite gets the
+# request, so it cannot be outrun by rule ordering. Verified: 403, zero bytes.
+# -----------------------------------------------------------------------------
+<FilesMatch "^config(\.example|\.production)?\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# -----------------------------------------------------------------------------
+# Deployment archives. eduskill-hostinger-deploy.zip is a BUILD ARTEFACT that
+# contains the whole source tree INCLUDING config.php — i.e. the live DB
+# credentials and the AES-256 key — and .zip was not covered by the deny list
+# above, so a plain GET on the artefact's well-known name handed over every
+# secret in the install. Archives are never a served content type here.
+# -----------------------------------------------------------------------------
+<FilesMatch "\.(zip|tar|gz|tgz|bz2|xz|7z|rar)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# -----------------------------------------------------------------------------
+# Underscore-prefixed files are the project's convention for local probes,
+# previews and diagnostics (_diag.php, _dochub_preview.html, and the throwaway
+# _*_probe.php harnesses that audits keep leaving behind). They are not part of
+# the application and several have shipped with NO authentication while calling
+# card renderers that print a member's email, mobile and address. Denying the
+# whole prefix means the next one is dead on arrival instead of relying on
+# somebody remembering to delete it.
+#
+# NOTE: this also disables _diag.php. That is intentional — run it by renaming
+# it temporarily, then delete it; a permanently reachable diagnostic endpoint is
+# exactly the class of file this rule exists to stop.
+# -----------------------------------------------------------------------------
+<FilesMatch "^_">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -36,9 +117,25 @@ DirectoryIndex index.php
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # If installed in a subfolder (local XAMPP), this is /pwf/.
-    # If installed at a domain root, change to:  RewriteBase /
-    RewriteBase /pwf/
+    # -------------------------------------------------------------------------
+    # NO RewriteBase — deliberately.
+    #
+    # This used to read "RewriteBase /pwf/", the local XAMPP subfolder, with a
+    # comment telling you to change it to "/" for a domain root. That comment is
+    # not a mechanism: this file is committed to Git, and a Git-based deploy put
+    # the DEV value on production, where every relative substitution below then
+    # resolved to /pwf/about.php and 404'd. The live site broke exactly this way.
+    #
+    # In a .htaccess, mod_rewrite already resolves a relative substitution
+    # against the directory this file sits in. RewriteBase is only needed when
+    # the URL path and the filesystem path diverge (an Alias, a symlink) — which
+    # is not the case here, in either environment. Omitting it makes ONE file
+    # correct at a subfolder AND at a domain root, with nothing to remember.
+    #
+    # The one rule that cannot be relative is the .php -> clean-URL redirect
+    # below; it captures the full path from THE_REQUEST and substitutes /%1,
+    # which is already environment-independent.
+    # -------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------
     # Reject TRACK and other non-standard methods here. NOTE: real TRACE cannot
@@ -80,11 +177,78 @@ DirectoryIndex index.php
     RewriteRule ^campaign/([A-Za-z0-9\-]+)/?$ campaigns.php?slug=$1 [L,QSA]
     RewriteRule ^scheme/([A-Za-z0-9\-]+)/?$ schemes.php?slug=$1 [L,QSA]
 
+    # Human-readable membership verification: /verify/member/EIF-2026-00042.
+    # This is the route a person TYPES from the printed card, and every printed
+    # card PRINTS this path as text — the URL shape is public and permanent, so
+    # it must keep resolving even if verify-member.php is renamed. The QR code
+    # does NOT encode it: the QR carries the opaque qr_token, because a code URL
+    # is the one enumerable surface. The code path is rate-limited inside
+    # verify-member.php on its own counter. The character class must keep hyphens
+    # (member_generate_code() emits PREFIX-YEAR-NNNNN) and is bounded to 32
+    # characters, which is the width of the members.member_code column and of
+    # the form's own maxlength — a 4000-character "code" has nothing to match.
+    #
+    # NOT [QSA]: the query string is merged BEFORE ?code=, so the captured path
+    # segment is the LAST occurrence and PHP's last-wins parsing makes it the
+    # value that arrives. With [QSA] the original query was appended AFTER ours,
+    # so /verify/member/X?code=<anything> silently overrode the capture and the
+    # character class stopped being binding. Any real ?token= / ?utm_* still
+    # rides along; an empty query yields "?&code=…", which PHP parses fine.
+    RewriteRule ^verify/member/([A-Za-z0-9\-]{1,32})/?$ verify-member.php?%{QUERY_STRING}&code=$1 [L]
+
+    # -------------------------------------------------------------------------
+    # Contextual login portals:  /login/{role}  ->  login.php?portal={role}
+    # One login page serves every audience and branches on ?portal=, so each
+    # portal gets its own shareable URL without a separate PHP file per role.
+    #
+    # The roles are an EXPLICIT whitelist, never a (.+) capture, so the set of
+    # URLs that exist is a closed list and an unlisted role 404s. Note what the
+    # whitelist does and does not do: it constrains the PATH, and — because the
+    # query string is merged BEFORE ?portal= rather than with [QSA] — it now also
+    # constrains the VALUE that reaches PHP, since PHP takes the last occurrence
+    # of a repeated parameter. It is still not an output filter: whatever a page
+    # echoes must go through e() regardless. [NC] so a capitalised link in print
+    # or in an email ("/login/Member") reaches the portal instead of the 404;
+    # login.php is noindex,nofollow, so the case variants cost no duplicate
+    # content.
+    #
+    # /login/admin is listed FIRST and points at admin/login.php on purpose: the
+    # admin panel is a separate auth realm with its own session, and must never
+    # be served by the member login form. Its OTHER defences (admin_ip_whitelist,
+    # force_2fa) ship default-off and are OFF in this install — the door is a
+    # password form with a 5-per-15-min lockout and a math CAPTCHA after 3 fails.
+    # So this alias is deliberately kept out of the crawl: robots.txt disallows
+    # /login/admin and the portal card links it rel="nofollow". Turn on the IP
+    # allow-list and force_2fa in Security Center before treating it as hardened.
+    # The ?portal= is inert for admin/login.php today — it reads no GET input.
+    # -------------------------------------------------------------------------
+    RewriteRule ^login/admin/?$ admin/login.php?%{QUERY_STRING}&portal=admin [L,NC]
+    RewriteRule ^login/(staff|school|teacher|student|volunteer|member|donor)/?$ login.php?%{QUERY_STRING}&portal=$1 [L,NC]
+
     # -------------------------------------------------------------------------
     # Clean URLs: /about  ->  /about.php  (only if the .php file exists)
+    #
+    # The guard tests DOCUMENT_ROOT + the base + the captured path, NOT
+    # %{REQUEST_FILENAME}. Apache truncates REQUEST_FILENAME at the deepest path
+    # component that exists and moves the rest into PATH_INFO, so for
+    # /about/nonsense it is ".../pwf/about" and "%{REQUEST_FILENAME}\.php -f"
+    # was satisfied by about.php. The rule then appended .php to the FULL URI
+    # ("about/nonsense.php"), which truncated the same way, appended again, and
+    # hit AH00124 "exceeded the limit of 10 internal redirects" — a 500 on
+    # /about/x, /contact/x, /login/x and every other page + garbage segment.
+    # Testing the whole path makes those a clean 404. $1 (not %{REQUEST_URI})
+    # so a trailing slash, which the rule pattern strips, still resolves.
+    #
+    # PORTABILITY: tested BOTH with and without the /pwf/ prefix, so one file
+    # works at a subdirectory install AND at a domain root. A single hardcoded
+    # "/pwf/" here would have been a silent site-down on deploy: production sets
+    # BASE_URI='' (config.php:79 note, DEPLOY_HOSTINGER_GIT.md:134), so
+    # DOCUMENT_ROOT/pwf/ would not exist, the condition would never match, and
+    # EVERY extensionless URL on the live site would 404 while local stayed green.
     # -------------------------------------------------------------------------
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME}\.php -f
+    RewriteCond %{DOCUMENT_ROOT}/pwf/$1.php -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/$1.php -f
     RewriteRule ^(.+?)/?$ $1.php [L]
 
     # Redirect requests that explicitly include .php to the clean URL.
@@ -94,13 +258,42 @@ DirectoryIndex index.php
     # resolved against RewriteBase and would yield /pwf/pwf/about -> 404.
     RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
     RewriteRule ^ /%1 [R=301,L,NE]
+
+    # -------------------------------------------------------------------------
+    # Portable custom 404. Must stay LAST — everything above it either matched
+    # and stopped, or named a real file.
+    #
+    # ErrorDocument (below) needs an absolute path from the SERVER root, so its
+    # value necessarily differs between a subfolder install (/pwf/404.php) and a
+    # domain root (/404.php). There is no way to write one value that is correct
+    # in both, and the committed file has to hold one of them — which is how the
+    # live site ended up with ErrorDocument pointing at a path that does not
+    # exist there, so Apache served its own default error page instead.
+    #
+    # This rule is a RELATIVE substitution, so it resolves against whichever
+    # directory this file sits in and is correct in both environments. 404.php
+    # sets its own 404 status, so the response code stays honest.
+    # -------------------------------------------------------------------------
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ 404.php [L]
 </IfModule>
 
 # -----------------------------------------------------------------------------
 # Custom error pages
+#
+# Still worth setting: these cover the errors Apache raises BEFORE mod_rewrite
+# runs (a 403 from an authz deny, a 500 from a PHP fatal), which the rewrite
+# above cannot reach. Adjust the prefix to match where the app is installed —
+# but if you forget, the rewrite above still renders the styled 404.
 # -----------------------------------------------------------------------------
 ErrorDocument 404 /pwf/404.php
 ErrorDocument 403 /pwf/404.php
+# 500.php renders in two tiers and falls back to a fully self-contained page if
+# bootstrap itself throws, so it is safe as an error document for a 500 — without
+# this line a server error served Apache's default page, which names
+# "postmaster@localhost" and leaks the server signature.
+ErrorDocument 500 /pwf/500.php
 
 # -----------------------------------------------------------------------------
 # Block dotfiles (.env, .git, .htaccess, etc.)

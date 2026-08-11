@@ -34,7 +34,7 @@ $thumbDoc = static function (string $body): string {
     $body = trim($body) !== '' ? $body : '<p style="color:#9ca3af;font-style:italic;padding-top:40px;text-align:center">No content yet</p>';
     return '<!doctype html><html><head><meta charset="utf-8">'
         . '<style>html,body{margin:0;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#1f2937;font-size:14px;line-height:1.55}'
-        . 'body{padding:20px}.tw{max-width:560px;margin:0 auto}img{max-width:100%;height:auto}a{color:#063566;text-decoration:none}table{max-width:100%}</style>'
+        . 'body{padding:20px}.tw{max-width:560px;margin:0 auto}img{max-width:100%;height:auto}a{color:#0B4E3D;text-decoration:none}table{max-width:100%}</style>'
         . '</head><body><div class="tw">' . $body . '</div></body></html>';
 };
 
@@ -171,7 +171,7 @@ include __DIR__ . '/partials/head.php';
 .etl-search{position:relative;flex:1;min-width:240px;max-width:420px;}
 .etl-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted);pointer-events:none;}
 .etl-search input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font-size:.9rem;transition:.15s;}
-.etl-search input:focus{outline:none;border-color:var(--brand-600);box-shadow:0 0 0 3px var(--grad-brand-soft,rgba(6,53,102,.14));}
+.etl-search input:focus{outline:none;border-color:var(--brand-600);box-shadow:0 0 0 3px var(--grad-brand-soft,rgba(11,78,61,.14));}
 .etl-chips{display:flex;flex-wrap:wrap;gap:8px;}
 .etl-chips .filter-chip{display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
 .etl-chips .filter-chip svg{width:14px;height:14px;}
@@ -187,10 +187,10 @@ include __DIR__ . '/partials/head.php';
 /* Real template thumbnail (scaled iframe of the actual email) */
 .etl-thumb{position:relative;height:170px;overflow:hidden;background:#fff;border-bottom:1px solid var(--border);}
 .etl-thumb-fr{position:absolute;top:0;left:0;width:600px;height:440px;border:0;transform:scale(.5);transform-origin:top left;pointer-events:none;background:#fff;}
-.etl-thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 62%,rgba(6,53,102,.06));pointer-events:none;}
-.etl-thumb-cat{position:absolute;top:10px;left:10px;z-index:2;color:#fff;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(6,53,102,.62);border:1px solid rgba(255,255,255,.22);padding:3px 9px;border-radius:20px;backdrop-filter:blur(3px);}
+.etl-thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 62%,rgba(11,78,61,.06));pointer-events:none;}
+.etl-thumb-cat{position:absolute;top:10px;left:10px;z-index:2;color:#fff;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(11,78,61,.62);border:1px solid rgba(255,255,255,.22);padding:3px 9px;border-radius:20px;backdrop-filter:blur(3px);}
 .etl-thumb-zoom{position:absolute;bottom:10px;right:10px;z-index:2;width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:9px;cursor:pointer;
-  background:rgba(6,53,102,.62);color:#fff;opacity:0;transform:translateY(4px);transition:opacity .16s ease,transform .16s ease,background .16s ease;backdrop-filter:blur(3px);}
+  background:rgba(11,78,61,.62);color:#fff;opacity:0;transform:translateY(4px);transition:opacity .16s ease,transform .16s ease,background .16s ease;backdrop-filter:blur(3px);}
 .etl-thumb-zoom svg{width:16px;height:16px;}
 .etl-card:hover .etl-thumb-zoom{opacity:1;transform:none;}
 .etl-thumb-zoom:hover{background:var(--brand-600);}
@@ -210,7 +210,7 @@ include __DIR__ . '/partials/head.php';
 .etl-actions .btn svg{width:14px;height:14px;}
 
 /* Modal */
-.etl-modal{position:fixed;inset:0;z-index:1200;background:rgba(6,53,102,.62);display:grid;place-items:center;padding:20px;backdrop-filter:blur(3px);}
+.etl-modal{position:fixed;inset:0;z-index:1200;background:rgba(11,78,61,.62);display:grid;place-items:center;padding:20px;backdrop-filter:blur(3px);}
 .etl-modal[hidden]{display:none;}
 .etl-modal-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:900px;max-height:92vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg,var(--shadow));overflow:hidden;}
 .etl-modal-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
@@ -305,7 +305,7 @@ include __DIR__ . '/partials/head.php';
       '.subj b{color:#111827;}' +
       '.content{padding:22px;line-height:1.55;font-size:15px;}' +
       '.content img{max-width:100%;height:auto;}' +
-      '.content a{color:#063566;}' +
+      '.content a{color:#0B4E3D;}' +
       '.foot{padding:14px 22px;color:#9ca3af;font-size:12px;text-align:center;}' +
       '</style></head><body><div class="wrap"><div class="card">' +
       (subject ? '<div class="subj"><b>Subject:</b> ' + esc(subject) + '</div>' : '') +

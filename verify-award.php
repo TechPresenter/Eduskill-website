@@ -14,7 +14,11 @@ $serial   = strtoupper(clean(get('serial', '')));
 $hasQuery = array_key_exists('serial', $_GET);
 
 $kind = null; $doc = null; $student = null; $course = null; $throttled = false;
-if ($serial !== '' && !pwf_throttle('verify-lookup', 10, 300)) {
+/* Own bucket, not the shared 'verify-lookup' one. Five public verifiers used the
+   same key, so a visitor checking one certificate spent the budget of the member,
+   employee and student lookups too — and a member-code enumerator could exhaust
+   the award verifier for everybody. One register, one window. */
+if ($serial !== '' && !pwf_throttle('verify-award', 10, 300)) {
     $throttled = true;
 } elseif ($serial !== '') {
     $doc = db_row('SELECT * FROM student_certificates WHERE serial = :s LIMIT 1', [':s' => $serial]);
@@ -73,7 +77,7 @@ include __DIR__ . '/includes/header.php';
             <?php else:
                 [$c1, $c2, $icon, $title] = $revoked
                     ? ['#b91c1c', '#ef4444', 'x', 'Revoked — no longer valid']
-                    : ['#308629', '#58A42F', 'check', 'Genuine — verified'];
+                    : ['#1F5C48', '#2F8065', 'check', 'Genuine — verified'];
             ?>
                 <div class="card-3d reveal" style="padding:0;overflow:hidden;">
                     <div style="background:linear-gradient(135deg,<?= $c1 ?>,<?= $c2 ?>);color:#fff;padding:1.5rem 1.7rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">

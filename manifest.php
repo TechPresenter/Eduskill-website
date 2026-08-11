@@ -9,14 +9,14 @@ header('Content-Type: application/manifest+json; charset=utf-8');
 $name = get_setting('site_name', SITE_NAME);
 echo json_encode([
     'name'             => $name,
-    'short_name'       => 'PWF',
+    'short_name'       => 'EduSkill',
     'description'      => get_setting('site_description', SITE_TAGLINE),
     'start_url'        => BASE_URI . '/',
     'scope'           => BASE_URI . '/',
     'display'          => 'standalone',
     'orientation'      => 'portrait-primary',
     'background_color' => '#0b1120',
-    'theme_color'      => '#063566',
+    'theme_color'      => '#0B4E3D',
     'icons'            => [
         // Organisation logo used as the PWA icon (any + maskable).
         ['src' => ASSET_URI . '/images/logo-256.webp', 'sizes' => '512x512', 'type' => 'image/jpeg', 'purpose' => 'any maskable'],

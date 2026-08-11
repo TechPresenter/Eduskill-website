@@ -1,0 +1,30 @@
+{
+    "asset_version": "5.8.4",
+    "built_files": 449,
+    "files": {
+        "assets/css/design-system.css": {
+            "md5": "73b9a9c0f603de55088b4ea0f7f7548a",
+            "bytes": 125819
+        },
+        "assets/css/admin-pro.css": {
+            "md5": "9be22b72aaadf175560844d118e4a32b",
+            "bytes": 41198
+        },
+        "assets/css/premium.css": {
+            "md5": "7729b475feb27887d6829656f65e21da",
+            "bytes": 75236
+        },
+        "assets/css/tailwind.css": {
+            "md5": "786b0e943aae57d797b36955528d45b7",
+            "bytes": 45098
+        },
+        "assets/js/main.js": {
+            "md5": "146e9938afeabafcfc47ed0583c954b1",
+            "bytes": 27791
+        },
+        ".htaccess": {
+            "md5": "6512a9c8210d347a13bf04f447c78b6e",
+            "bytes": 21504
+        }
+    }
+}

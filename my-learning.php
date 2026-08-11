@@ -77,7 +77,7 @@ include __DIR__ . '/includes/header.php';
                                 </div>
                                 <?php if (!empty($e['category'])): ?><small class="text-muted"><?= e($e['category']) ?></small><?php endif; ?>
                                 <div style="background:#e5e7eb;border-radius:99px;height:8px;margin:.8rem 0 .3rem;overflow:hidden;">
-                                    <div style="background:var(--brand-600,#063566);height:100%;width:<?= (int) round($pct) ?>%;"></div>
+                                    <div style="background:var(--brand-600,#0B4E3D);height:100%;width:<?= (int) round($pct) ?>%;"></div>
                                 </div>
                                 <small class="text-muted"><?= (int) round($pct) ?>% complete</small>
                                 <a class="btn btn-primary btn-sm mt-2" href="<?= e(url('learn?course=' . (int) $e['course_id'])) ?>">

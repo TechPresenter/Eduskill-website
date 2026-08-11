@@ -38,10 +38,10 @@ $img  = image_url($c['image'] ?? null, 'blog');
 .w .b{padding:14px 16px;}
 .w h3{margin:0 0 8px;font-size:1.05rem;line-height:1.25;}
 .bar{background:#e5e7eb;border-radius:99px;height:9px;overflow:hidden;margin:6px 0;}
-.bar span{display:block;height:100%;background:linear-gradient(90deg,#063566,#58A42F);}
+.bar span{display:block;height:100%;background:linear-gradient(90deg,#0B4E3D,#2F8065);}
 .row{display:flex;justify-content:space-between;font-size:.82rem;color:#6b7280;}
 .row strong{color:#111827;}
-.btn{display:block;text-align:center;margin-top:12px;background:#063566;color:#fff;text-decoration:none;font-weight:700;padding:11px;border-radius:9px;}
+.btn{display:block;text-align:center;margin-top:12px;background:#0B4E3D;color:#fff;text-decoration:none;font-weight:700;padding:11px;border-radius:9px;}
 .credit{text-align:center;font-size:.68rem;color:#9ca3af;margin-top:8px;}
 </style></head><body>
 <div class="w">

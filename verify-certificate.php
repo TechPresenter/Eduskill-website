@@ -18,7 +18,9 @@ $cert       = null;
 
 $throttled = false;
 if ($hasQuery && $certNumber !== '') {
-    if (!pwf_throttle('verify-lookup', 10, 300)) {
+    /* Own bucket — see the note in verify-award.php. The five public verifiers
+       shared one 'verify-lookup' key, so they spent each other's budget. */
+    if (!pwf_throttle('verify-certificate', 10, 300)) {
         $throttled = true;
     } else {
         $cert = db_row(
@@ -48,7 +50,7 @@ $types = [
 
 /* Verification FAQ */
 $faqs = [
-    ['q' => 'Where do I find my certificate number?',        'a' => 'The certificate number is printed on the certificate itself, usually near the bottom or in the footer — for example PWF-2026-000123. Enter it exactly as shown.'],
+    ['q' => 'Where do I find my certificate number?',        'a' => 'The certificate number is printed on the certificate itself, usually near the bottom or in the footer — for example EIF-2026-000123. Enter it exactly as shown.'],
     ['q' => 'My certificate says valid but shows expired.',  'a' => 'Some certificates carry a validity period. A certificate can be genuine (valid record) yet past its expiry date. The result card shows both the status and the expiry date.'],
     ['q' => 'The number is not found — what should I do?',   'a' => 'Check for typing mistakes, extra spaces or a confused 0/O or 1/l. If it still fails, the certificate may not have been issued by us. Contact our team with a photo of the certificate.'],
     ['q' => 'Why does a certificate show as revoked?',       'a' => 'A certificate is revoked when it was cancelled or superseded after issue. A revoked certificate is no longer valid and should not be relied upon.'],
@@ -90,7 +92,7 @@ include __DIR__ . '/includes/header.php';
                            maxlength="64" required>
                     <label for="certificate_number">Certificate Number</label>
                 </div>
-                <p class="form-hint mb-3">Example format: <strong>PWF-2026-000123</strong></p>
+                <p class="form-hint mb-3">Example format: <strong>EIF-2026-000123</strong></p>
                 <button class="btn btn-3d btn-block btn-lg" type="submit"><?= lucide('search') ?> Verify Now</button>
             </form>
         </div>
@@ -114,8 +116,8 @@ include __DIR__ . '/includes/header.php';
                 $typeLabel = $typeLabels[$cert['type']] ?? ucfirst((string) $cert['type']);
             ?>
                 <!-- VALID -->
-                <div class="card-3d reveal" style="padding:0;overflow:hidden;border:1px solid rgba(88,164,47,.35);">
-                    <div style="background:linear-gradient(135deg,#308629,#58A42F);color:#fff;padding:1.6rem 1.8rem;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;">
+                <div class="card-3d reveal" style="padding:0;overflow:hidden;border:1px solid rgba(47,128,101,.35);">
+                    <div style="background:linear-gradient(135deg,#1F5C48,#2F8065);color:#fff;padding:1.6rem 1.8rem;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;">
                         <div class="icon-badge" style="background:rgba(255,255,255,.22);font-size:1.9rem;flex:0 0 auto;box-shadow:none;"><?= lucide('check') ?></div>
                         <div style="flex:1 1 240px;">
                             <span class="badge" style="background:rgba(255,255,255,.22);color:#fff;">Verified Certificate</span>
@@ -206,8 +208,8 @@ include __DIR__ . '/includes/header.php';
 
             <?php else: ?>
                 <!-- NOT FOUND -->
-                <div class="card-3d reveal" style="padding:0;overflow:hidden;border:1px solid rgba(230,123,29,.4);">
-                    <div style="background:linear-gradient(135deg,#E67B1D,#E67B1D);color:#fff;padding:1.6rem 1.8rem;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;">
+                <div class="card-3d reveal" style="padding:0;overflow:hidden;border:1px solid rgba(241,90,36,.4);">
+                    <div style="background:linear-gradient(135deg,#F15A24,#F15A24);color:#fff;padding:1.6rem 1.8rem;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;">
                         <div class="icon-badge" style="background:rgba(255,255,255,.22);font-size:1.9rem;flex:0 0 auto;box-shadow:none;"><?= lucide('triangle-alert') ?></div>
                         <div style="flex:1 1 240px;">
                             <span class="badge" style="background:rgba(255,255,255,.22);color:#fff;">No Record Found</span>
@@ -248,7 +250,7 @@ include __DIR__ . '/includes/header.php';
             <div class="process-steps mt-4">
                 <div class="process-step">
                     <h3 class="card-title mb-1">Locate the number</h3>
-                    <p class="card-text mb-0">Find the certificate number printed on your document (e.g. PWF-2026-000123).</p>
+                    <p class="card-text mb-0">Find the certificate number printed on your document (e.g. EIF-2026-000123).</p>
                 </div>
                 <div class="process-step">
                     <h3 class="card-title mb-1">Enter &amp; verify</h3>
@@ -263,7 +265,7 @@ include __DIR__ . '/includes/header.php';
         <div class="reveal delay-1">
             <div class="stat-premium">
                 <span class="eyebrow">Sample Certificate Number</span>
-                <div class="text-grad-ocean" style="font-family:var(--font-mono, monospace);font-size:1.6rem;font-weight:800;letter-spacing:.04em;margin:.5rem 0 .75rem;">PWF-2026-000123</div>
+                <div class="text-grad-ocean" style="font-family:var(--font-mono, monospace);font-size:1.6rem;font-weight:800;letter-spacing:.04em;margin:.5rem 0 .75rem;">EIF-2026-000123</div>
                 <p class="text-muted mb-0" style="position:relative;z-index:1;">Numbers follow the pattern <strong>PWF</strong> — <strong>year</strong> — <strong>serial</strong>. Enter it exactly as shown, including hyphens. The lookup is not case-sensitive to hyphenation but must match the printed serial.</p>
                 <div class="divider mt-3 mb-3"></div>
                 <div class="flex items-center gap-2">

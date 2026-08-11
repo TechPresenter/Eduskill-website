@@ -57,8 +57,8 @@ $page_hero = [
 include __DIR__ . '/includes/header.php';
 
 $views = [
-    'paid'    => ['#308629', '#58A42F', 'check', 'Payment successful', 'Thank you! Your membership has been renewed.'],
-    'pending' => ['#b45309', '#E67B1D', 'clock', 'Payment pending', 'We have not received a confirmation yet. If money was debited, it will reflect shortly.'],
+    'paid'    => ['#1F5C48', '#2F8065', 'check', 'Payment successful', 'Thank you! Your membership has been renewed.'],
+    'pending' => ['#b45309', '#F15A24', 'clock', 'Payment pending', 'We have not received a confirmation yet. If money was debited, it will reflect shortly.'],
     'failed'  => ['#b91c1c', '#ef4444', 'x', 'Payment not completed', 'The payment was not completed. You have not been charged, or any debit will be refunded.'],
     'unknown' => ['#4b5563', '#9ca3af', 'help-circle', 'Status unavailable', 'We could not locate this payment. Please check your account or contact us.'],
 ];

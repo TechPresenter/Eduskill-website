@@ -148,7 +148,7 @@ if ($action === 'create' || $action === 'edit') {
 
             <div class="form-group">
                 <label class="form-label">Content</label>
-                <textarea class="form-textarea widget-content" name="content" style="min-height:180px;"><?= e($row['content'] ?? '') ?></textarea>
+                <textarea class="form-textarea code-editor" name="content" rows="8"><?= e($row['content'] ?? '') ?></textarea>
                 <p class="form-hint" id="widget-hint"><?= e($typeHints[$curType] ?? $typeHints['html']) ?></p>
             </div>
 
@@ -166,9 +166,6 @@ if ($action === 'create' || $action === 'edit') {
         </form>
     </div>
 
-    <style>
-        .admin-form .widget-content { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9rem; line-height: 1.55; }
-    </style>
     <script>
         (function () {
             var sel = document.getElementById('widget-type');
@@ -197,17 +194,10 @@ if ($search !== '') {
 }
 $p = paginate("SELECT * FROM $table WHERE $where ORDER BY position ASC, sort_order ASC, id DESC", $params, 12);
 
-/* Pill colour per widget type for the list badge. */
-$typePill = static function (string $t): string {
-    switch ($t) {
-        case 'html':       return 'pill-blue';
-        case 'text':       return 'pill-gray';
-        case 'links':      return 'pill-amber';
-        case 'contact':    return 'pill-green';
-        case 'newsletter': return 'pill-red';
-        default:           return 'pill-gray';
-    }
-};
+/* A widget TYPE is a tag, not a status, so it takes the one glyph-free variant
+   rather than five status hues. .pill-amber was drawing a warning triangle in front
+   of the word "Links" and .pill-red an error cross in front of "Newsletter". */
+$typePill = static fn (string $t): string => 'pill-tag';
 
 include __DIR__ . '/partials/head.php';
 ?>
@@ -227,25 +217,25 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Title</th><th>Position</th><th>Type</th><th>Status</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Title</th><th>Position</th><th>Type</th><th>Status</th><th>Order</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
                         <td><strong><?= e($r['title']) ?></strong></td>
-                        <td><span class="pill pill-blue"><?= e(ucfirst($r['position'])) ?></span></td>
+                        <td><span class="pill pill-tag"><?= e(ucfirst($r['position'])) ?></span></td>
                         <td><span class="pill <?= $typePill($r['type']) ?>"><?= e(ucfirst($r['type'])) ?></span></td>
                         <td><span class="pill <?= !empty($r['status']) ? 'pill-green' : 'pill-gray' ?>"><?= !empty($r['status']) ? 'Active' : 'Inactive' ?></span></td>
                         <td><?= (int) $r['sort_order'] ?></td>
                         <td>
                             <div class="actions">
-                                <form method="post" action="<?= e(admin_url('widgets')) ?>" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('widgets')) ?>" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="toggle">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
                                     <button class="icon-btn" type="submit" title="<?= !empty($r['status']) ? 'Deactivate' : 'Activate' ?>"><?= lucide(!empty($r['status']) ? 'toggle-right' : 'toggle-left') ?></button>
                                 </form>
                                 <a class="icon-btn" href="<?= e(admin_url('widgets?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('widgets')) ?>" data-confirm="Delete this widget permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('widgets')) ?>" data-confirm="Delete this widget permanently?" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -260,7 +250,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('layout-panel-left') ?></div>No widgets yet. <a href="<?= e(admin_url('widgets?action=create')) ?>">Add your first widget</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('layout-panel-left') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No widgets match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No widget has that title. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('widgets')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('widgets?action=create')) ?>"><?= lucide('plus') ?> Add your first widget</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No widgets yet</p>
+                                <p class="es-text">Widgets fill the footer and sidebar positions — a text block, a link list, a contact card or a newsletter form.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('widgets?action=create')) ?>"><?= lucide('plus') ?> Add your first widget</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

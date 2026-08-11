@@ -74,6 +74,15 @@ if ($action === 'create' || $action === 'edit') {
     $text = $row['text_color'] ?? '#ffffff';
     include __DIR__ . '/partials/head.php';
     ?>
+    <style>
+        /* Layout-only. The preview strip keeps inline background/colour because it
+           PREVIEWS the two colours being edited. */
+        .an-msg { min-height: 90px; }
+        .admin-content .an-color { height: 48px; padding: var(--sp-1); cursor: pointer; }
+        .an-preview { padding: var(--sp-3) var(--sp-4); border-radius: var(--r-sm); text-align: center; font-weight: 600; }
+        .an-preview-link { text-decoration: underline; margin-left: var(--sp-1); }
+    </style>
+
     <div class="admin-page-head">
         <div><h1><?= e($page_title) ?></h1><span class="muted">Announcement Bar / <?= $action === 'edit' ? 'Edit' : 'Create' ?></span></div>
         <a class="btn btn-secondary" href="<?= e(admin_url('announcements')) ?>">← Back to list</a>
@@ -87,7 +96,7 @@ if ($action === 'create' || $action === 'edit') {
 
             <div class="form-group">
                 <label class="form-label">Message <span class="req">*</span></label>
-                <textarea class="form-textarea" name="message" maxlength="500" required style="min-height:90px;" placeholder="Our Annual Charity Run is on 15 Sep — register today!"><?= e($row['message'] ?? '') ?></textarea>
+                <textarea class="form-textarea an-msg" name="message" maxlength="500" required placeholder="Our Annual Charity Run is on 15 Sep — register today!"><?= e($row['message'] ?? '') ?></textarea>
                 <small class="form-hint">Shown in the site-wide bar at the top of every page. Only the newest active announcement (within its date window) is displayed.</small>
             </div>
 
@@ -105,11 +114,11 @@ if ($action === 'create' || $action === 'edit') {
             <div class="grid-2">
                 <div class="form-group">
                     <label class="form-label">Background Colour</label>
-                    <input class="form-control" type="color" name="bg_color" value="<?= e($bg) ?>" style="height:48px;">
+                    <input class="form-control an-color" type="color" name="bg_color" value="<?= e($bg) ?>">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Text Colour</label>
-                    <input class="form-control" type="color" name="text_color" value="<?= e($text) ?>" style="height:48px;">
+                    <input class="form-control an-color" type="color" name="text_color" value="<?= e($text) ?>">
                 </div>
             </div>
 
@@ -128,9 +137,9 @@ if ($action === 'create' || $action === 'edit') {
 
             <div class="form-group">
                 <label class="form-label">Live Preview</label>
-                <div style="padding:12px 16px;border-radius:8px;text-align:center;font-weight:600;background:<?= e($bg) ?>;color:<?= e($text) ?>;">
+                <div class="an-preview" style="background:<?= e($bg) ?>;color:<?= e($text) ?>;">
                     <?= e($row['message'] ?? 'Your announcement preview appears here') ?>
-                    <?php if (!empty($row['link_text'])): ?><span style="text-decoration:underline;margin-left:6px;"><?= e($row['link_text']) ?></span><?php endif; ?>
+                    <?php if (!empty($row['link_text'])): ?><span class="an-preview-link"><?= e($row['link_text']) ?></span><?php endif; ?>
                 </div>
             </div>
 
@@ -171,6 +180,12 @@ $liveId = (int) db_value(
 
 include __DIR__ . '/partials/head.php';
 ?>
+<style>
+    /* The swatch keeps an inline background — it previews the stored colour. */
+    .an-swatch { display: inline-block; width: 20px; height: 20px; border-radius: var(--r-sm);
+        vertical-align: middle; border: 1px solid var(--border); }
+</style>
+
 <div class="admin-page-head">
     <div><h1>Announcement Bar</h1><span class="muted"><?= (int) $p['total'] ?> total</span></div>
     <a class="btn btn-primary" href="<?= e(admin_url('announcements?action=create')) ?>">+ Add Announcement</a>
@@ -187,14 +202,14 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Message</th><th>Link</th><th>Window</th><th>Colours</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Message</th><th>Link</th><th>Window</th><th>Colours</th><th>Status</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <?php $isLive = ((int) $r['id'] === $liveId); ?>
                     <tr>
                         <td>
                             <strong><?= e(excerpt($r['message'], 16)) ?></strong>
-                            <?php if ($isLive): ?><br><span class="pill pill-green">● Live now</span><?php endif; ?>
+                            <?php if ($isLive): ?><br><span class="pill pill-green">Live now</span><?php endif; ?>
                         </td>
                         <td>
                             <?php if (!empty($r['link_text']) || !empty($r['link_url'])): ?>
@@ -211,14 +226,14 @@ include __DIR__ . '/partials/head.php';
                             </small>
                         </td>
                         <td>
-                            <span style="display:inline-block;width:20px;height:20px;border-radius:4px;vertical-align:middle;border:1px solid rgba(0,0,0,.1);background:<?= e($r['bg_color'] ?? '#111827') ?>;" title="<?= e($r['bg_color'] ?? '') ?>"></span>
-                            <span style="display:inline-block;width:20px;height:20px;border-radius:4px;vertical-align:middle;border:1px solid rgba(0,0,0,.1);background:<?= e($r['text_color'] ?? '#ffffff') ?>;" title="<?= e($r['text_color'] ?? '') ?>"></span>
+                            <span class="an-swatch" style="background:<?= e($r['bg_color'] ?? '#111827') ?>" title="<?= e($r['bg_color'] ?? '') ?>"></span>
+                            <span class="an-swatch" style="background:<?= e($r['text_color'] ?? '#ffffff') ?>" title="<?= e($r['text_color'] ?? '') ?>"></span>
                         </td>
                         <td><span class="pill <?= $r['status'] ? 'pill-green' : 'pill-gray' ?>"><?= $r['status'] ? 'Active' : 'Inactive' ?></span></td>
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('announcements?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('announcements')) ?>" data-confirm="Delete this announcement permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('announcements')) ?>" data-confirm="Delete this announcement permanently?">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -233,7 +248,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('megaphone') ?></div>No announcements yet. <a href="<?= e(admin_url('announcements?action=create')) ?>">Add your first announcement</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('megaphone') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No announcements match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No announcement has that message. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('announcements')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('announcements?action=create')) ?>"><?= lucide('plus') ?> Add your first announcement</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No announcements yet</p>
+                                <p class="es-text">An announcement is the strip across the top of the public site. Give it a start and end date and it shows only inside that window.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('announcements?action=create')) ?>"><?= lucide('plus') ?> Add your first announcement</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

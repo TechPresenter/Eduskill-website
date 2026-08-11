@@ -98,12 +98,12 @@ function mail_layout(string $content, string $title = ''): string
     $address  = e(get_setting('contact_address', SITE_ADDRESS));
 
     // Themed from Global Theme Settings (email tokens), with brand fallbacks.
-    $tHead = function_exists('theme_get') ? (theme_get('email.header_bg') ?: '#063566') : '#063566';
-    $tGrad = function_exists('theme_get') ? (theme_get('color.secondary')  ?: '#084881') : '#084881';
+    $tHead = function_exists('theme_get') ? (theme_get('email.header_bg') ?: '#0B4E3D') : '#0B4E3D';
+    $tGrad = function_exists('theme_get') ? (theme_get('color.secondary')  ?: '#174D3D') : '#174D3D';
     $tFont = function_exists('theme_get') ? (theme_get('email.font') ?: 'Arial, Helvetica, sans-serif') : 'Arial, Helvetica, sans-serif';
     $tSig  = function_exists('theme_get') ? trim((string) theme_get('email.signature')) : '';
-    $tHead = preg_match('/^#[0-9a-fA-F]{6}$/', $tHead) ? $tHead : '#063566';
-    $tGrad = preg_match('/^#[0-9a-fA-F]{6}$/', $tGrad) ? $tGrad : '#084881';
+    $tHead = preg_match('/^#[0-9a-fA-F]{6}$/', $tHead) ? $tHead : '#0B4E3D';
+    $tGrad = preg_match('/^#[0-9a-fA-F]{6}$/', $tGrad) ? $tGrad : '#174D3D';
     $tFont = e($tFont);
     if ($tSig !== '') { $content .= '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px;">' . nl2br(e($tSig)) . '</div>'; }
 

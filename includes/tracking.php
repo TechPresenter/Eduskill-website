@@ -41,6 +41,25 @@ function tracking_config(): array
 }
 
 /**
+ * Has this page opted out of third-party analytics?
+ *
+ * A page that carries a SECRET IN ITS URL must not hand that URL to Google or
+ * Meta. /verify-member?token=<32 hex> is the case: the token is a permanent,
+ * non-rotating, per-member bearer identifier printed on a physical card, and
+ * every vendor tag reports `page_location` — the full URL, query string
+ * included — on page_view. No GA4/Pixel id is configured today, so nothing
+ * leaves yet; the opt-out is what stops it leaving the day one is entered in the
+ * admin panel by someone who has never heard of qr_token.
+ *
+ * A page opts out with `define('PWF_NO_TRACKING', true);` BEFORE it includes
+ * includes/header.php.
+ */
+function tracking_suppressed(): bool
+{
+    return defined('PWF_NO_TRACKING') && PWF_NO_TRACKING;
+}
+
+/**
  * Scripts for the <head>: the pwfTrack() helper first (so it always exists),
  * then GTM, GA4, Meta Pixel, Clarity and Hotjar for whichever ids are set.
  */
@@ -54,6 +73,13 @@ function tracking_head(): string
          . "try{if(window.gtag)gtag('event',n,p);}catch(e){}"
          . "try{if(window.fbq){var m={Lead:1,Donate:1,Purchase:1,CompleteRegistration:1,Contact:1,Subscribe:1};"
          . "if(m[n])fbq('track',n,p);else fbq('trackCustom',n,p);}}catch(e){}};</script>\n";
+
+    /* The pwfTrack() shim above still ships — assets/js/forms.js calls it when it
+       exists, so removing it would be a JS error rather than a privacy win. With
+       no vendor tag loaded it pushes to a dataLayer nobody reads. */
+    if (tracking_suppressed()) {
+        return $out;
+    }
 
     if ($c['gtm'] !== '') {
         $id = e($c['gtm']);
@@ -103,6 +129,9 @@ function tracking_body_open(): string
 {
     $c   = tracking_config();
     $out = '';
+    if (tracking_suppressed()) {
+        return $out;
+    }
     if ($c['gtm'] !== '') {
         $id = e($c['gtm']);
         $out .= "<!-- Google Tag Manager (noscript) --><noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=$id\""

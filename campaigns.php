@@ -262,7 +262,7 @@ if ($slug !== '') {
 
             <!-- Donation sidebar -->
             <aside class="reveal delay-1">
-                <div class="card-3d" style="position:sticky;top:90px;">
+                <div class="card-3d sticky-aside" style="position:sticky;top:90px;">
                     <div class="counter-value" style="font-size:1.9rem;line-height:1.1;"><?= e(money($raised)) ?></div>
                     <p class="text-muted mb-2" style="margin-top:.15rem;">raised of <?= e(money($goal)) ?> goal</p>
 
@@ -270,7 +270,7 @@ if ($slug !== '') {
                         <div class="progress-bar" style="width:<?= $pct ?>%;"></div>
                     </div>
                     <div class="flex justify-between items-center mt-1">
-                        <strong style="color:var(--brand-600,#063566);"><?= $pct ?>% funded</strong>
+                        <strong style="color:var(--brand-600,#0B4E3D);"><?= $pct ?>% funded</strong>
                         <small class="text-muted"><?= e($timeLabel($campaign)) ?></small>
                     </div>
 
@@ -304,9 +304,9 @@ if ($slug !== '') {
                     <!-- Share this campaign -->
                     <p class="mb-1" style="font-weight:700;font-size:.9rem;"><?= lucide('send') ?> Share this campaign</p>
                     <div class="flex gap-2 flex-wrap">
-                        <a class="btn btn-outline btn-sm" href="https://wa.me/?text=<?= e(rawurlencode($shareText . ' ' . $shareUrl)) ?>" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><?= social_fa('whatsapp') ?> WhatsApp</a>
-                        <a class="btn btn-outline btn-sm" href="https://www.facebook.com/sharer/sharer.php?u=<?= e(rawurlencode($shareUrl)) ?>" target="_blank" rel="noopener" aria-label="Share on Facebook"><?= social_fa('facebook') ?> Share</a>
-                        <a class="btn btn-outline btn-sm" href="https://twitter.com/intent/tweet?text=<?= e(rawurlencode($shareText)) ?>&url=<?= e(rawurlencode($shareUrl)) ?>" target="_blank" rel="noopener" aria-label="Share on X"><?= social_fa('twitter') ?> Post</a>
+                        <a class="btn btn-outline btn-sm" href="https://wa.me/?text=<?= e(rawurlencode($shareText . ' ' . $shareUrl)) ?>" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><?= social_svg('whatsapp') ?> WhatsApp</a>
+                        <a class="btn btn-outline btn-sm" href="https://www.facebook.com/sharer/sharer.php?u=<?= e(rawurlencode($shareUrl)) ?>" target="_blank" rel="noopener" aria-label="Share on Facebook"><?= social_svg('facebook') ?> Share</a>
+                        <a class="btn btn-outline btn-sm" href="https://twitter.com/intent/tweet?text=<?= e(rawurlencode($shareText)) ?>&url=<?= e(rawurlencode($shareUrl)) ?>" target="_blank" rel="noopener" aria-label="Share on X"><?= social_svg('twitter') ?> Post</a>
                         <button class="btn btn-outline btn-sm" type="button" data-copy="<?= e($shareUrl) ?>" aria-label="Copy campaign link"><?= lucide('paperclip') ?> Copy link</button>
                     </div>
 

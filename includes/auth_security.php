@@ -114,7 +114,11 @@ function remember_attempt(): void
 {
     // Admin
     if (!is_logged_in() && !empty($_COOKIE['pwf_remember'])) {
-        [$id, $token] = array_pad(explode(':', $_COOKIE['pwf_remember'], 2), 2, '');
+        /* A cookie can be an array (Cookie: pwf_remember[]=x), and explode()
+           takes only a string — in PHP 8 that is a TypeError, so a crafted
+           cookie 500'd every page that boots the session. */
+        $rawCookie = is_string($_COOKIE['pwf_remember']) ? $_COOKIE['pwf_remember'] : '';
+        [$id, $token] = array_pad(explode(':', $rawCookie, 2), 2, '');
         $user = $id ? find('users', (int) $id) : null;
         if ($user && !empty($user['remember_token']) && $token !== ''
             && hash_equals($user['remember_token'], hash('sha256', $token))
@@ -131,7 +135,8 @@ function remember_attempt(): void
     }
     // Member
     if (function_exists('member_set_session') && !is_member_logged_in() && !empty($_COOKIE['pwf_member_remember'])) {
-        [$id, $token] = array_pad(explode(':', $_COOKIE['pwf_member_remember'], 2), 2, '');
+        $rawCookie = is_string($_COOKIE['pwf_member_remember']) ? $_COOKIE['pwf_member_remember'] : '';
+        [$id, $token] = array_pad(explode(':', $rawCookie, 2), 2, '');
         $m = $id ? find('members', (int) $id) : null;
         if ($m && !empty($m['remember_token']) && $token !== ''
             && hash_equals($m['remember_token'], hash('sha256', $token))

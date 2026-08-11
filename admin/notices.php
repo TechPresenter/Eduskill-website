@@ -164,6 +164,11 @@ if ($action === 'create' || $action === 'edit') {
     $page_title = $action === 'edit' ? 'Edit Notice' : 'New Notice';
     include __DIR__ . '/partials/head.php';
     ?>
+    <style>
+        /* Layout only — the two editor columns and the body field's height. */
+        .nt-body { min-height: 180px; }
+    </style>
+
     <div class="admin-page-head">
         <div><h1><?= e($page_title) ?></h1><span class="muted">Notices / <?= $action === 'edit' ? 'Edit' : 'New' ?></span></div>
         <a class="btn btn-secondary" href="<?= e(admin_url('notices')) ?>">&larr; Back to list</a>
@@ -174,19 +179,19 @@ if ($action === 'create' || $action === 'edit') {
         <input type="hidden" name="_do" value="save">
         <input type="hidden" name="id" value="<?= (int) ($row['id'] ?? 0) ?>">
 
-        <div class="grid-2" style="align-items:start;gap:1.25rem;">
+        <div class="grid-2 cols-top">
             <div class="panel"><div class="panel-body">
-                <h3 class="mb-3">Notice content</h3>
+                <h2 class="panel-title mb-3">Notice content</h2>
                 <div class="form-group"><label class="form-label">Title <span class="req">*</span></label>
                     <input class="form-control" name="title" required value="<?= $o('title') ?>"></div>
                 <div class="form-group"><label class="form-label">Body</label>
-                    <textarea class="form-textarea" name="body" style="min-height:180px;" placeholder="Write the notice…"><?= e(old('body', $row['body'] ?? '')) ?></textarea>
+                    <textarea class="form-textarea nt-body" name="body" placeholder="Write the notice…"><?= e(old('body', $row['body'] ?? '')) ?></textarea>
                     <small class="form-hint">Plain text. Line breaks are preserved in emails and on the board.</small>
                 </div>
             </div></div>
 
             <div class="panel"><div class="panel-body">
-                <h3 class="mb-3">Audience &amp; delivery</h3>
+                <h2 class="panel-title mb-3">Audience &amp; delivery</h2>
                 <div class="form-group"><label class="form-label">Audience</label>
                     <select class="form-select" name="audience" id="notice-audience" onchange="noticeAudience(this.value)">
                         <?php foreach ($audiences as $k => $l): ?><option value="<?= e($k) ?>" <?= $curAudience === $k ? 'selected' : '' ?>><?= e($l) ?></option><?php endforeach; ?>
@@ -295,6 +300,12 @@ $counts = [
 
 include __DIR__ . '/partials/head.php';
 ?>
+<style>
+    /* Layout only. */
+    .nt-filters { gap: var(--sp-2); }
+    .nt-titlerow { gap: var(--sp-1); }
+</style>
+
 <div class="admin-page-head">
     <div><h1>Notices</h1><span class="muted"><?= (int) $counts['total'] ?> notices</span></div>
     <a class="btn btn-primary" href="<?= e(admin_url('notices?action=create')) ?>">+ New Notice</a>
@@ -314,7 +325,7 @@ include __DIR__ . '/partials/head.php';
             <?php if ($statusFilter !== ''): ?><input type="hidden" name="status" value="<?= e($statusFilter) ?>"><?php endif; ?>
             <input class="form-control" type="search" name="q" value="<?= e($search) ?>" placeholder="Search title, body…">
         </form>
-        <form method="get" action="<?= e(admin_url('notices')) ?>" class="flex" style="gap:.5rem;">
+        <form method="get" action="<?= e(admin_url('notices')) ?>" class="flex nt-filters">
             <?php if ($search !== ''): ?><input type="hidden" name="q" value="<?= e($search) ?>"><?php endif; ?>
             <select class="form-select" name="audience" onchange="this.form.submit()">
                 <option value="">All audiences</option>
@@ -330,7 +341,7 @@ include __DIR__ . '/partials/head.php';
 
     <?php if ($p['items']): ?>
     <div class="table-wrap"><table class="admin-table">
-        <thead><tr><th>Notice</th><th>Audience</th><th>Status</th><th>Published</th><th style="text-align:right;">Actions</th></tr></thead>
+        <thead><tr><th>Notice</th><th>Audience</th><th>Status</th><th>Published</th><th class="num">Actions</th></tr></thead>
         <tbody>
         <?php foreach ($p['items'] as $r):
             $target = match ($r['audience']) {
@@ -342,7 +353,7 @@ include __DIR__ . '/partials/head.php';
         ?>
             <tr>
                 <td>
-                    <div class="flex items-center" style="gap:.4rem;">
+                    <div class="flex items-center nt-titlerow">
                         <?php if (!empty($r['pinned'])): ?><span class="text-muted" title="Pinned"><?= lucide('pin') ?></span><?php endif; ?>
                         <strong><?= e($r['title']) ?></strong>
                     </div>
@@ -355,11 +366,11 @@ include __DIR__ . '/partials/head.php';
                 <td><?= $r['published_at'] ? e(format_datetime($r['published_at'])) : '<span class="text-muted">—</span>' ?></td>
                 <td><div class="actions">
                     <a class="icon-btn" href="<?= e(admin_url('notices?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                    <form method="post" action="<?= e(admin_url('notices')) ?>" data-confirm="Dispatch this notice by email/SMS to its audience now?" style="display:inline;">
+                    <form method="post" action="<?= e(admin_url('notices')) ?>" data-confirm="Dispatch this notice by email/SMS to its audience now?">
                         <?= csrf_field() ?><input type="hidden" name="_do" value="dispatch"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
                         <button class="icon-btn" type="submit" title="Dispatch"><?= lucide('send') ?></button>
                     </form>
-                    <form method="post" action="<?= e(admin_url('notices')) ?>" data-confirm="Delete this notice? This cannot be undone." style="display:inline;">
+                    <form method="post" action="<?= e(admin_url('notices')) ?>" data-confirm="Delete this notice? This cannot be undone.">
                         <?= csrf_field() ?><input type="hidden" name="_do" value="delete"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
                         <button class="icon-btn danger" type="submit" title="Delete"><?= lucide('trash-2') ?></button>
                     </form>

@@ -68,7 +68,7 @@ include __DIR__ . '/includes/header.php';
             <!-- Result -->
             <div class="card-3d reveal" style="text-align:center;padding:2.4rem;">
                 <?php $ok = $last && (int) $last['passed'] === 1; $review = $last && (int) $last['needs_review'] === 1; ?>
-                <div class="icon-badge" style="margin:0 auto 1rem;font-size:2rem;color:#fff;background:<?= $review ? '#E67B1D' : ($ok ? '#58A42F' : '#dc2626') ?>;">
+                <div class="icon-badge" style="margin:0 auto 1rem;font-size:2rem;color:#fff;background:<?= $review ? '#F15A24' : ($ok ? '#2F8065' : '#dc2626') ?>;">
                     <?= lucide($review ? 'clock' : ($ok ? 'check' : 'x')) ?></div>
                 <h2 class="mb-1"><?= $review ? 'Submitted — under review' : ($ok ? 'Passed!' : 'Completed') ?></h2>
                 <p class="text-muted">You scored <strong><?= e($last['score']) ?></strong> / <?= e($last['total']) ?><?= $review ? ' so far (short answers pending teacher review)' : '' ?>.</p>

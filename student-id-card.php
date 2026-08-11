@@ -48,7 +48,7 @@ if ($format === 'png') {
         body{margin:0;min-height:100vh;background:#eef2f7;font-family:system-ui,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:30px;}
         .toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
         .btn{border:0;border-radius:9px;padding:10px 18px;font-weight:700;cursor:pointer;text-decoration:none;font-size:.92rem;display:inline-flex;align-items:center;gap:6px;}
-        .btn-p{background:#063566;color:#fff;} .btn-o{background:#fff;color:#1f2937;border:1px solid #cbd5e1;}
+        .btn-p{background:#0B4E3D;color:#fff;} .btn-o{background:#fff;color:#1f2937;border:1px solid #cbd5e1;}
         img.card{max-width:520px;width:100%;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);}
         @media print{.toolbar{display:none;}body{background:#fff;}}
     </style>

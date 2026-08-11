@@ -15,7 +15,7 @@ declare(strict_types=1);
 function hero_slide(array $s): array
 {
     return array_merge([
-        'accent' => '#084881', 'bg_type' => 'gradient', 'bg_from' => '#084881', 'bg_to' => '#084881',
+        'accent' => '#174D3D', 'bg_type' => 'gradient', 'bg_from' => '#174D3D', 'bg_to' => '#174D3D',
         'bg_angle' => 135, 'overlay' => 45, 'layout' => 'center', 'height' => 'tall',
         'btn_style' => 'gradient', 'btn2_style' => 'glass', 'divider' => 'none', 'animate' => 1,
         'text_align' => 'left',
@@ -24,15 +24,15 @@ function hero_slide(array $s): array
 
 function hero_accent(array $s): string
 {
-    return $s['accent'] ?: '#084881';
+    return $s['accent'] ?: '#174D3D';
 }
 
 /** Background CSS for a slide (gradient / mesh / image / solid / video base). */
 function hero_bg_style(array $s): string
 {
     $type = $s['bg_type'] ?? 'gradient';
-    $from = $s['bg_from'] ?: '#084881';
-    $to   = $s['bg_to'] ?: '#084881';
+    $from = $s['bg_from'] ?: '#174D3D';
+    $to   = $s['bg_to'] ?: '#174D3D';
     $ang  = (int) ($s['bg_angle'] ?? 135);
     return match ($type) {
         'solid' => 'background:' . e($from) . ';',

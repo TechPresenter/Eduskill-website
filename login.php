@@ -8,9 +8,26 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/oauth.php';   // social sign-in availability + URLs
 
-// Already signed in? Straight to the account dashboard.
+/* -----------------------------------------------------------------------------
+ | Portal context
+ | -----------------------------------------------------------------------------
+ | .htaccess maps /login/{role} -> login.php?portal={role} (an explicit role
+ | whitelist, never an open capture). The portal only changes the WORDING on
+ | this page — the badge, heading and blurb. It never decides where a successful
+ | sign-in lands: that comes from the authenticated account's own role via
+ | auth_post_login_target(), so opening /login/member with a student account
+ | still ends at the student dashboard.
+ */
+$portal    = strtolower(trim((string) get('portal', '')));
+$portalCtx = function_exists('auth_role_context') ? auth_role_context($portal) : [
+    'slug' => '', 'label' => 'Sign in', 'icon' => 'log-in',
+    'title' => 'Welcome back', 'blurb' => 'Sign in to continue to your EduSkill India portal.',
+];
+
+// Already signed in? Send them to the dashboard their role actually owns.
 if (is_member_logged_in()) {
-    redirect('/account');
+    $role = function_exists('auth_current_role') ? auth_current_role() : '';
+    redirect($role !== '' && function_exists('auth_dashboard_for') ? auth_dashboard_for($role) : '/account');
 }
 
 $error           = '';
@@ -72,128 +89,103 @@ $fieldErr = ($error !== '' && $unverifiedEmail === '');
 <link rel="stylesheet" href="<?= e(asset('css/tailwind.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('css/premium.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('css/ui.css')) ?>">
+    <?php /* Same link order as includes/header.php: the design system loads LAST
+             of the stylesheets so its radius / elevation / motion scales and its
+             components win over the accumulated per-component values above.
+             The Theme Engine block follows it because it only emits custom
+             properties, which the design system then reads. */ ?>
+    <link rel="stylesheet" href="<?= e(asset('css/design-system.css')) ?>">
     <?php echo function_exists('theme_style_tag') ? theme_style_tag('site') : ''; ?>
 <style>
 /* =========================================================================
-   Member Login — page-specific premium polish (forest-green brand skin).
-   Standalone page, so brand tokens are re-mapped locally to the NGO's
-   forest-green / teal / gold palette without touching the shared CSS.
+   Member Login — page-scoped layer ON TOP of design-system.css.
+   The local :root palette that used to live here is gone: colour, radius,
+   elevation and motion all come from the Theme Engine + the design system, so
+   this screen now follows the same tokens as the rest of the public site (and
+   an admin palette change reaches it, which it previously could not).
    ========================================================================= */
-:root{
-    --brand:        #063566;
-    --brand-600:    #063566;
-    --brand-700:    #042a52;
-    --brand-2:      #084881;
-    --accent:       #E67B1D;
-    --accent-2:     #E67B1D;
-    --gold:         #E67B1D;
-    --teal:         #084881;
-    --grad-brand:   linear-gradient(135deg, #063566 0%, #084881 100%);
-    --ring:         rgba(8,72,129,.28);
-    --shadow-brand: 0 14px 34px rgba(8,72,129,.30);
-}
 
-/* ------------------------------------------------------ AURORA BACKGROUND */
+/* ------------------------------------------------------------------ SHELL */
 .auth-shell{
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    padding: clamp(1.5rem, 4vw, 3rem) 1.25rem;
+    position: relative; overflow: hidden; isolation: isolate;
+    padding: clamp(1.25rem, 4vw, 3rem) clamp(.85rem, 3vw, 1.5rem);
     background:
-        radial-gradient(1100px 720px at 6% -8%,  rgba(8,72,129,.18), transparent 55%),
-        radial-gradient(1000px 720px at 104% 108%, rgba(230,123,29,.16), transparent 55%),
-        radial-gradient(820px 620px  at 50% 46%, rgba(6,53,102,.07),  transparent 60%),
-        linear-gradient(160deg, #f1faf5 0%, #eef7f3 46%, #f6fbf1 100%);
+        radial-gradient(900px 640px at 6% -8%,
+            color-mix(in srgb, var(--primary, #0B4E3D) 11%, transparent), transparent 58%),
+        radial-gradient(780px 560px at 104% 106%,
+            color-mix(in srgb, var(--yellow, #FFE987) 55%, transparent), transparent 58%),
+        var(--ivory, #FEFEF1);
 }
+/* Two brand washes in place of four blurred orbs in mint / teal / mustard —
+   none of which were in the palette — and no infinite float animation. */
 .auth-aurora{ position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-.auth-aurora .orb{
-    position: absolute; border-radius: 50%; filter: blur(64px);
-    opacity: .55; mix-blend-mode: multiply;
-    animation: orbFloat 20s ease-in-out infinite;
-}
-.auth-aurora .orb-1{ width: 460px; height: 460px; top: -140px; left: -120px;
-    background: radial-gradient(circle at 30% 30%, #22c197, #063566); }
-.auth-aurora .orb-2{ width: 400px; height: 400px; bottom: -160px; right: -110px;
-    background: radial-gradient(circle at 30% 30%, #2dd4bf, #084881); animation-delay: -6s; }
-.auth-aurora .orb-3{ width: 320px; height: 320px; top: 42%; right: 8%;
-    background: radial-gradient(circle at 30% 30%, #f4cd6a, #E67B1D); opacity: .38; animation-delay: -11s; }
-.auth-aurora .orb-4{ width: 260px; height: 260px; bottom: 6%; left: 6%;
-    background: radial-gradient(circle at 30% 30%, #5eead4, #084881); opacity: .34; animation-delay: -3s; }
-/* faint dotted texture layer */
-.auth-shell::after{
-    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background-image: radial-gradient(rgba(6,53,102,.10) 1px, transparent 1.4px);
-    background-size: 26px 26px;
-    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 0%, transparent 78%);
-            mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 0%, transparent 78%);
-    opacity: .5;
-}
-@keyframes orbFloat{
-    0%,100%{ transform: translate(0,0) scale(1); }
-    33%    { transform: translate(30px,-26px) scale(1.08); }
-    66%    { transform: translate(-22px,24px) scale(.94); }
-}
+.auth-aurora .orb{ position: absolute; border-radius: 50%; filter: blur(70px); opacity: .5; }
+.auth-aurora .orb-1{ width: 420px; height: 420px; top: -150px; left: -130px;
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 30%, transparent); }
+.auth-aurora .orb-2{ width: 360px; height: 360px; bottom: -170px; right: -120px;
+    background: color-mix(in srgb, var(--secondary, #174D3D) 26%, transparent); }
+.auth-aurora .orb-3{ width: 300px; height: 300px; top: 44%; right: 6%;
+    background: color-mix(in srgb, var(--yellow, #FFE987) 72%, transparent); opacity: .6; }
 .auth-main{ position: relative; z-index: 2; }
 
-/* ------------------------------------------------------ CARD + LOGO */
+/* ---------------------------------------------------------- CARD + LOGO */
 .auth-box{ max-width: 468px; }
-.auth-logo{ gap: .7rem; margin-bottom: 1.6rem; }
-.auth-logo img{ border-radius: 14px; box-shadow: 0 8px 20px rgba(6,78,59,.18); }
-.auth-logo span{ line-height: 1.15; }
-.auth-logo small{ color: var(--teal); letter-spacing: .12em; }
+.auth-logo{ gap: .7rem; margin-bottom: 1.5rem; }
+.auth-logo img{ border-radius: var(--r-md); box-shadow: var(--elev-2); }
+.auth-logo span{ line-height: 1.15; color: var(--text, #151818); }
+.auth-logo small{ color: var(--muted, #4B6754); letter-spacing: .12em; }
 
-.auth-box .glass-card{
-    position: relative;
-    padding: clamp(1.6rem, 3.4vw, 2.6rem);
-    border-radius: 26px;
-    background: rgba(255,255,255,.74);
-    backdrop-filter: blur(24px) saturate(165%);
-    -webkit-backdrop-filter: blur(24px) saturate(165%);
-    border: 1px solid rgba(255,255,255,.75);
-    box-shadow:
-        0 34px 80px -34px rgba(6,78,59,.5),
-        0 2px 0 rgba(255,255,255,.65) inset,
-        0 -1px 0 rgba(6,53,102,.05) inset;
-    overflow: hidden;
+/* .card is the design-system surface: hairline border, --r-lg family, no
+   glass. Only the radius step and the page's own padding are set here. */
+.auth-box .card{
+    position: relative; overflow: hidden;
+    padding: clamp(1.5rem, 3.4vw, 2.5rem);
+    border-radius: var(--r-xl);
+    box-shadow: var(--elev-4);
 }
-/* Gold-into-green hairline crowning the card */
-.auth-box .glass-card::before{
-    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-    background: linear-gradient(90deg, #063566, #084881 55%, #E67B1D);
+/* A flat yellow rule crowning the card — the same device the design system
+   uses to anchor the featured photograph, instead of a 3-stop gradient. */
+.auth-box .card::before{
+    content: ""; position: absolute; inset: 0 0 auto; height: 5px;
+    background: var(--yellow, #FFE987);
 }
+/* The card is a static surface; the lift belongs to clickable cards. */
+.auth-box .card:hover{ transform: none; box-shadow: var(--elev-4); border-color: var(--border, #C1CCB3); }
 
-/* ------------------------------------------------------ HEADINGS */
-.auth-eyebrow{
-    display: inline-flex; align-items: center; gap: .45rem;
-    justify-content: center; margin: 0 auto .55rem;
-    padding: .32rem .85rem; border-radius: 999px;
-    font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--brand-700);
-    background: rgba(8,72,129,.10);
-    border: 1px solid rgba(8,72,129,.22);
+/* -------------------------------------------------------------- HEADINGS */
+.auth-box .section-head{ margin-bottom: 1.4rem; }
+.auth-box .section-title{
+    font-size: clamp(1.6rem, 5.6vw, 2.05rem); line-height: 1.14; letter-spacing: -.02em;
 }
-.auth-eyebrow svg.lucide{ width: 14px; height: 14px; color: var(--teal); }
-.auth-title{
-    font-size: clamp(1.8rem, 4.5vw, 2.15rem); font-weight: 800; line-height: 1.1;
-    margin: 0; letter-spacing: -.02em;
-    background: linear-gradient(120deg, #042a52 0%, #084881 90%);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.auth-sub{ color: var(--muted); margin: .5rem 0 0; font-size: .96rem; }
+.auth-box .section-subtitle{ font-size: .96rem; line-height: 1.6; }
+.auth-box .eyebrow svg.lucide{ width: 14px; height: 14px; }
 
-/* ------------------------------------------------------ FIELDS + VALIDATION */
+/* --------------------------------------------------- FIELDS + VALIDATION */
+.field-float{ margin-bottom: 1.1rem; }
+/* 16px minimum: anything smaller makes iOS Safari zoom the page on focus. */
+.field-float input{
+    font-size: 1rem; border-radius: var(--r-sm);
+    transition: border-color var(--dur, .3s) var(--ease-out, ease),
+                box-shadow var(--dur, .3s) var(--ease-out, ease);
+}
+.field-float input:hover:not(:focus){
+    border-color: color-mix(in srgb, var(--primary, #0B4E3D) 45%, transparent);
+}
+.field-float input:focus{
+    border-color: var(--primary, #0B4E3D);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #0B4E3D) 16%, transparent);
+}
 /* General-sibling float so the label still lifts on the password field,
    where the show/hide button sits between the input and its label. */
 .field-float input:focus ~ label,
 .field-float input:not(:placeholder-shown) ~ label{
     top: .3rem; left: .85rem; font-size: .72rem; font-weight: 700;
-    color: var(--brand-600); padding: 0 .3rem;
+    color: var(--primary, #0B4E3D); padding: 0 .3rem;
 }
-.field-float{ margin-bottom: 1.15rem; }
-.field-float input{ transition: border-color .2s, box-shadow .2s, background .2s; }
-.field-float input:hover:not(:focus){ border-color: rgba(8,72,129,.5); }
-.field-float input.is-invalid{ border-color: var(--danger); }
-.field-float input.is-invalid:focus{ box-shadow: 0 0 0 4px rgba(220,38,38,.16); }
+.field-float input.is-invalid{ border-color: var(--danger, #DC2626); }
+.field-float input.is-invalid:focus{
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger, #DC2626) 18%, transparent);
+}
 .field-float.shake{ animation: fieldShake .38s cubic-bezier(.36,.07,.19,.97) both; }
 @keyframes fieldShake{
     10%,90%{ transform: translateX(-1px); }
@@ -202,96 +194,97 @@ $fieldErr = ($error !== '' && $unverifiedEmail === '');
     40%,60%{ transform: translateX(4px); }
 }
 
-/* Password show/hide toggle (Lucide eye / eye-off) */
-.toggle-pass{
+/* Password show/hide: a 20px mark inside a 44px touch target (it measured
+   34x34 before). The input reserves room so the value never runs under it. */
+#password{ padding-right: 3.25rem; }
+.field-float .toggle-pass{
     display: inline-flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; right: .55rem; top: .7rem; border-radius: 9px;
-    color: var(--muted); transition: color .2s, background .2s;
+    width: 44px; height: 44px; min-width: 44px;
+    right: .35rem; top: 50%; transform: translateY(-50%);
+    border-radius: var(--r-sm); color: var(--muted, #4B6754);
+    transition: color var(--dur, .3s) var(--ease-out, ease),
+                background-color var(--dur, .3s) var(--ease-out, ease);
 }
-.toggle-pass:hover{ color: var(--brand-600); background: rgba(8,72,129,.10); }
-.toggle-pass svg.lucide{ width: 19px; height: 19px; }
+.field-float .toggle-pass:hover{
+    color: var(--primary, #0B4E3D);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 9%, transparent);
+}
+.field-float .toggle-pass svg.lucide{ width: 20px; height: 20px; }
 .toggle-pass .tp-off{ display: none; }
 .toggle-pass.is-on .tp-on{ display: none; }
 .toggle-pass.is-on .tp-off{ display: inline-flex; }
 
-/* Remember-me / forgot row */
-.auth-meta{ margin-bottom: 1.3rem; }
-.auth-meta .checkbox{ font-size: .92rem; color: var(--text-soft); }
-.auth-meta a{ font-weight: 700; color: var(--brand-600); }
-.auth-meta a:hover{ color: var(--teal); }
-
-/* ------------------------------------------------------ SUBMIT BUTTON */
-.auth-shell .btn-3d{
-    background: linear-gradient(135deg, #063566 0%, #084881 100%);
-    border-radius: 14px; font-weight: 700; letter-spacing: .015em;
-    box-shadow: 0 6px 0 #0f4c43, 0 16px 30px rgba(8,72,129,.38);
+/* Remember-me / forgot row — the checkbox row is a 44px target on touch. */
+.auth-meta{ margin-bottom: 1.25rem; }
+.auth-meta .checkbox{
+    font-size: .92rem; color: var(--text-soft, #372C22);
+    align-items: center; min-height: 44px; cursor: pointer;
 }
-.auth-shell .btn-3d::after{
-    content: ""; position: absolute; inset: 0; border-radius: inherit;
-    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%);
-    transform: translateX(-120%); transition: transform .6s ease; pointer-events: none;
+.auth-meta .checkbox input{
+    width: 1.15rem; height: 1.15rem; margin-top: 0; accent-color: var(--primary, #0B4E3D);
 }
-.auth-shell .btn-3d:hover{ box-shadow: 0 9px 0 #0f4c43, 0 22px 42px rgba(8,72,129,.5); }
-.auth-shell .btn-3d:hover::after{ transform: translateX(120%); }
-.auth-shell .btn-3d:active{ box-shadow: 0 2px 0 #0f4c43, 0 8px 16px rgba(8,72,129,.34); }
-.auth-shell .btn-3d svg.lucide{ margin-left: .1rem; }
+.auth-meta a{ font-weight: 700; color: var(--primary, #0B4E3D); }
 
-/* ------------------------------------------------------ SEPARATOR + SOCIAL */
-.auth-sep{ margin: 1.4rem 0; font-weight: 600; letter-spacing: .02em; }
-.social-auth{ gap: .8rem; }
+/* ----------------------------------------------------- SEPARATOR + SOCIAL */
+.auth-sep{ margin: 1.35rem 0; font-weight: 600; color: var(--muted, #4B6754); }
+.social-auth{ gap: .7rem; }
 .btn-social{
-    gap: .55rem; padding: .8rem 1rem; border-radius: 13px; font-weight: 700;
-    background: var(--surface); color: var(--text-soft);
-    transition: transform .2s, border-color .2s, box-shadow .2s, color .2s;
+    gap: .55rem; padding: .8rem 1rem; min-height: 48px;
+    border-radius: var(--r-pill); font-weight: 700;
+    background: var(--surface, #fff); color: var(--text, #151818);
+    border: 1.5px solid var(--border, #C1CCB3);
+    transition: transform var(--dur-fast, .18s) var(--ease-out, ease),
+                border-color var(--dur, .3s) var(--ease-out, ease),
+                box-shadow var(--dur, .3s) var(--ease-out, ease),
+                color var(--dur, .3s) var(--ease-out, ease);
 }
 .btn-social .brand-svg{ width: 19px; height: 19px; flex-shrink: 0; }
-.btn-social:hover{ transform: translateY(-2px); }
-.btn-social.google:hover{ border-color: #4285F4; color: #1a73e8; box-shadow: 0 10px 20px rgba(66,133,244,.16); }
-.btn-social.facebook:hover{ border-color: #1877F2; color: #1877F2; box-shadow: 0 10px 20px rgba(24,119,242,.16); }
-
-/* Footer links */
-.auth-newhere{ font-size: .96rem; }
-.auth-newhere a{ font-weight: 800; color: var(--brand-600); }
-.auth-newhere a:hover{ color: var(--teal); }
-.auth-back{
-    display: inline-flex; align-items: center; gap: .35rem;
-    font-size: .9rem; color: var(--muted); font-weight: 600;
+/* The hover label used to turn #1877F2 / #1a73e8 — 4.23:1 and 4.51:1 on the
+   white button, i.e. below AA for a .9rem label. Brand green is 9.67:1; the
+   provider colour stays where it belongs, on the glyph and the border. */
+.btn-social:hover{
+    transform: translateY(-2px); color: var(--primary, #0B4E3D); box-shadow: var(--elev-2);
 }
-.auth-back:hover{ color: var(--brand-600); }
+.btn-social.google:hover{ border-color: #4285F4; }
+.btn-social.facebook:hover{ border-color: #1877F2; }
+
+/* ---------------------------------------------------------- FOOTER LINKS */
+.auth-newhere{ font-size: .96rem; color: var(--text-soft, #372C22); }
+.auth-newhere a{ font-weight: 800; }
+.auth-back{
+    display: inline-flex; align-items: center; gap: .4rem; min-height: 44px;
+    font-size: .9rem; color: var(--muted, #4B6754); font-weight: 600;
+}
+.auth-back:hover{ color: var(--primary, #0B4E3D); }
 .auth-back svg.lucide{ width: 15px; height: 15px; }
 
-.alert{ border-radius: 13px; }
-.alert a{ display: inline-flex; align-items: center; gap: .3rem; }
+.alert{ border-radius: var(--r-sm); }
+.alert a{ display: inline-flex; align-items: center; gap: .3rem; font-weight: 700; }
 .alert svg.lucide{ width: 15px; height: 15px; }
 
-/* ------------------------------------------------------ RESPONSIVE */
+/* ------------------------------------------------------------ RESPONSIVE */
+@media (max-width: 820px){
+    /* Ambient washes off on a phone: three 70px blurs repainting on a phone GPU
+       for an effect the card covers anyway (design system §13). */
+    .auth-aurora{ display: none; }
+}
 @media (max-width: 540px){
     .auth-box{ max-width: 100%; }
     .social-auth{ grid-template-columns: 1fr; }
     .auth-logo{ font-size: 1.05rem; }
 }
-
-/* ------------------------------------------------------ DARK MODE (if enabled) */
-:root[data-theme="dark"] .auth-shell{
-    background:
-        radial-gradient(1100px 720px at 6% -8%,  rgba(8,72,129,.22), transparent 55%),
-        radial-gradient(1000px 720px at 104% 108%, rgba(230,123,29,.14), transparent 55%),
-        radial-gradient(820px 620px  at 50% 46%, rgba(6,53,102,.16),  transparent 60%),
-        linear-gradient(160deg, #07130f 0%, #0a1a17 55%, #0b1510 100%);
-}
-:root[data-theme="dark"] .auth-aurora .orb{ mix-blend-mode: screen; opacity: .4; }
-:root[data-theme="dark"] .auth-box .glass-card{
-    background: rgba(16,28,24,.62); border-color: rgba(255,255,255,.08);
-}
-:root[data-theme="dark"] .auth-title{
-    background: linear-gradient(120deg, #7BC94F 0%, #2dd4bf 90%);
-    -webkit-background-clip: text; background-clip: text;
+@media (max-width: 380px){
+    /* 320px: 2.25rem of card padding either side left 248px for the form. */
+    .auth-shell{ padding: 1rem .7rem; }
+    .auth-box .card{ padding: 1.3rem 1.05rem; }
+    .auth-logo img{ width: 44px; height: 44px; }
 }
 
-/* ------------------------------------------------------ REDUCED MOTION */
+/* ------------------------------------------------------- REDUCED MOTION */
 @media (prefers-reduced-motion: reduce){
-    .auth-aurora .orb{ animation: none; }
-    .auth-shell .btn-3d::after{ display: none; }
+    .field-float.shake{ animation: none; }
+    .btn-social{ transition: none; }
+    .btn-social:hover{ transform: none; }
 }
 </style>
 </head>
@@ -301,21 +294,25 @@ $fieldErr = ($error !== '' && $unverifiedEmail === '');
         <span class="orb orb-1"></span>
         <span class="orb orb-2"></span>
         <span class="orb orb-3"></span>
-        <span class="orb orb-4"></span>
     </div>
 
     <!-- ============================== LOGIN FORM ============================== -->
     <main class="auth-main">
         <div class="auth-box">
             <a href="<?= e(url('')) ?>" class="auth-logo reveal">
-                <img src="<?= e(asset('images/logo-128.webp')) ?>" alt="<?= e($siteName) ?>" width="52" height="52">
-                <span><?= e($siteName) ?><small>Member Portal</small></span>
+                <img src="<?= e(brand_logo_url()) ?>" alt="<?= e($siteName) ?>" width="52" height="52">
+                <span><?= e($siteName) ?></span>
             </a>
-            <div class="glass-card reveal delay-1">
-                <div class="text-center mb-3">
-                    <span class="auth-eyebrow"><?= lucide('shield') ?> Secure Sign In</span>
-                    <h1 class="auth-title">Welcome back</h1>
-                    <p class="auth-sub">Enter your details to access your account.</p>
+            <div class="card auth-card reveal delay-1">
+                <?php /* The portal badge is the only thing that changes per role —
+                         one platform, one design, contextual wording. */ ?>
+                <div class="auth-head">
+                    <span class="auth-badge">
+                        <?= lucide($portalCtx['icon'] ?: 'log-in') ?>
+                        <?= e($portalCtx['label']) ?>
+                    </span>
+                    <h1 class="auth-title"><?= e($portalCtx['title']) ?></h1>
+                    <p class="auth-blurb"><?= e($portalCtx['blurb']) ?></p>
                 </div>
 
                 <?php // Pending flashes (e.g. logout / OTP-verified redirects land here). ?>
@@ -332,7 +329,7 @@ $fieldErr = ($error !== '' && $unverifiedEmail === '');
                 <?php if ($unverifiedEmail): ?>
                     <div class="alert alert-warning">
                         Your email isn't verified yet.
-                        <a href="<?= e(url('verify-otp?email=' . urlencode($unverifiedEmail))) ?>" style="font-weight:700;">Verify now <?= lucide('arrow-right') ?></a>
+                        <a class="link-underline" href="<?= e(url('verify-otp?email=' . urlencode($unverifiedEmail))) ?>">Verify now <?= lucide('arrow-right') ?></a>
                     </div>
                 <?php endif; ?>
 
@@ -356,10 +353,10 @@ $fieldErr = ($error !== '' && $unverifiedEmail === '');
 
                     <div class="flex justify-between items-center auth-meta flex-wrap gap-2">
                         <label class="checkbox"><input type="checkbox" name="remember" value="1"> Remember me</label>
-                        <a href="<?= e(url('forgot-password')) ?>">Forgot password?</a>
+                        <a class="link-underline" href="<?= e(url('forgot-password')) ?>">Forgot password?</a>
                     </div>
 
-                    <button class="btn btn-3d btn-block btn-lg" type="submit"><?= lucide('log-in') ?> Sign In</button>
+                    <button class="btn btn-secondary btn-block btn-lg" type="submit"><?= lucide('log-in') ?> Sign In</button>
                 </form>
 
                 <?php
@@ -390,8 +387,32 @@ $fieldErr = ($error !== '' && $unverifiedEmail === '');
                 <?php endif; ?>
 
                 <p class="text-center mt-3 auth-newhere" style="margin-bottom:0;">
-                    New here? <a href="<?= e(url('signup')) ?>">Create an account</a>
+                    New here? <a class="link-underline" href="<?= e(url('signup')) ?>">Create an account</a>
                 </p>
+
+                <?php
+                /* Portal switcher. Somebody who lands on the wrong door should be
+                   able to move, not guess a URL. Sign-in still works from ANY of
+                   these — the destination comes from the account's own role — so
+                   this is wayfinding, not a gate. */
+                $switchRoles = ['member', 'donor', 'volunteer', 'student', 'teacher', 'school'];
+                $allRoles    = function_exists('auth_roles') ? auth_roles() : [];
+                ?>
+                <div class="auth-switch">
+                    <p>Other portals</p>
+                    <div class="auth-switch-list">
+                        <?php foreach ($switchRoles as $r):
+                            $cfg = $allRoles[$r] ?? null;
+                            if (!$cfg) { continue; }
+                            $isCurrent = ($portalCtx['slug'] ?? '') === $r; ?>
+                            <a class="<?= $isCurrent ? 'is-current' : '' ?>" href="<?= e(url('login/' . $r)) ?>"
+                               <?= $isCurrent ? 'aria-current="page"' : '' ?>>
+                                <?= lucide($cfg['icon']) ?> <?= e(ucfirst($r)) ?>
+                            </a>
+                        <?php endforeach; ?>
+                        <a href="<?= e(url('login/admin')) ?>"><?= lucide('shield') ?> Admin</a>
+                    </div>
+                </div>
             </div>
 
             <p class="text-center mt-3">

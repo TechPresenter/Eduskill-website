@@ -85,6 +85,14 @@ if ($action === 'view') {
     $backView   = 'job-applications?action=view&id=' . (int) $row['id'];
     include __DIR__ . '/partials/head.php';
     ?>
+    <style>
+        /* Layout only — the detail view is built from shared components. */
+        .ja-w-label { width: 180px; }
+        .ja-letter { margin-top: var(--sp-5); }
+        .ja-body { white-space: pre-wrap; padding: var(--sp-4); line-height: 1.6; }
+        .ja-sep { margin: var(--sp-5) 0; }
+    </style>
+
     <div class="admin-page-head">
         <div>
             <h1><?= e($row['name']) ?></h1>
@@ -93,13 +101,20 @@ if ($action === 'view') {
         <a class="btn btn-secondary" href="<?= e(admin_url('job-applications')) ?>">&larr; Back to list</a>
     </div>
 
-    <div class="grid grid-2 gap-3" style="align-items:start;">
+    <div class="grid grid-2 cols-top">
         <div class="panel">
-            <div class="panel-head"><h3>Applicant Details</h3></div>
+            <div class="panel-head"><h2 class="panel-title">Applicant Details</h2></div>
             <div class="panel-body">
+                <?php /* .table-wrap, like every other table in the panel. Without it this
+                         one could not scroll, and because admin-ds.css sets
+                         `overflow-x: clip` on body.admin it did not get a scrollbar
+                         either — a 180px fixed label column plus an unbreakable email,
+                         tel: number or résumé filename in the value cell simply pushed
+                         content out of reach on a phone. */ ?>
+                <div class="table-wrap">
                 <table class="admin-table">
                     <tbody>
-                        <tr><th style="width:180px;">Status</th>
+                        <tr><th class="ja-w-label">Status</th>
                             <td><span class="pill <?= e($PILLS[$row['status']] ?? 'pill-gray') ?>"><?= e(ucfirst($row['status'])) ?></span></td></tr>
                         <tr><th>Position Applied For</th>
                             <td><?php if (!empty($row['position_title'])): ?>
@@ -119,8 +134,9 @@ if ($action === 'view') {
                                 <?php else: ?><span class="text-muted">—</span><?php endif; ?></td></tr>
                         <?php
                         /* Everything the application form collects now has its own column
-                           (schema_v27.sql). Rows are only rendered when filled, so a short
-                           general application still reads cleanly. */
+                           on `job_applications` (see database/eduskill.sql). Rows are only
+                           rendered when filled, so a short general application still reads
+                           cleanly. */
                         $extraRows = [
                             'Location'         => trim(implode(', ', array_filter([$row['address'] ?? '', $row['city'] ?? '', $row['state'] ?? '']))),
                             'Applying For'     => $row['position_applied'] ?? '',
@@ -147,19 +163,20 @@ if ($action === 'view') {
                         <tr><th>Submitted</th><td><?= e(format_datetime($row['created_at'])) ?> <span class="text-muted">(<?= e(time_ago($row['created_at'])) ?>)</span></td></tr>
                     </tbody>
                 </table>
+                </div>
 
                 <?php foreach (['Cover Letter' => $row['cover_letter'] ?? '', 'Additional Notes' => $row['message'] ?? ''] as $label => $body):
                     if (trim((string) $body) === '') { continue; } ?>
-                    <div class="form-group" style="margin-top:1.25rem;">
+                    <div class="form-group ja-letter">
                         <label class="form-label"><?= e($label) ?></label>
-                        <div class="panel" style="white-space:pre-wrap;padding:1rem 1.15rem;line-height:1.6;"><?= nl2br(e($body)) ?></div>
+                        <div class="panel ja-body"><?= nl2br(e($body)) ?></div>
                     </div>
                 <?php endforeach; ?>
             </div>
         </div>
 
         <div class="panel">
-            <div class="panel-head"><h3>Manage</h3></div>
+            <div class="panel-head"><h2 class="panel-title">Manage</h2></div>
             <div class="panel-body">
                 <form method="post" action="<?= e(admin_url('job-applications')) ?>">
                     <?= csrf_field() ?>
@@ -179,11 +196,11 @@ if ($action === 'view') {
                     </div>
                 </form>
 
-                <div class="divider" style="margin:1.25rem 0;"></div>
+                <div class="divider ja-sep"></div>
 
                 <?php if (!empty($row['email'])): ?>
                     <a class="btn btn-outline btn-block" href="mailto:<?= e($row['email']) ?>?subject=<?= e(rawurlencode('Your application' . (!empty($row['position_title']) ? ' for ' . $row['position_title'] : ''))) ?>"><?= lucide('mail') ?> Email Applicant</a>
-                    <div class="divider" style="margin:1.25rem 0;"></div>
+                    <div class="divider ja-sep"></div>
                 <?php endif; ?>
 
                 <form method="post" action="<?= e(admin_url('job-applications')) ?>" data-confirm="Delete this application permanently?">
@@ -257,13 +274,20 @@ $statCards = [
 
 include __DIR__ . '/partials/head.php';
 ?>
+<style>
+    /* Layout only, plus the "this filter is active" state on the stat cards. */
+    .ja-w-status { width: 160px; }
+    /* qualified so it beats the shared `.admin-content .form-select` padding */
+    .admin-content .ja-status-select { padding: var(--sp-1) var(--sp-2); }
+</style>
+
 <div class="admin-page-head">
     <div><h1>Job Applications</h1><span class="muted"><?= (int) $p['total'] ?> matching · <?= (int) $counts['all'] ?> total</span></div>
 </div>
 
 <div class="stat-grid">
     <?php foreach ($statCards as $c): ?>
-        <a class="stat-card" href="<?= e(admin_url('job-applications' . ($c['key'] !== '' ? '?status=' . $c['key'] : ''))) ?>" style="<?= $statusFilter === $c['key'] ? 'border-color:var(--brand-600);box-shadow:var(--shadow);' : '' ?>">
+        <a class="stat-card"<?= $statusFilter === $c['key'] ? ' aria-current="page"' : '' ?> href="<?= e(admin_url('job-applications' . ($c['key'] !== '' ? '?status=' . $c['key'] : ''))) ?>">
             <div class="stat-icon <?= e($c['bg']) ?>"><?= lucide($c['icon']) ?></div>
             <div>
                 <div class="stat-value"><?= e(number_format($c['value'])) ?></div>
@@ -298,7 +322,7 @@ include __DIR__ . '/partials/head.php';
         <div class="table-wrap">
             <table class="admin-table">
                 <thead><tr>
-                    <th>Applicant</th><th>Position</th><th>Résumé</th><th>Submitted</th><th style="width:160px;">Status</th><th style="text-align:right;">Actions</th>
+                    <th>Applicant</th><th>Position</th><th>Résumé</th><th>Submitted</th><th class="ja-w-status">Status</th><th class="num">Actions</th>
                 </tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
@@ -320,12 +344,12 @@ include __DIR__ . '/partials/head.php';
                         </td>
                         <td><small class="text-muted"><?= e(time_ago($r['created_at'])) ?></small></td>
                         <td>
-                            <form method="post" action="<?= e(admin_url('job-applications')) ?>" style="display:inline;">
+                            <form method="post" action="<?= e(admin_url('job-applications')) ?>">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="_do" value="status">
                                 <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
                                 <input type="hidden" name="_return" value="<?= e($listReturn) ?>">
-                                <select class="form-select" name="status" onchange="this.form.submit()" style="padding:.35rem .5rem;">
+                                <select class="form-select ja-status-select" name="status" onchange="this.form.submit()">
                                     <?php foreach ($STATUSES as $st): ?>
                                         <option value="<?= e($st) ?>" <?= $r['status'] === $st ? 'selected' : '' ?>><?= e(ucfirst($st)) ?></option>
                                     <?php endforeach; ?>
@@ -335,7 +359,7 @@ include __DIR__ . '/partials/head.php';
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('job-applications?action=view&id=' . (int) $r['id'])) ?>" title="View"><?= lucide('eye') ?></a>
-                                <form method="post" action="<?= e(admin_url('job-applications')) ?>" data-confirm="Delete this application permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('job-applications')) ?>" data-confirm="Delete this application permanently?">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">

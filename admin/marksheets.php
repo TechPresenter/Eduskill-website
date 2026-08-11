@@ -174,6 +174,13 @@ if ($action === 'create' || $action === 'edit') {
     $page_title = $action === 'edit' ? 'Edit Marksheet' : 'New Marksheet';
     include __DIR__ . '/partials/head.php';
     ?>
+    <style>
+        /* Layout only — column widths for the parallel-input subject editor. */
+        .ms-remarks { min-height: 90px; }
+        .ms-w-mark { width: 110px; }
+        .ms-w-act { width: 44px; }
+    </style>
+
     <div class="admin-page-head">
         <div><h1><?= e($page_title) ?></h1><span class="muted">Marksheets / <?= $action === 'edit' ? 'Edit' : 'Create' ?></span></div>
         <a class="btn btn-secondary" href="<?= e(admin_url('marksheets')) ?>">← Back to list</a>
@@ -184,9 +191,9 @@ if ($action === 'create' || $action === 'edit') {
         <input type="hidden" name="_do" value="save">
         <input type="hidden" name="id" value="<?= (int) ($row['id'] ?? 0) ?>">
 
-        <div class="grid-2" style="align-items:start;gap:1.25rem;">
+        <div class="grid-2 cols-top">
             <div class="panel"><div class="panel-body">
-                <h3 class="mb-3">Marksheet details</h3>
+                <h2 class="panel-title mb-3">Marksheet details</h2>
                 <div class="form-group"><label class="form-label">Student <span class="req">*</span></label>
                     <select class="form-select" name="student_id" required>
                         <option value="">Select student…</option>
@@ -209,14 +216,14 @@ if ($action === 'create' || $action === 'edit') {
                 <div class="form-group"><label class="form-label">Rank</label>
                     <input class="form-control" type="number" min="1" name="rank" value="<?= $o('rank') ?>" placeholder="Class rank (optional)"></div>
                 <div class="form-group"><label class="form-label">Remarks</label>
-                    <textarea class="form-textarea" name="remarks" style="min-height:90px;"><?= e(old('remarks', $row['remarks'] ?? '')) ?></textarea></div>
+                    <textarea class="form-textarea ms-remarks" name="remarks"><?= e(old('remarks', $row['remarks'] ?? '')) ?></textarea></div>
                 <small class="form-hint">Totals, percentage, grade and pass/fail are calculated automatically from the subjects.</small>
             </div></div>
 
             <div class="panel"><div class="panel-body">
-                <h3 class="mb-3">Subjects &amp; marks</h3>
+                <h2 class="panel-title mb-3">Subjects &amp; marks</h2>
                 <div class="table-wrap"><table class="admin-table" id="subjectsTable">
-                    <thead><tr><th>Subject</th><th style="width:110px;">Max</th><th style="width:110px;">Obtained</th><th style="width:44px;"></th></tr></thead>
+                    <thead><tr><th>Subject</th><th class="ms-w-mark">Max</th><th class="ms-w-mark">Obtained</th><th class="ms-w-act"></th></tr></thead>
                     <tbody>
                     <?php foreach ($editorRows as $sr): ?>
                         <tr>
@@ -229,7 +236,7 @@ if ($action === 'create' || $action === 'edit') {
                     </tbody>
                 </table></div>
                 <button type="button" class="btn btn-outline btn-sm" id="addSubjectRow"><?= lucide('plus') ?> Add subject</button>
-                <small class="form-hint" style="display:block;margin-top:.5rem;">Empty rows are ignored on save.</small>
+                <small class="form-hint">Empty rows are ignored on save.</small>
                 <div class="form-actions mt-3">
                     <button class="btn btn-primary" type="submit"><?= $action === 'edit' ? 'Update' : 'Create' ?> marksheet</button>
                     <a class="btn btn-ghost" href="<?= e(admin_url('marksheets')) ?>">Cancel</a>
@@ -293,6 +300,11 @@ $counts = [
 
 include __DIR__ . '/partials/head.php';
 ?>
+<style>
+    /* Layout only. */
+    .ms-filters { gap: var(--sp-2); }
+</style>
+
 <div class="admin-page-head">
     <div><h1>Marksheets</h1><span class="muted"><?= (int) $p['total'] ?> result sheets</span></div>
     <a class="btn btn-primary" href="<?= e(admin_url('marksheets?action=create')) ?>">+ New Marksheet</a>
@@ -312,7 +324,7 @@ include __DIR__ . '/partials/head.php';
             <?php if ($publishedFilter !== ''): ?><input type="hidden" name="published" value="<?= e($publishedFilter) ?>"><?php endif; ?>
             <input class="form-control" type="search" name="q" value="<?= e($search) ?>" placeholder="Search student, code, title, serial…">
         </form>
-        <form method="get" action="<?= e(admin_url('marksheets')) ?>" class="flex" style="gap:.5rem;">
+        <form method="get" action="<?= e(admin_url('marksheets')) ?>" class="flex ms-filters">
             <?php if ($search !== ''): ?><input type="hidden" name="q" value="<?= e($search) ?>"><?php endif; ?>
             <select class="form-select" name="result" onchange="this.form.submit()">
                 <option value="">All results</option>
@@ -330,7 +342,7 @@ include __DIR__ . '/partials/head.php';
 
     <?php if ($p['items']): ?>
     <div class="table-wrap"><table class="admin-table">
-        <thead><tr><th>Serial</th><th>Student</th><th>Title</th><th>Term / Year</th><th style="text-align:right;">%</th><th>Grade</th><th>Result</th><th>Published</th><th style="text-align:right;">Actions</th></tr></thead>
+        <thead><tr><th>Serial</th><th>Student</th><th>Title</th><th>Term / Year</th><th class="num">%</th><th>Grade</th><th>Result</th><th>Published</th><th class="num">Actions</th></tr></thead>
         <tbody>
         <?php foreach ($p['items'] as $r): ?>
             <tr>
@@ -341,18 +353,18 @@ include __DIR__ . '/partials/head.php';
                     $tp = array_filter([$r['term'] ?? '', $r['academic_year'] ?? '']);
                     echo $tp ? e(implode(' · ', $tp)) : '<span class="text-muted">—</span>';
                 ?></td>
-                <td style="text-align:right;"><?= e(number_format((float) $r['percentage'], 2)) ?>%</td>
+                <td class="num"><?= e(number_format((float) $r['percentage'], 2)) ?>%</td>
                 <td><?= $r['grade'] ? e($r['grade']) : '<span class="text-muted">—</span>' ?></td>
                 <td><span class="pill <?= e($resultPill[$r['result']] ?? 'pill-gray') ?>"><?= e($results[$r['result']] ?? ucfirst((string) $r['result'])) ?></span></td>
                 <td><span class="pill <?= ((int) $r['published']) ? 'pill-green' : 'pill-gray' ?>"><?= ((int) $r['published']) ? 'Published' : 'Draft' ?></span></td>
                 <td><div class="actions">
                     <a class="icon-btn" href="<?= e(admin_url('marksheet-view?id=' . $r['id'])) ?>" target="_blank" rel="noopener" title="View / print"><?= lucide('eye') ?></a>
                     <a class="icon-btn" href="<?= e(admin_url('marksheets?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                    <form method="post" action="<?= e(admin_url('marksheets')) ?>" style="display:inline;">
+                    <form method="post" action="<?= e(admin_url('marksheets')) ?>">
                         <?= csrf_field() ?><input type="hidden" name="_do" value="publish"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
                         <button class="icon-btn" type="submit" title="<?= ((int) $r['published']) ? 'Unpublish' : 'Publish' ?>"><?= lucide(((int) $r['published']) ? 'eye-off' : 'send') ?></button>
                     </form>
-                    <form method="post" action="<?= e(admin_url('marksheets')) ?>" data-confirm="Delete this marksheet and all its subject rows? This cannot be undone." style="display:inline;">
+                    <form method="post" action="<?= e(admin_url('marksheets')) ?>" data-confirm="Delete this marksheet and all its subject rows? This cannot be undone.">
                         <?= csrf_field() ?><input type="hidden" name="_do" value="delete"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
                         <button class="icon-btn danger" type="submit" title="Delete"><?= lucide('trash-2') ?></button>
                     </form>

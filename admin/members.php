@@ -27,6 +27,29 @@ $statusPill = static fn (string $s): string => match ($s) {
 $memberTypes = ['member', 'donor', 'volunteer', 'intern', 'partner', 'supporter'];
 $genders     = ['' => '—', 'male' => 'Male', 'female' => 'Female', 'other' => 'Other'];
 
+/* -----------------------------------------------------------------------------
+ | ROLE — what decides where this person lands after signing in.
+ | -----------------------------------------------------------------------------
+ | Distinct from `type`, which is a membership category the card/CSV code reads.
+ | members.role is what includes/auth_router.php routes on, and until now this
+ | screen could not set it at all — the column was written by nothing and every
+ | row carried the 'member' default.
+ |
+ | The list is DERIVED from auth_roles(): only roles that may legitimately live
+ | in the members table are offered, so a members row can never be given a
+ | users-realm role like 'staff' or 'super-admin' from here.
+ */
+$memberRoles = [];
+foreach (auth_roles() as $roleSlug => $roleCfg) {
+    if (in_array('members', $roleCfg['realms'], true)) {
+        $memberRoles[$roleSlug] = ucfirst(str_replace('-', ' ', $roleSlug));
+    }
+}
+$rolePill = static fn (string $r): string => match ($r) {
+    'school' => 'pill-violet', 'student' => 'pill-blue', 'volunteer' => 'pill-green',
+    'donor'  => 'pill-amber',  default    => 'pill-gray',
+};
+
 /** Normalise a CSV date cell to YYYY-MM-DD, or null when unparseable/blank. */
 function csv_date(string $v): ?string
 {
@@ -92,6 +115,8 @@ if (is_post() && post('_do') === 'save') {
         'email'             => $email,
         'phone'             => clean(post('phone')) ?: null,
         'type'              => in_array(post('type'), $memberTypes, true) ? post('type') : 'member',
+        // Whitelisted against the members-realm roles only — see $memberRoles.
+        'role'              => isset($memberRoles[(string) post('role')]) ? (string) post('role') : ($old['role'] ?? 'member'),
         'gender'            => in_array(post('gender'), ['male', 'female', 'other'], true) ? post('gender') : null,
         'dob'              => clean(post('dob')) ?: null,
         'occupation'        => clean(post('occupation')) ?: null,
@@ -129,7 +154,7 @@ if (is_post() && post('_do') === 'save') {
         $member = member_ensure_identity(find($table, $editId));
         // Audit diff of meaningful fields.
         $changes = [];
-        foreach (['name', 'email', 'phone', 'plan_id', 'join_date', 'expiry_date', 'membership_status', 'status', 'auto_renew'] as $f) {
+        foreach (['name', 'email', 'phone', 'role', 'type', 'plan_id', 'join_date', 'expiry_date', 'membership_status', 'status', 'auto_renew'] as $f) {
             $before = $old[$f] ?? null;
             $after  = $data[$f] ?? $before;
             if ((string) $before !== (string) $after) { $changes[$f] = [$before, $after]; }
@@ -167,6 +192,44 @@ if (is_post() && post('_do') === 'status') {
     member_audit_log($mid, 'status', ['status' => [$row['status'], $status]], 'Account status changed');
     log_activity('update', 'members', 'Member #' . $mid . ' account status → ' . $status);
     set_flash('success', 'Account status updated.');
+    redirect(post('from') === 'view' ? '/admin/members?action=view&id=' . $mid : '/admin/members' . $listQS());
+}
+
+/* =============================================================================
+ |  APPROVE A PENDING ACCOUNT
+ |=============================================================================
+ |  members.status = 'pending' is the approval queue, and auth_status_gate()
+ |  refuses to seat a session for it. This is the action that empties the queue.
+ |
+ |  Approval is NOT verification: it does not touch email_verified_at, because
+ |  an admin clicking a button is not evidence that the account holder owns the
+ |  address. An approved-but-unverified account still has to confirm its email
+ |  before it can sign in, and the UI says so.
+ |============================================================================*/
+if (is_post() && post('_do') === 'approve') {
+    require_csrf();
+    $mid = (int) post('id', 0);
+    $row = find($table, $mid);
+    if (!$row) {
+        set_flash('error', 'Member not found.');
+        redirect('/admin/members');
+    }
+    if ($row['status'] !== 'pending') {
+        set_flash('error', 'Only a pending account can be approved.');
+        redirect('/admin/members?action=view&id=' . $mid);
+    }
+
+    db_update($table, ['status' => 'active'], 'id = :id', [':id' => $mid]);
+    member_audit_log($mid, 'approved', ['status' => ['pending', 'active']], 'Account approved in admin');
+    log_activity('member_approved', 'members',
+        'Approved member #' . $mid . ' (' . ($row['email'] ?? '') . ') role=' . ($row['role'] ?? 'member'));
+    if (function_exists('send_member_approved_notice')) {
+        send_member_approved_notice((string) $row['email'], (string) $row['name'], empty($row['email_verified_at']));
+    }
+
+    set_flash('success', empty($row['email_verified_at'])
+        ? 'Account approved. They still need to verify their email address before they can sign in — we have emailed them the reminder.'
+        : 'Account approved. They can sign in now.');
     redirect(post('from') === 'view' ? '/admin/members?action=view&id=' . $mid : '/admin/members' . $listQS());
 }
 
@@ -316,6 +379,16 @@ if (is_post() && post('_do') === 'import') {
             'status'            => isset($statuses[$val($row, $idx, 'status')]) ? $val($row, $idx, 'status') : 'active',
         ];
 
+        /* `role` decides where the person lands after signing in, so it is only
+           written when the CSV actually names a valid members-realm role.
+           Including it unconditionally would silently demote every existing
+           school/student row to 'member' on any import whose sheet has no role
+           column — this loop UPDATEs matched rows with the whole $fields array. */
+        $roleCell = strtolower($val($row, $idx, 'role'));
+        if (isset($memberRoles[$roleCell])) {
+            $fields['role'] = $roleCell;
+        }
+
         $existing = db_row('SELECT id FROM members WHERE email = :e', [':e' => $email]);
         if ($existing) {
             db_update($table, $fields, 'id = :id', [':id' => (int) $existing['id']]);
@@ -353,13 +426,13 @@ if ($action === 'export') {
         return preg_match('/^[=+\-@\t\r]/', $v) ? "'" . $v : $v;
     };
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['member_code', 'name', 'email', 'phone', 'type', 'plan', 'membership_status',
-        'join_date', 'expiry_date', 'auto_renew', 'account_status', 'city', 'state', 'created_at']);
+    fputcsv($out, ['member_code', 'name', 'email', 'phone', 'role', 'type', 'plan', 'membership_status',
+        'join_date', 'expiry_date', 'auto_renew', 'account_status', 'email_verified', 'city', 'state', 'created_at']);
     foreach ($rows as $r) {
         fputcsv($out, array_map($safe, [
-            $r['member_code'], $r['name'], $r['email'], $r['phone'], $r['type'], $r['plan_name'],
+            $r['member_code'], $r['name'], $r['email'], $r['phone'], $r['role'], $r['type'], $r['plan_name'],
             $r['membership_status'], $r['join_date'], $r['expiry_date'], $r['auto_renew'],
-            $r['status'], $r['city'], $r['state'], $r['created_at'],
+            $r['status'], $r['email_verified_at'] ? 'yes' : 'no', $r['city'], $r['state'], $r['created_at'],
         ]));
     }
     fclose($out);
@@ -401,8 +474,9 @@ if ($action === 'view') {
         <div>
             <!-- Membership card preview -->
             <div class="panel"><div class="panel-body" style="display:flex;justify-content:center;">
-                <?= card_html($row, get_setting('membership_card_template', 'classic')) ?>
+                <?= card_html($row, card_default_template()) ?>
             </div></div>
+            <?= card_html_assets() ?>
 
             <!-- Profile -->
             <div class="panel"><div class="panel-body">
@@ -411,6 +485,11 @@ if ($action === 'view') {
                     <tr><th style="width:170px;">Email</th><td><a href="mailto:<?= e($row['email']) ?>"><?= e($row['email']) ?></a>
                         <span class="pill <?= $isVerified ? 'pill-green' : 'pill-gray' ?>"><?= $isVerified ? 'Verified' : 'Unverified' ?></span></td></tr>
                     <tr><th>Phone</th><td><?= $row['phone'] ? e($row['phone']) : '—' ?></td></tr>
+                    <tr><th>Role</th><td>
+                        <?php $vRole = strtolower((string) ($row['role'] ?? 'member')); ?>
+                        <span class="pill <?= e($rolePill($vRole)) ?>"><?= e($memberRoles[$vRole] ?? ucfirst($vRole)) ?></span>
+                        <small class="text-muted">lands on <code><?= e(auth_dashboard_for($vRole, 'members')) ?></code></small>
+                    </td></tr>
                     <tr><th>Type</th><td><?= e(ucfirst($row['type'])) ?></td></tr>
                     <tr><th>Gender / DOB</th><td><?= e($genders[$row['gender'] ?? ''] ?? '—') ?> · <?= $row['dob'] ? e(format_date($row['dob'])) : '—' ?></td></tr>
                     <tr><th>Occupation</th><td><?= $row['occupation'] ? e($row['occupation']) : '—' ?></td></tr>
@@ -536,6 +615,23 @@ if ($action === 'view') {
             <!-- Danger / account -->
             <div class="panel"><div class="panel-body">
                 <h3 class="mb-2">Account & danger zone</h3>
+
+                <?php if ($row['status'] === 'pending'): ?>
+                <?php /* The approval queue, at the point of decision. */ ?>
+                <div class="alert alert-warning" style="margin-bottom:.8rem;">
+                    <?= lucide('hourglass') ?>
+                    <span>This account is <strong>awaiting approval</strong> and cannot sign in yet.
+                    <?= $isVerified ? '' : ' Its email address has not been verified either.' ?></span>
+                </div>
+                <form method="post" action="<?= e(admin_url('members')) ?>" class="mb-3">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="_do" value="approve"><input type="hidden" name="from" value="view"><input type="hidden" name="id" value="<?= $id ?>">
+                    <button class="btn btn-success btn-block" type="submit"><?= lucide('user-check') ?> Approve this account</button>
+                    <small class="form-hint">Approval does not verify the email address — that stays the account
+                        holder's to prove.</small>
+                </form>
+                <?php endif; ?>
+
                 <form method="post" action="<?= e(admin_url('members')) ?>" class="mb-3">
                     <?= csrf_field() ?>
                     <input type="hidden" name="_do" value="status"><input type="hidden" name="from" value="view"><input type="hidden" name="id" value="<?= $id ?>">
@@ -543,6 +639,8 @@ if ($action === 'view') {
                     <select class="form-select" name="status" onchange="this.form.submit()">
                         <?php foreach ($statuses as $k => $l): ?><option value="<?= e($k) ?>" <?= $row['status'] === $k ? 'selected' : '' ?>><?= e($l) ?></option><?php endforeach; ?>
                     </select>
+                    <small class="form-hint"><strong>Pending</strong> means awaiting approval — the account cannot
+                        sign in. <strong>Suspended</strong> blocks sign-in permanently until changed.</small>
                 </form>
                 <?php if ($mStatus !== 'cancelled' && $mStatus !== 'none'): ?>
                 <form method="post" action="<?= e(admin_url('members')) ?>" class="mb-2" data-confirm="Cancel this membership?">
@@ -601,7 +699,21 @@ if ($action === 'create' || $action === 'edit') {
                     <div class="form-group"><label class="form-label">Member type</label>
                         <select class="form-select" name="type">
                             <?php foreach ($memberTypes as $t): ?><option value="<?= e($t) ?>" <?= ($row['type'] ?? 'member') === $t ? 'selected' : '' ?>><?= e(ucfirst($t)) ?></option><?php endforeach; ?>
-                        </select></div>
+                        </select>
+                        <small class="form-hint">Membership category — used by the card, renewals and CSV export.</small></div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label class="form-label">Portal role</label>
+                        <select class="form-select" name="role">
+                            <?php $curRole = strtolower((string) ($row['role'] ?? 'member'));
+                            foreach ($memberRoles as $rk => $rl): ?>
+                                <option value="<?= e($rk) ?>" <?= $curRole === $rk ? 'selected' : '' ?>><?= e($rl) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="form-hint">Decides which dashboard they land on after signing in. Staff and
+                            administrator roles are not available here — those live on <a href="<?= e(admin_url('users')) ?>">Users</a>.</small>
+                    </div>
+                    <div class="form-group"></div>
                 </div>
                 <div class="grid-2">
                     <div class="form-group"><label class="form-label">Gender</label>
@@ -690,11 +802,17 @@ if ($action === 'import') {
     </div>
     <div class="panel"><div class="panel-body">
         <p>Upload a <code>.csv</code> with a header row. Recognised columns (extra columns are ignored):</p>
-        <p><code>name, email, phone, type, plan, join_date, expiry_date, status, membership_status, address, city, state, pincode, occupation, gender, dob</code></p>
+        <p><code>name, email, phone, role, type, plan, join_date, expiry_date, status, membership_status, address, city, state, pincode, occupation, gender, dob</code></p>
         <ul class="text-muted" style="font-size:.9rem;">
             <li><strong>name</strong> and a valid <strong>email</strong> are required; rows missing them are skipped.</li>
             <li>Existing members (matched by email) are updated; others are created with a random password.</li>
             <li><strong>plan</strong> may be the plan name or its id. Dates accept <code>YYYY-MM-DD</code> or <code>DD/MM/YYYY</code>.</li>
+            <li><strong>role</strong> decides which dashboard the person lands on:
+                <code><?= e(implode(', ', array_keys($memberRoles))) ?></code>.
+                Anything else is ignored — and on an update, a missing or unrecognised role leaves the
+                existing one alone rather than resetting it.</li>
+            <li><strong>status</strong> <code>pending</code> means the account is in the approval queue and
+                cannot sign in; <code>active</code> lets it sign in once the email is verified.</li>
         </ul>
         <form method="post" action="<?= e(admin_url('members')) ?>" enctype="multipart/form-data" class="mt-3">
             <?= csrf_field() ?>
@@ -715,8 +833,8 @@ if ($action === 'sample') {
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="members-sample.csv"');
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['name', 'email', 'phone', 'type', 'plan', 'join_date', 'expiry_date', 'status', 'membership_status', 'address', 'city', 'state', 'pincode', 'occupation', 'gender', 'dob']);
-    fputcsv($out, ['Asha Devi', 'asha@example.com', '7491932148', 'member', 'Gold', '2026-01-01', '2027-01-01', 'active', 'active', '12 MG Road', 'Patna', 'Bihar', '800001', 'Teacher', 'female', '1990-05-12']);
+    fputcsv($out, ['name', 'email', 'phone', 'role', 'type', 'plan', 'join_date', 'expiry_date', 'status', 'membership_status', 'address', 'city', 'state', 'pincode', 'occupation', 'gender', 'dob']);
+    fputcsv($out, ['Asha Devi', 'asha@example.com', '7491932148', 'member', 'member', 'Gold', '2026-01-01', '2027-01-01', 'active', 'active', '12 MG Road', 'Patna', 'Bihar', '800001', 'Teacher', 'female', '1990-05-12']);
     fclose($out);
     exit;
 }
@@ -770,6 +888,8 @@ $counts = [
     'active'    => db_count('members', "membership_status = 'active' AND (expiry_date IS NULL OR expiry_date >= CURDATE())"),
     'expiring'  => db_count('members', "membership_status = 'active' AND expiry_date IS NOT NULL AND expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)"),
     'expired'   => db_count('members', "membership_status IN ('active','expired') AND expiry_date IS NOT NULL AND expiry_date < CURDATE()"),
+    // Account-level, not membership-level: these people cannot sign in at all.
+    'pending'   => db_count('members', "status = 'pending'"),
 ];
 $allPlans = membership_plans_all(false);
 
@@ -785,15 +905,28 @@ include __DIR__ . '/partials/head.php';
 </div>
 
 <div class="stat-grid">
-    <a class="stat-card" href="<?= e(admin_url('members')) ?>" style="<?= $mStatusFilter === '' && $statusFilter === '' ? 'outline:2px solid var(--brand,#063566);' : '' ?>">
+    <a class="stat-card" href="<?= e(admin_url('members')) ?>" style="<?= $mStatusFilter === '' && $statusFilter === '' ? 'outline:2px solid var(--brand,#0B4E3D);' : '' ?>">
         <div class="stat-icon bg-violet"><?= lucide('users') ?></div><div><div class="stat-value"><?= (int) $counts['all'] ?></div><div class="stat-label">All Members</div></div></a>
-    <a class="stat-card" href="<?= e(admin_url('members?mstatus=active')) ?>" style="<?= $mStatusFilter === 'active' ? 'outline:2px solid var(--brand,#063566);' : '' ?>">
+    <a class="stat-card" href="<?= e(admin_url('members?mstatus=active')) ?>" style="<?= $mStatusFilter === 'active' ? 'outline:2px solid var(--brand,#0B4E3D);' : '' ?>">
         <div class="stat-icon bg-green"><?= lucide('badge-check') ?></div><div><div class="stat-value"><?= (int) $counts['active'] ?></div><div class="stat-label">Active</div></div></a>
-    <a class="stat-card" href="<?= e(admin_url('members?expiring=1')) ?>" style="<?= $expiringFilter ? 'outline:2px solid var(--brand,#063566);' : '' ?>">
+    <a class="stat-card" href="<?= e(admin_url('members?expiring=1')) ?>" style="<?= $expiringFilter ? 'outline:2px solid var(--brand,#0B4E3D);' : '' ?>">
         <div class="stat-icon bg-amber"><?= lucide('clock') ?></div><div><div class="stat-value"><?= (int) $counts['expiring'] ?></div><div class="stat-label">Expiring ≤30d</div></div></a>
-    <a class="stat-card" href="<?= e(admin_url('members?mstatus=expired')) ?>" style="<?= $mStatusFilter === 'expired' ? 'outline:2px solid var(--brand,#063566);' : '' ?>">
+    <a class="stat-card" href="<?= e(admin_url('members?mstatus=expired')) ?>" style="<?= $mStatusFilter === 'expired' ? 'outline:2px solid var(--brand,#0B4E3D);' : '' ?>">
         <div class="stat-icon bg-rose"><?= lucide('calendar-x') ?></div><div><div class="stat-value"><?= (int) $counts['expired'] ?></div><div class="stat-label">Expired</div></div></a>
+    <?php /* The approval queue. These accounts cannot sign in until approved —
+             see auth_status_gate(). Policy lives in Registration Policy. */ ?>
+    <a class="stat-card" href="<?= e(admin_url('members?status=pending')) ?>" style="<?= $statusFilter === 'pending' ? 'outline:2px solid var(--brand,#0B4E3D);' : '' ?>">
+        <div class="stat-icon bg-amber"><?= lucide('user-check') ?></div><div><div class="stat-value"><?= (int) $counts['pending'] ?></div><div class="stat-label">Awaiting Approval</div></div></a>
 </div>
+
+<?php if ($statusFilter === 'pending'): ?>
+<div class="alert alert-info">
+    <?= lucide('info') ?>
+    <span>These accounts are waiting on a human. Whether new sign-ups land here at all is set in
+    <a href="<?= e(admin_url('registration-settings')) ?>">Registration Policy</a>; School accounts
+    always do, whatever that policy says.</span>
+</div>
+<?php endif; ?>
 
 <div class="panel"><div class="panel-body">
     <div class="data-toolbar">
@@ -801,6 +934,14 @@ include __DIR__ . '/partials/head.php';
             <input class="form-control" type="search" name="q" value="<?= e($search) ?>" placeholder="Search name, email, phone, ID…">
         </form>
         <form method="get" action="<?= e(admin_url('members')) ?>" class="flex" style="gap:.5rem;">
+            <?php /* Account status was filterable only by hand-editing the URL, which is
+                     why the approval queue was invisible from this screen. */ ?>
+            <select class="form-select" name="status" onchange="this.form.submit()">
+                <option value="">All accounts</option>
+                <?php foreach ($statuses as $sk => $sl): ?>
+                    <option value="<?= e($sk) ?>" <?= $statusFilter === $sk ? 'selected' : '' ?>><?= e($sl) ?></option>
+                <?php endforeach; ?>
+            </select>
             <select class="form-select" name="mstatus" onchange="this.form.submit()">
                 <option value="">All membership</option>
                 <?php foreach (['active', 'expired', 'none', 'cancelled'] as $ms): ?>
@@ -819,27 +960,41 @@ include __DIR__ . '/partials/head.php';
 
     <?php if ($p['items']): ?>
     <div class="table-wrap"><table class="admin-table">
-        <thead><tr><th>Member</th><th>ID</th><th>Tier</th><th>Membership</th><th>Expires</th><th style="text-align:right;">Actions</th></tr></thead>
+        <thead><tr><th>Member</th><th>Role</th><th>Account</th><th>Membership</th><th>Expires</th><th style="text-align:right;">Actions</th></tr></thead>
         <tbody>
         <?php foreach ($p['items'] as $r):
             $viewUrl = admin_url('members?action=view&id=' . $r['id']);
             $ms = member_effective_status($r);
             $dl = member_days_left($r);
+            $rr = strtolower((string) ($r['role'] ?? 'member'));
         ?>
             <tr>
                 <td><div class="flex items-center" style="gap:.6rem;">
                     <img src="<?= e(image_url($r['avatar'] ?? null, 'avatar')) ?>" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex:none;">
                     <div><a href="<?= e($viewUrl) ?>"><strong><?= e($r['name']) ?></strong></a><br>
-                        <small class="text-muted"><?= e($r['email']) ?></small></div>
+                        <small class="text-muted"><?= e($r['email']) ?></small><br>
+                        <small class="text-muted"><?= e($r['member_code'] ?? '—') ?></small></div>
                 </div></td>
-                <td><small><?= e($r['member_code'] ?? '—') ?></small></td>
-                <td><?= $r['plan_name'] ? e($r['plan_name']) : '<span class="text-muted">—</span>' ?></td>
-                <td><span class="pill <?= e(membership_status_pill($ms)) ?>"><?= e(membership_status_label($ms)) ?></span></td>
+                <td><span class="pill <?= e($rolePill($rr)) ?>"><?= e($memberRoles[$rr] ?? ucfirst($rr)) ?></span></td>
+                <td><span class="pill <?= e($statusPill((string) $r['status'])) ?>"><?= e($statuses[$r['status']] ?? $r['status']) ?></span>
+                    <?php if (empty($r['email_verified_at'])): ?><br><small class="pill pill-gray">Unverified</small><?php endif; ?></td>
+                <td><span class="pill <?= e(membership_status_pill($ms)) ?>"><?= e(membership_status_label($ms)) ?></span>
+                    <?php if ($r['plan_name']): ?><br><small class="text-muted"><?= e($r['plan_name']) ?></small><?php endif; ?></td>
                 <td><?php if ($r['expiry_date']): ?>
                         <span title="<?= e(format_date($r['expiry_date'])) ?>"><?= e(format_date($r['expiry_date'], 'd M Y')) ?></span>
                         <?php if ($dl !== null && $dl >= 0 && $dl <= 30): ?><br><small class="pill pill-amber"><?= $dl ?>d left</small><?php endif; ?>
                     <?php else: ?><span class="text-muted">—</span><?php endif; ?></td>
                 <td><div class="actions">
+                    <?php if ($r['status'] === 'pending'): ?>
+                        <form method="post" action="<?= e(admin_url('members')) ?>" style="display:inline;">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="_do" value="approve">
+                            <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
+                            <input type="hidden" name="f_status" value="<?= e($statusFilter) ?>">
+                            <input type="hidden" name="f_q" value="<?= e($search) ?>">
+                            <button class="icon-btn" type="submit" title="Approve account"><?= lucide('user-check') ?></button>
+                        </form>
+                    <?php endif; ?>
                     <a class="icon-btn" href="<?= e($viewUrl) ?>" title="View"><?= lucide('eye') ?></a>
                     <a class="icon-btn" href="<?= e(admin_url('member-card?id=' . $r['id'] . '&format=pdf')) ?>" title="Card PDF"><?= lucide('id-card') ?></a>
                     <a class="icon-btn" href="<?= e(admin_url('members?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>

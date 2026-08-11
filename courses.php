@@ -59,7 +59,7 @@ include __DIR__ . '/includes/header.php';
                                 <?php if (!empty($c['duration'])): ?>
                                     <span class="text-muted" style="font-size:.85rem;"><?= lucide('clock') ?> <?= e($c['duration']) ?></span>
                                 <?php endif; ?>
-                                <strong style="color:var(--brand-600,#063566);"><?= (float) $c['price'] > 0 ? e(money($c['price'], '₹', 0)) : 'Free' ?></strong>
+                                <strong style="color:var(--brand-600,#0B4E3D);"><?= (float) $c['price'] > 0 ? e(money($c['price'], '₹', 0)) : 'Free' ?></strong>
                             </div>
                         </div>
                     </a>

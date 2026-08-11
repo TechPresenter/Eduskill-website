@@ -121,7 +121,7 @@ include __DIR__ . '/includes/header.php';
     <div class="container" style="max-width:820px;">
         <?php if ($done): ?>
             <div class="card-3d reveal" style="text-align:center;padding:2.5rem;">
-                <div class="icon-badge" style="margin:0 auto 1rem;background:var(--grad-green,#58A42F);color:#fff;font-size:2rem;"><?= lucide('check') ?></div>
+                <div class="icon-badge" style="margin:0 auto 1rem;background:var(--grad-green,#2F8065);color:#fff;font-size:2rem;"><?= lucide('check') ?></div>
                 <h2 class="mb-1">Application received</h2>
                 <p class="text-muted">Thank you for applying to <?= e($siteName) ?>. Our admissions team will review your application and contact you soon.</p>
                 <a class="btn btn-primary mt-2" href="<?= e(url('/')) ?>">Back to home</a>

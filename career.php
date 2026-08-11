@@ -157,7 +157,18 @@ $jobCard = static function (array $c) use ($typeMeta, $deriveExp): void {
             </small>
             <div class="car-job-actions">
                 <a class="btn btn-outline btn-sm" href="<?= e($detailHref) ?>"><?= lucide('eye') ?> Details</a>
-                <button type="button" class="btn btn-primary btn-sm car-apply-btn" data-apply="<?= $cid ?>" data-apply-title="<?= e($c['title']) ?>">Apply <?= lucide('arrow-right') ?></button>
+                <?php /* A LINK, not a scripted button.
+                         This was <button class="car-apply-btn" data-apply="…">, whose handler
+                         scrolled to #car-apply and focused #ca2-name. Neither id exists on this
+                         page: the application form lives on a job's DETAIL view (it posts a hidden
+                         career_id) and is not rendered on the listing at all, and its fields were
+                         long ago renamed to ca-name / ca-email. So every Apply button here did
+                         nothing at all — verified against the rendered HTML: 4 buttons present,
+                         0 occurrences of #car-apply, #car-position or #ca2-name.
+                         The detail view already carries id="apply", so linking straight to it lands
+                         on the form with no JavaScript in the path, and keeps middle-click and
+                         "open in new tab" working. */ ?>
+                <a class="btn btn-primary btn-sm" href="<?= e($detailHref) ?>#apply"><?= lucide('send') ?> Apply</a>
             </div>
         </div>
     </article>
@@ -193,8 +204,8 @@ $carAssets = static function (): void { ?>
 .page-hero::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background:
-        radial-gradient(60% 90% at 85% -10%, rgba(230,123,29,.28), transparent 60%),
-        radial-gradient(50% 80% at 8% 120%, rgba(8,72,129,.30), transparent 60%);
+        radial-gradient(60% 90% at 85% -10%, rgba(241,90,36,.28), transparent 60%),
+        radial-gradient(50% 80% at 8% 120%, rgba(23,77,61,.30), transparent 60%);
     mix-blend-mode: screen;
 }
 .page-hero .container { position: relative; z-index: 1; }
@@ -216,8 +227,8 @@ $carAssets = static function (): void { ?>
 .car-intro-proof .chip { backdrop-filter: blur(6px); }
 
 /* Workforce counters band */
-.car-stats { position: relative; overflow: hidden; background: var(--grad-brand); border-radius: 28px; padding: clamp(1.6rem, 4vw, 3rem); color: #fff; box-shadow: var(--shadow-brand, 0 24px 60px -24px rgba(6,53,102,.6)); }
-.car-stats::before { content: ''; position: absolute; inset: 0; background: radial-gradient(40% 70% at 90% 0, rgba(230,123,29,.35), transparent 60%); pointer-events: none; }
+.car-stats { position: relative; overflow: hidden; background: var(--grad-brand); border-radius: 28px; padding: clamp(1.6rem, 4vw, 3rem); color: #fff; box-shadow: var(--shadow-brand, 0 24px 60px -24px rgba(11,78,61,.6)); }
+.car-stats::before { content: ''; position: absolute; inset: 0; background: radial-gradient(40% 70% at 90% 0, rgba(241,90,36,.35), transparent 60%); pointer-events: none; }
 .car-stats-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.25rem; }
 .car-stat { text-align: center; }
 .car-stat-ic { width: 54px; height: 54px; margin: 0 auto .7rem; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.16); backdrop-filter: blur(4px); }
@@ -238,15 +249,15 @@ $carAssets = static function (): void { ?>
 
 /* Jobs grid */
 .car-jobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.4rem; }
-.car-job { position: relative; display: flex; flex-direction: column; gap: .6rem; padding: 1.5rem; border-radius: 22px; background: var(--card-bg, rgba(255,255,255,.9)); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 10px 30px -18px rgba(6,53,102,.35); transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s, border-color .35s; overflow: hidden; }
+.car-job { position: relative; display: flex; flex-direction: column; gap: .6rem; padding: 1.5rem; border-radius: 22px; background: var(--card-bg, rgba(255,255,255,.9)); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 10px 30px -18px rgba(11,78,61,.35); transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s, border-color .35s; overflow: hidden; }
 .car-job::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--grad-brand); opacity: 0; transition: opacity .35s; }
-.car-job:hover { transform: translateY(-6px); box-shadow: 0 26px 50px -24px rgba(6,53,102,.4); border-color: rgba(8,72,129,.4); }
+.car-job:hover { transform: translateY(-6px); box-shadow: 0 26px 50px -24px rgba(11,78,61,.4); border-color: rgba(23,77,61,.4); }
 .car-job:hover::before { opacity: 1; }
 .car-job-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
 .car-job-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin: .2rem 0 0; line-height: 1.25; }
 .car-job-title a { color: inherit; text-decoration: none; }
 .car-job-title a:hover { color: var(--brand-600); }
-.car-job-dept { display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; font-weight: 600; color: var(--accent, #084881); }
+.car-job-dept { display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; font-weight: 600; color: var(--accent, #174D3D); }
 .car-job-dept svg { width: 15px; height: 15px; }
 .car-job-meta { list-style: none; padding: 0; margin: .2rem 0 0; display: flex; flex-wrap: wrap; gap: .35rem .9rem; }
 .car-job-meta li { display: inline-flex; align-items: center; gap: .35rem; font-size: .86rem; color: var(--muted); }
@@ -265,17 +276,17 @@ $carAssets = static function (): void { ?>
 
 /* Benefits */
 .car-benefits { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.2rem; }
-.car-benefit { display: flex; gap: 1rem; padding: 1.4rem; border-radius: 20px; background: var(--card-bg, rgba(255,255,255,.85)); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 10px 26px -20px rgba(6,53,102,.4); transition: transform .3s, box-shadow .3s; }
-.car-benefit:hover { transform: translateY(-4px); box-shadow: 0 22px 44px -24px rgba(6,53,102,.45); }
-.car-benefit-ic { flex: 0 0 auto; width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--grad-brand); box-shadow: var(--shadow-brand, 0 10px 24px -12px rgba(6,53,102,.6)); }
+.car-benefit { display: flex; gap: 1rem; padding: 1.4rem; border-radius: 20px; background: var(--card-bg, rgba(255,255,255,.85)); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 10px 26px -20px rgba(11,78,61,.4); transition: transform .3s, box-shadow .3s; }
+.car-benefit:hover { transform: translateY(-4px); box-shadow: 0 22px 44px -24px rgba(11,78,61,.45); }
+.car-benefit-ic { flex: 0 0 auto; width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--grad-brand); box-shadow: var(--shadow-brand, 0 10px 24px -12px rgba(11,78,61,.6)); }
 .car-benefit-ic svg { width: 24px; height: 24px; }
 .car-benefit h3 { font-size: 1.02rem; margin: 0 0 .25rem; }
 .car-benefit p { margin: 0; font-size: .88rem; color: var(--muted); line-height: 1.5; }
 
 /* Team voices */
 .car-voices { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.4rem; }
-.car-voice { position: relative; padding: 2rem 1.6rem 1.6rem; border-radius: 22px; background: var(--card-bg, rgba(255,255,255,.9)); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 34px -22px rgba(6,53,102,.4); }
-.car-voice-quote { position: absolute; top: -14px; left: 22px; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--grad-accent, linear-gradient(135deg,#084881,#063566)); box-shadow: 0 12px 24px -12px rgba(8,72,129,.7); }
+.car-voice { position: relative; padding: 2rem 1.6rem 1.6rem; border-radius: 22px; background: var(--card-bg, rgba(255,255,255,.9)); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 34px -22px rgba(11,78,61,.4); }
+.car-voice-quote { position: absolute; top: -14px; left: 22px; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--grad-accent, linear-gradient(135deg,#174D3D,#0B4E3D)); box-shadow: 0 12px 24px -12px rgba(23,77,61,.7); }
 .car-voice-quote svg { width: 22px; height: 22px; }
 .car-voice p { margin: .4rem 0 1.2rem; font-style: italic; color: var(--text, inherit); line-height: 1.6; }
 .car-voice-who { display: flex; align-items: center; gap: .8rem; }
@@ -298,17 +309,17 @@ $carAssets = static function (): void { ?>
     top: .1rem; left: .25rem; font-size: .72rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--brand-600);
 }
 .car-static { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--brand-600); margin-bottom: .4rem; }
-.car-file { position: relative; border: 2px dashed rgba(8,72,129,.5); border-radius: 16px; padding: 1.1rem; text-align: center; transition: border-color .25s, background .25s; cursor: pointer; }
-.car-file:hover { border-color: var(--brand-600); background: rgba(8,72,129,.05); }
+.car-file { position: relative; border: 2px dashed rgba(23,77,61,.5); border-radius: 16px; padding: 1.1rem; text-align: center; transition: border-color .25s, background .25s; cursor: pointer; }
+.car-file:hover { border-color: var(--brand-600); background: rgba(23,77,61,.05); }
 .car-file input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .car-file-inner { display: flex; align-items: center; justify-content: center; gap: .6rem; color: var(--muted); font-size: .9rem; }
 .car-file-inner svg { width: 22px; height: 22px; color: var(--brand-600); }
-.car-file.has-file { border-style: solid; border-color: var(--brand-600); background: rgba(6,53,102,.06); }
+.car-file.has-file { border-style: solid; border-color: var(--brand-600); background: rgba(11,78,61,.06); }
 .car-file-name { display: block; margin-top: .5rem; font-weight: 700; color: var(--brand-600); font-size: .88rem; word-break: break-word; }
 .car-apply-card .is-invalid { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220,38,38,.12) !important; }
-.car-apply-card .is-valid { border-color: #58A42F !important; }
+.car-apply-card .is-valid { border-color: #2F8065 !important; }
 .car-detail-apply .is-invalid { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220,38,38,.12) !important; }
-.car-detail-apply .is-valid { border-color: #58A42F !important; }
+.car-detail-apply .is-valid { border-color: #2F8065 !important; }
 
 @media (max-width: 720px) {
     .car-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1.4rem; }
@@ -601,7 +612,7 @@ include __DIR__ . '/includes/footer.php';
 
             <!-- Sidebar -->
             <aside class="reveal delay-1">
-                <div class="card-3d" style="position:sticky;top:90px;">
+                <div class="card-3d sticky-aside" style="position:sticky;top:90px;">
                     <h3 class="mb-2">Role Summary</h3>
                     <ul style="list-style:none;padding:0;margin:0;display:grid;gap:.85rem;">
                         <li style="display:flex;gap:.6rem;align-items:flex-start;"><?= lucide('briefcase') ?> <span><strong>Type</strong><br><span class="text-muted"><?= e($meta['label']) ?></span></span></li>
@@ -628,9 +639,9 @@ include __DIR__ . '/includes/footer.php';
                         $shareTitleEnc = rawurlencode($job['title'] . ' at ' . SITE_NAME);
                     ?>
                     <div class="flex gap-2 flex-wrap">
-                        <a class="btn btn-outline btn-sm" href="https://www.linkedin.com/sharing/share-offsite/?url=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><?= social_fa('linkedin') ?></a>
-                        <a class="btn btn-outline btn-sm" href="https://twitter.com/intent/tweet?url=<?= e($shareUrlEnc) ?>&amp;text=<?= e($shareTitleEnc) ?>" target="_blank" rel="noopener" aria-label="Share on X"><?= social_fa('x') ?></a>
-                        <a class="btn btn-outline btn-sm" href="https://wa.me/?text=<?= e($shareTitleEnc) ?>%20<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><?= social_fa('whatsapp') ?></a>
+                        <a class="btn btn-outline btn-sm" href="https://www.linkedin.com/sharing/share-offsite/?url=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><?= social_svg('linkedin') ?></a>
+                        <a class="btn btn-outline btn-sm" href="https://twitter.com/intent/tweet?url=<?= e($shareUrlEnc) ?>&amp;text=<?= e($shareTitleEnc) ?>" target="_blank" rel="noopener" aria-label="Share on X"><?= social_svg('x') ?></a>
+                        <a class="btn btn-outline btn-sm" href="https://wa.me/?text=<?= e($shareTitleEnc) ?>%20<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><?= social_svg('whatsapp') ?></a>
                         <a class="btn btn-outline btn-sm" href="mailto:?subject=<?= e($shareTitleEnc) ?>&amp;body=<?= e($shareUrlEnc) ?>" aria-label="Share by email"><?= lucide('mail') ?></a>
                     </div>
 
@@ -1411,21 +1422,12 @@ $capTeamCount = max((int) db_count('team_members'), 120);
         apply();
     });
 
-    document.querySelectorAll('.car-apply-btn').forEach(function (b) {
-        b.addEventListener('click', function () {
-            var sel = document.getElementById('car-position');
-            if (sel) {
-                var v = b.getAttribute('data-apply') || '0';
-                sel.value = sel.querySelector('option[value="' + v + '"]') ? v : '0';
-            }
-            var form = document.getElementById('car-apply');
-            if (form) {
-                form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                var fn = document.getElementById('ca2-name');
-                if (fn) setTimeout(function () { fn.focus(); }, 450);
-            }
-        });
-    });
+    /* The .car-apply-btn handler that used to live here is gone with the buttons.
+       It looked for #car-position, #car-apply and #ca2-name — three ids that do
+       not exist anywhere on this page — and every one of its guards was an
+       `if (x) {}`, so it failed silently rather than erroring. That is why the
+       Apply buttons looked fine and did nothing: there was no console error to
+       notice. Apply is now a plain link to the job's detail view (#apply). */
 
     apply();
 })();

@@ -101,22 +101,24 @@ $fileIcon = static function (string $ext): string {
 include __DIR__ . '/partials/head.php';
 ?>
 <style>
-/* Media Library — responsive grid (scoped to this page). */
-.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.1rem; }
-.media-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s; }
-.media-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+/* Media Library — responsive card grid (layout only; scoped to this page).
+   Radius, spacing, elevation, colour and motion all read admin-ds.css tokens,
+   which are declared on body.admin and inherit down to these nodes. */
+.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--sp-4); }
+.media-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--elev-1); transition: box-shadow var(--dur-1) var(--ease); }
+.media-card:hover { box-shadow: var(--elev-2); }
 .media-thumb { position: relative; aspect-ratio: 4 / 3; background: var(--surface-2); display: grid; place-items: center; overflow: hidden; }
 .media-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .media-thumb .file-glyph { font-size: 2.6rem; }
-.media-thumb .type-tag { position: absolute; top: .5rem; left: .5rem; }
-.media-body { padding: .8rem .85rem; display: flex; flex-direction: column; gap: .55rem; }
+.media-thumb .type-tag { position: absolute; top: var(--sp-2); left: var(--sp-2); }
+.media-body { padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); }
 .media-name { font-weight: 600; font-size: .85rem; word-break: break-word; line-height: 1.3; }
-.media-meta { color: var(--muted); font-size: .74rem; display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
-.media-copy { display: flex; gap: .35rem; }
-.media-copy .form-control { font-size: .74rem; padding: .35rem .5rem; }
-.copy-btn { flex-shrink: 0; padding: 0 .6rem; font-size: .74rem; white-space: nowrap; }
-.copy-btn.is-copied { background: rgba(88,164,47,.14); color: #308629; border-color: transparent; }
-.media-foot { display: flex; align-items: center; justify-content: space-between; padding: 0 .85rem .8rem; }
+.media-meta { color: var(--muted); font-size: .74rem; display: flex; gap: var(--sp-1); flex-wrap: wrap; align-items: center; }
+.media-copy { display: flex; gap: var(--sp-1); }
+.media-copy .form-control { font-size: .74rem; padding: var(--sp-1) var(--sp-2); }
+.copy-btn { flex-shrink: 0; padding: 0 var(--sp-2); font-size: .74rem; white-space: nowrap; }
+.copy-btn.is-copied { background: color-mix(in srgb, var(--st-ok) 14%, transparent); color: var(--st-ok); border-color: transparent; }
+.media-foot { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--sp-3) var(--sp-3); }
 </style>
 
 <div class="admin-page-head">
@@ -171,7 +173,7 @@ include __DIR__ . '/partials/head.php';
                     <?php else: ?>
                         <span class="file-glyph"><?= lucide($fileIcon((string) ($m['file_type'] ?? ''))) ?></span>
                     <?php endif; ?>
-                    <span class="pill pill-blue type-tag"><?= e(strtoupper((string) ($m['file_type'] ?? 'file'))) ?></span>
+                    <span class="pill pill-tag type-tag"><?= e(strtoupper((string) ($m['file_type'] ?? 'file'))) ?></span>
                 </div>
                 <div class="media-body">
                     <div class="media-name" title="<?= e($m['file_name']) ?>"><?= e($m['file_name']) ?></div>
@@ -187,7 +189,7 @@ include __DIR__ . '/partials/head.php';
                 </div>
                 <div class="media-foot">
                     <a class="btn btn-ghost btn-sm" href="<?= e($publicUrl) ?>" target="_blank" rel="noopener">Open ↗</a>
-                    <form method="post" action="<?= e(admin_url('media-library')) ?>" data-confirm="Delete this file permanently?" style="display:inline;">
+                    <form method="post" action="<?= e(admin_url('media-library')) ?>" data-confirm="Delete this file permanently?" class="inline-form">
                         <?= csrf_field() ?>
                         <input type="hidden" name="_do" value="delete">
                         <input type="hidden" name="id" value="<?= (int) $m['id'] ?>">
@@ -199,7 +201,24 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('image') ?></div>No media yet. Upload your first file above.</div>
+            <?php /* Branched on $search: with a term typed in, "No media yet" is simply
+                     untrue, and the only offered action was one the admin cannot take
+                     until they clear the filter. There is no ?action=create route here —
+                     uploads happen in the panel above — so the empty arm points at that. */ ?>
+            <div class="empty-state">
+                <div class="icon"><?= lucide('image') ?></div>
+                <?php if ($search !== ''): ?>
+                    <p class="es-title">No files match &ldquo;<?= e($search) ?>&rdquo;</p>
+                    <p class="es-text">No file has that name or alt text. Clear the search to see everything in the library.</p>
+                    <div class="es-actions">
+                        <a class="btn btn-secondary" href="<?= e(admin_url('media-library')) ?>">Clear search</a>
+                    </div>
+                <?php else: ?>
+                    <p class="es-title">No media yet</p>
+                    <p class="es-text">The library holds every image and document you upload, with a copyable
+                        public URL for each. Use the upload panel above to add the first file.</p>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
     </div>
 </div>

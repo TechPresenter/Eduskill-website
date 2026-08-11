@@ -59,10 +59,10 @@ $objectives = $list_setting('foundation_objectives', [
 
 /* Our Approach — numbered steps */
 $approach = $list_setting('our_approach', [
-    ['title' => 'Listen & Assess',      'text' => 'We begin in the community — mapping real needs alongside local families, leaders and partners before a single program is designed.', 'color' => '#063566'],
-    ['title' => 'Design & Mobilise',    'text' => 'We co-create focused, evidence-based interventions and rally volunteers, resources and partners around a shared plan.',            'color' => '#084881'],
-    ['title' => 'Implement & Empower',  'text' => 'We deliver on the ground with dedicated teams, building local ownership and skills so change takes root from within.',             'color' => '#E67B1D'],
-    ['title' => 'Measure & Sustain',    'text' => 'We track outcomes transparently, learn from every project, and hand over lasting systems that outlive our involvement.',           'color' => '#58A42F'],
+    ['title' => 'Listen & Assess',      'text' => 'We begin in the community — mapping real needs alongside local families, leaders and partners before a single program is designed.', 'color' => '#0B4E3D'],
+    ['title' => 'Design & Mobilise',    'text' => 'We co-create focused, evidence-based interventions and rally volunteers, resources and partners around a shared plan.',            'color' => '#174D3D'],
+    ['title' => 'Implement & Empower',  'text' => 'We deliver on the ground with dedicated teams, building local ownership and skills so change takes root from within.',             'color' => '#F15A24'],
+    ['title' => 'Measure & Sustain',    'text' => 'We track outcomes transparently, learn from every project, and hand over lasting systems that outlive our involvement.',           'color' => '#2F8065'],
 ]);
 
 /* ---- SEO --------------------------------------------------------------- */
@@ -87,13 +87,13 @@ include __DIR__ . '/includes/header.php';
 /* =============================================================================
    Mission & Vision — page-specific premium polish (scoped, no shared-CSS edits)
    ========================================================================== */
-.mv-page{ --mv-gold:#E67B1D; }
+.mv-page{ --mv-gold:#F15A24; }
 
 /* ---- Unique hero treatment (only loads on this page) --------------------- */
 .page-hero{
     background:
-        radial-gradient(820px circle at 12% 130%, rgba(230,123,29,.20), transparent 55%),
-        radial-gradient(720px circle at 88% -35%, rgba(8,72,129,.30), transparent 55%),
+        radial-gradient(820px circle at 12% 130%, rgba(241,90,36,.20), transparent 55%),
+        radial-gradient(720px circle at 88% -35%, rgba(23,77,61,.30), transparent 55%),
         var(--grad-brand);
     padding-block: clamp(3.6rem,7vw,6.2rem) clamp(3rem,6vw,5rem);
 }
@@ -110,7 +110,7 @@ include __DIR__ . '/includes/header.php';
 /* A slim gold underline flourish beneath the hero heading */
 .page-hero h1::after{
     content:""; display:block; width:74px; height:4px; margin-top:1rem;
-    background:linear-gradient(90deg,var(--mv-gold),rgba(230,123,29,0));
+    background:linear-gradient(90deg,var(--mv-gold),rgba(241,90,36,0));
     border-radius:4px;
 }
 
@@ -134,7 +134,7 @@ include __DIR__ . '/includes/header.php';
     display:grid; place-items:center; width:38px; height:38px; border-radius:12px;
     color:#fff; background:var(--grad-brand); box-shadow:var(--shadow-brand);
 }
-.mv-mark.gold .mv-mark-ico{ background:linear-gradient(135deg,var(--mv-gold),#b8860b); box-shadow:0 10px 22px rgba(230,123,29,.34); }
+.mv-mark.gold .mv-mark-ico{ background:linear-gradient(135deg,var(--mv-gold),#b8860b); box-shadow:0 10px 22px rgba(241,90,36,.34); }
 .mv-mark .mv-mark-ico svg.lucide{ width:19px; height:19px; }
 
 /* ---- Feature (mission / vision) gradient cards -------------------------- */
@@ -165,7 +165,7 @@ include __DIR__ . '/includes/header.php';
 .mv-value-card:hover::after{ transform:scaleX(1); }
 .mv-value-card .icon-badge{ transition:transform .45s ease; }
 .mv-value-card:hover .icon-badge{ transform:translateY(-3px) rotate(-6deg); }
-.mv-value-card:nth-child(3n-1) .icon-badge{ background:var(--grad-accent); box-shadow:0 10px 24px rgba(230,123,29,.3); }
+.mv-value-card:nth-child(3n-1) .icon-badge{ background:var(--grad-accent); box-shadow:0 10px 24px rgba(241,90,36,.3); }
 .mv-value-card:nth-child(3n-1)::after{ background:var(--grad-accent); }
 .mv-value-card .icon-badge svg.lucide{ width:28px; height:28px; }
 .mv-value-card .card-title{ font-size:1.2rem; }
@@ -214,7 +214,7 @@ include __DIR__ . '/includes/header.php';
 .mv-cta-card::after{
     content:""; position:absolute; inset:0; pointer-events:none;
     background:
-        radial-gradient(420px circle at 85% 120%, rgba(230,123,29,.28), transparent 60%),
+        radial-gradient(420px circle at 85% 120%, rgba(241,90,36,.28), transparent 60%),
         radial-gradient(420px circle at 10% -20%, rgba(255,255,255,.16), transparent 60%);
 }
 .mv-cta-card > *{ position:relative; z-index:1; }
@@ -361,7 +361,7 @@ include __DIR__ . '/includes/header.php';
         <div class="grid grid-4">
             <?php foreach ($approach as $i => $step): $num = $i + 1; ?>
                 <div class="card-3d mv-step reveal <?= 'delay-' . (($i % 4) + 1) ?>">
-                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($step['color'] ?? '#063566') ?>,#084881);"><?= e(str_pad((string) $num, 2, '0', STR_PAD_LEFT)) ?></div>
+                    <div class="icon-badge" style="background:linear-gradient(135deg,<?= e($step['color'] ?? '#0B4E3D') ?>,#174D3D);"><?= e(str_pad((string) $num, 2, '0', STR_PAD_LEFT)) ?></div>
                     <span class="mv-step-k"><?= lucide('arrow-right') ?> Step <?= e((string) $num) ?></span>
                     <h3 class="card-title"><?= e($step['title'] ?? '') ?></h3>
                     <p class="card-text"><?= e($step['text'] ?? '') ?></p>

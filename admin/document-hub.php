@@ -150,7 +150,10 @@ if ($action === 'bulk-print' || $action === 'bulk-zip') {
     // bulk-print: one page, all documents, page-break between each.
     ?><!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Bulk print (<?= count($docs) ?>)</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style><?= dh_styles() ?> body{margin:0;padding:4rem 1rem 2rem;background:#e5e7eb} .doc{margin:0 auto 2rem} .pv-bar{position:fixed;top:0;left:0;right:0;background:#0f172a;color:#fff;padding:.7rem;text-align:center;z-index:10} .pv-bar button{background:#063566;color:#fff;border:0;padding:.55rem 1rem;border-radius:9px;cursor:pointer;font:inherit;font-weight:600}</style>
+    <?php /* Standalone page: admin-ds.css is not loaded here, so the scales are
+             written as literals — brand ink for the bar, brand sage as the paper
+             backdrop, --r-md (10px) radius, no heavy shadow. */ ?>
+    <style><?= dh_styles() ?> body{margin:0;padding:4rem 1rem 2rem;background:#C1CCB3} .doc{margin:0 auto 2rem} .pv-bar{position:fixed;top:0;left:0;right:0;background:#151818;color:#fff;padding:.7rem;text-align:center;z-index:10} .pv-bar button{background:#0B4E3D;color:#fff;border:0;padding:.55rem 1rem;border-radius:10px;cursor:pointer;font:inherit;font-weight:600}</style>
     </head><body><div class="pv-bar no-print"><button onclick="window.print()">Print / Save all as PDF</button></div>
     <?php foreach ($docs as $d) { echo dh_render($d, json_decode((string) $d['data'], true) ?: [], $d); } ?>
     </body></html><?php
@@ -192,8 +195,10 @@ if ($action === 'preview') {
     $html = dh_render($tpl, dh_sample_data(), null);
     ?><!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview · <?= e($tpl['name']) ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <?php /* Standalone page — see the bulk-print note above: brand literals,
+             --r-md radius, and --elev-3 rather than a 12px black drop shadow. */ ?>
     <style><?= dh_styles() ?>
-    body{margin:0;padding:5rem 1.5rem 2rem;background:#e5e7eb;} .pv-bar{position:fixed;top:0;left:0;right:0;background:#0f172a;color:#fff;padding:.7rem 1rem;display:flex;gap:.6rem;justify-content:center;align-items:center;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.3)} .pv-bar b{margin-right:auto;padding-left:.5rem} .pv-bar button,.pv-bar a{background:#063566;color:#fff;border:0;padding:.55rem 1rem;border-radius:9px;cursor:pointer;text-decoration:none;font:inherit;font-weight:600}</style>
+    body{margin:0;padding:5rem 1.5rem 2rem;background:#C1CCB3;} .pv-bar{position:fixed;top:0;left:0;right:0;background:#151818;color:#fff;padding:.7rem 1rem;display:flex;gap:.6rem;justify-content:center;align-items:center;z-index:10;box-shadow:0 4px 12px -2px rgba(21,24,24,.18)} .pv-bar b{margin-right:auto;padding-left:.5rem} .pv-bar button,.pv-bar a{background:#0B4E3D;color:#fff;border:0;padding:.55rem 1rem;border-radius:10px;cursor:pointer;text-decoration:none;font:inherit;font-weight:600}</style>
     </head><body>
     <div class="pv-bar no-print"><b>Preview — sample data</b><button onclick="window.print()">Print / Save as PDF</button><a href="<?= e(admin_url('document-hub?action=generate&id=' . $id)) ?>">Generate real</a><a href="<?= e(admin_url('document-hub?action=edit&id=' . $id)) ?>">Edit</a><a href="<?= e(admin_url('document-hub')) ?>">Close</a></div>
     <?= $html ?>
@@ -241,16 +246,16 @@ if ($action === 'issued') {
         <a class="btn btn-secondary" href="<?= e(admin_url('document-hub')) ?>">← Templates</a></div>
     <div class="panel"><div class="panel-body">
     <?php if ($p['items']): ?>
-        <div class="flex gap-2" style="margin-bottom:1rem;flex-wrap:wrap;align-items:center;">
+        <div class="flex gap-2" style="margin-bottom:var(--sp-4);flex-wrap:wrap;align-items:center;">
             <button type="button" class="btn btn-sm btn-secondary" id="dh-bulk-print" disabled><?= lucide('printer') ?> Bulk print</button>
             <button type="button" class="btn btn-sm btn-secondary" id="dh-bulk-zip" disabled><?= lucide('file-archive') ?> Download ZIP</button>
             <span class="text-muted" style="font-size:.82rem;" id="dh-bulk-count">Select documents to print or download together.</span>
         </div>
-        <div class="table-wrap"><table class="admin-table"><thead><tr><th style="width:34px;"><input type="checkbox" id="dh-check-all"></th><th>Doc No</th><th>Type</th><th>Recipient</th><th>Issued</th><th style="text-align:right;">Actions</th></tr></thead><tbody>
+        <div class="table-wrap"><table class="admin-table"><thead><tr><th style="width:34px;"><input type="checkbox" id="dh-check-all"></th><th>Doc No</th><th>Type</th><th>Recipient</th><th>Issued</th><th class="num">Actions</th></tr></thead><tbody>
         <?php foreach ($p['items'] as $r): ?>
             <tr><td><input type="checkbox" class="dh-check" value="<?= (int) $r['id'] ?>"></td><td><code><?= e($r['doc_no']) ?></code></td><td><?= e($r['doc_type']) ?></td><td><?= e($r['recipient_name'] ?: '—') ?><br><small class="text-muted"><?= e($r['recipient_email'] ?: '') ?></small></td>
                 <td><small class="text-muted"><?= e(format_date($r['created_at'], 'd M Y')) ?></small></td>
-                <td style="text-align:right;"><div class="actions">
+                <td class="num"><div class="actions">
                     <a class="icon-btn" href="<?= e(url('document?t=' . $r['qr_token'])) ?>" target="_blank" title="View / print"><?= lucide('printer') ?></a>
                     <a class="icon-btn" href="<?= e(url('verify-document?t=' . $r['qr_token'])) ?>" target="_blank" title="Verify"><?= lucide('shield-check') ?></a>
                 </div></td></tr>
@@ -269,7 +274,13 @@ if ($action === 'issued') {
             bz.addEventListener('click', function () { var s = selected(); if (s.length) window.location = base + '?action=bulk-zip&ids=' + s.join(','); });
         })();
         </script>
-    <?php else: ?><div class="empty-state"><div class="icon"><?= lucide('files') ?></div>No documents issued yet.</div><?php endif; ?>
+    <?php else: ?>
+        <div class="empty-state"><div class="icon"><?= lucide('files') ?></div>
+            <p class="es-title">No documents issued yet</p>
+            <p class="es-text">Generate a document from any template and it is recorded here with its number and QR verification link.</p>
+            <div class="es-actions"><a class="btn btn-primary btn-sm" href="<?= e(admin_url('document-hub')) ?>"><?= lucide('stamp') ?> Browse templates</a></div>
+        </div>
+    <?php endif; ?>
     </div></div>
     <?php include __DIR__ . '/partials/foot.php'; exit;
 }
@@ -287,7 +298,7 @@ if ($action === 'create' || $action === 'edit') {
 
     <form class="admin-form" method="post" action="<?= e(admin_url('document-hub')) ?>">
         <?= csrf_field() ?><input type="hidden" name="_do" value="save"><input type="hidden" name="id" value="<?= (int) ($row['id'] ?? 0) ?>">
-        <div class="grid-2" style="align-items:start;gap:1.5rem;">
+        <div class="grid-2" style="align-items:start;gap:var(--sp-6);">
             <div class="panel"><div class="panel-body">
                 <div class="grid-2">
                     <div class="form-group"><label class="form-label">Template name <span class="req">*</span></label><input class="form-control" name="name" required value="<?= e($row['name'] ?? '') ?>" data-slug-source></div>
@@ -305,27 +316,36 @@ if ($action === 'create' || $action === 'edit') {
                     <textarea class="form-textarea" name="body" data-wysiwyg style="min-height:280px;"><?= e($row['body'] ?? '') ?></textarea>
                 </div>
                 <label class="checkbox"><input type="checkbox" name="terms_enabled" value="1" <?= !empty($row['terms_enabled']) ? 'checked' : '' ?>> Enable Terms &amp; Conditions</label>
-                <div class="form-group" style="margin-top:.6rem;"><label class="form-label">Terms &amp; Conditions</label>
+                <div class="form-group" style="margin-top:var(--sp-2);"><label class="form-label">Terms &amp; Conditions</label>
                     <textarea class="form-textarea" name="terms" data-wysiwyg style="min-height:150px;"><?= e($row['terms'] ?? '') ?></textarea>
                 </div>
             </div></div>
 
             <div>
-                <div class="panel"><div class="panel-head"><h3 class="panel-title"><?= lucide('sliders-horizontal') ?> Options</h3></div><div class="panel-body">
+                <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('sliders-horizontal') ?> Options</h2></div><div class="panel-body">
                     <div class="form-group"><label class="form-label">Status</label><select class="form-select" name="status"><option value="draft" <?= ($row['status'] ?? 'draft') === 'draft' ? 'selected' : '' ?>>Draft</option><option value="published" <?= ($row['status'] ?? '') === 'published' ? 'selected' : '' ?>>Published</option></select></div>
                     <label class="checkbox"><input type="checkbox" name="show_logo" value="1" <?= $chk('show_logo') ?>> Show logo</label><br>
                     <label class="checkbox"><input type="checkbox" name="show_qr" value="1" <?= $chk('show_qr') ?>> Show QR code</label><br>
                     <label class="checkbox"><input type="checkbox" name="show_seal" value="1" <?= $chk('show_seal') ?>> Show seal</label><br>
                     <label class="checkbox"><input type="checkbox" name="show_signature" value="1" <?= $chk('show_signature') ?>> Show signature</label><br>
                     <label class="checkbox"><input type="checkbox" name="show_watermark" value="1" <?= $chk('show_watermark', 0) ?>> Watermark</label>
-                    <div class="form-group" style="margin-top:.6rem;"><input class="form-control" name="watermark_text" value="<?= e($row['watermark_text'] ?? '') ?>" placeholder="Watermark text"></div>
+                    <div class="form-group" style="margin-top:var(--sp-2);"><input class="form-control" name="watermark_text" value="<?= e($row['watermark_text'] ?? '') ?>" placeholder="Watermark text"></div>
                 </div></div>
-                <div class="panel"><div class="panel-head"><h3 class="panel-title"><?= lucide('braces') ?> Placeholders</h3></div><div class="panel-body" style="max-height:340px;overflow:auto;">
-                    <p class="text-muted" style="font-size:.8rem;">Click to copy, then paste into the body.</p>
+                <div class="panel"><div class="panel-head"><h2 class="panel-title"><?= lucide('braces') ?> Placeholders</h2></div><div class="panel-body scroll-box">
+                    <p class="form-hint">Click to copy, then paste into the body.</p>
+                    <p class="sr-only" role="status" id="dhCopied"></p>
+                    <?php /* These 39 controls were `.pill pill-blue` with the pill's border
+                             stripped inline — a status chip pressed into service as a button,
+                             which also inherited admin-ds.css's status glyph. They are buttons
+                             now and carry the shared button classes; the <code> child keeps the
+                             monospace token look and is what the copy handler swaps, so the
+                             button's own classes survive the "copied!" state.
+                             TODO: the clipboard handler is still inline — it belongs in
+                             assets/js/admin-ui.js, which another run owns. */ ?>
                     <?php foreach (dh_placeholders() as $grp => $items): ?>
-                        <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:.6rem 0 .3rem;"><?= e($grp) ?></div>
+                        <div class="group-label"><?= e($grp) ?></div>
                         <div class="flex flex-wrap gap-1">
-                            <?php foreach ($items as $k => $l): ?><button type="button" class="pill pill-blue" style="border:0;cursor:pointer;font-family:monospace;" onclick="navigator.clipboard&&navigator.clipboard.writeText('{{<?= e($k) ?>}}');this.textContent='copied!';var s=this;setTimeout(function(){s.textContent='{{<?= e($k) ?>}}'},900);">{{<?= e($k) ?>}}</button><?php endforeach; ?>
+                            <?php foreach ($items as $k => $l): ?><button type="button" class="btn btn-sm btn-outline" aria-label="Copy the <?= e($l) ?> placeholder" title="Copy <?= e($l) ?>" onclick="navigator.clipboard&&navigator.clipboard.writeText('{{<?= e($k) ?>}}');var s=this.querySelector('code')||this;s.textContent='copied!';document.getElementById('dhCopied').textContent='Copied {{<?= e($k) ?>}} to the clipboard';setTimeout(function(){s.textContent='{{<?= e($k) ?>}}'},900);"><code>{{<?= e($k) ?>}}</code></button><?php endforeach; ?>
                         </div>
                     <?php endforeach; ?>
                 </div></div>
@@ -357,13 +377,16 @@ include __DIR__ . '/partials/head.php';
         <a class="btn btn-primary" href="<?= e(admin_url('document-hub?action=create')) ?>">+ New Template</a></div></div>
 
 <?php $catalogueCount = count(dh_catalogue()); ?>
-<div class="panel" style="margin-bottom:1rem;"><div class="panel-body" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;">
-    <div style="display:flex;align-items:center;gap:.7rem;">
-        <span style="width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(225,29,72,.14),rgba(8,72,129,.14));color:#e11d48;"><?= lucide('library-big') ?></span>
+<div class="panel"><div class="panel-body" style="display:flex;flex-wrap:wrap;gap:var(--sp-4);align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:var(--sp-3);">
+        <?php /* Was a 44px chip carrying colour + two-stop gradient + radius + size in
+                 one inline style, tinted a rose hue that is not in the palette.
+                 `.kpi-ico` is the design system's icon chip: --r-sm, brand tint. */ ?>
+        <span class="kpi-ico"><?= lucide('library-big') ?></span>
         <div><strong>Standard template library</strong><br><small class="text-muted"><?= $catalogueCount ?> professional NGO, educational, exam &amp; ID-card templates ready to install.</small></div>
     </div>
     <div class="flex gap-2" style="flex-wrap:wrap;">
-        <form method="post" action="<?= e(admin_url('document-hub')) ?>" enctype="multipart/form-data" style="display:flex;gap:.5rem;align-items:center;">
+        <form method="post" action="<?= e(admin_url('document-hub')) ?>" enctype="multipart/form-data" style="display:flex;gap:var(--sp-2);align-items:center;">
             <?= csrf_field() ?><input type="hidden" name="_do" value="import">
             <input class="form-control" type="file" name="file" accept="application/json,.json" style="max-width:200px;">
             <button class="btn btn-secondary" type="submit"><?= lucide('upload') ?> Import</button>
@@ -375,33 +398,45 @@ include __DIR__ . '/partials/head.php';
 
 <div class="panel"><div class="panel-body">
     <div class="data-toolbar">
-        <form class="search" method="get" action="<?= e(admin_url('document-hub')) ?>" style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <form class="search" method="get" action="<?= e(admin_url('document-hub')) ?>" style="display:flex;gap:var(--sp-2);flex-wrap:wrap;">
             <input class="form-control" type="search" name="q" value="<?= e($q) ?>" placeholder="Search templates…">
             <select class="form-select" name="category" style="max-width:170px;"><option value="">All categories</option><?php foreach (dh_categories() as $k => $l): ?><option value="<?= $k ?>" <?= $catF === $k ? 'selected' : '' ?>><?= e($l) ?></option><?php endforeach; ?></select>
             <button class="btn btn-secondary" type="submit"><?= lucide('search') ?></button>
         </form>
     </div>
     <?php if ($rows): ?>
-    <div class="grid grid-3" style="gap:1rem;">
+    <div class="grid grid-3" style="gap:var(--sp-4);">
         <?php foreach ($rows as $r): ?>
-            <div class="card-3d" style="padding:1.1rem;">
+            <?php /* .card-3d came from premium.css, the only admin dependency on that
+                     stylesheet. Now a .panel — and the content sits in .panel-body rather
+                     than an inline padding, so it inherits the shared surface geometry. */ ?>
+            <div class="panel"><div class="panel-body">
                 <div class="flex items-center justify-between mb-1">
-                    <span class="pill pill-blue"><?= e(dh_categories()[$r['category']] ?? $r['category']) ?></span>
+                    <span class="pill pill-tag"><?= e(dh_categories()[$r['category']] ?? $r['category']) ?></span>
                     <span class="pill <?= $r['status'] === 'published' ? 'pill-green' : 'pill-gray' ?>"><?= e($r['status']) ?></span>
                 </div>
-                <h3 style="margin:.3rem 0 .1rem;font-size:1.02rem;"><?= e($r['name']) ?></h3>
-                <p class="text-muted" style="font-size:.8rem;margin:0 0 .7rem;"><?= e($r['doc_type'] ?: ucfirst($r['category'])) ?> · <?= e(dh_themes()[$r['theme']] ?? $r['theme']) ?> · <?= e(dh_layouts()[$r['layout']] ?? $r['layout']) ?></p>
+                <h2 class="panel-title" style="margin:var(--sp-2) 0 var(--sp-1);"><?= e($r['name']) ?></h2>
+                <p class="text-muted" style="font-size:.82rem;margin:0 0 var(--sp-3);"><?= e($r['doc_type'] ?: ucfirst($r['category'])) ?> · <?= e(dh_themes()[$r['theme']] ?? $r['theme']) ?> · <?= e(dh_layouts()[$r['layout']] ?? $r['layout']) ?></p>
                 <div class="flex flex-wrap gap-1">
                     <a class="btn btn-outline btn-sm" href="<?= e(admin_url('document-hub?action=preview&id=' . $r['id'])) ?>" target="_blank"><?= lucide('eye') ?> Preview</a>
                     <a class="btn btn-primary btn-sm" href="<?= e(admin_url('document-hub?action=generate&id=' . $r['id'])) ?>"><?= lucide('file-plus') ?> Generate</a>
                     <a class="btn btn-secondary btn-sm" href="<?= e(admin_url('document-hub?action=edit&id=' . $r['id'])) ?>"><?= lucide('pencil') ?></a>
-                    <form method="post" action="<?= e(admin_url('document-hub')) ?>" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="_do" value="duplicate"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><button class="icon-btn" type="submit" title="Duplicate"><?= lucide('copy') ?></button></form>
-                    <form method="post" action="<?= e(admin_url('document-hub')) ?>" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="_do" value="toggle"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><button class="icon-btn" type="submit" title="Toggle status"><?= lucide($r['status'] === 'published' ? 'toggle-right' : 'toggle-left') ?></button></form>
-                    <form method="post" action="<?= e(admin_url('document-hub')) ?>" data-confirm="Delete this template?" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="_do" value="delete"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><button class="icon-btn danger" type="submit" title="Delete"><?= lucide('trash-2') ?></button></form>
+                    <form method="post" action="<?= e(admin_url('document-hub')) ?>" class="inline-form"><?= csrf_field() ?><input type="hidden" name="_do" value="duplicate"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><button class="icon-btn" type="submit" title="Duplicate"><?= lucide('copy') ?></button></form>
+                    <form method="post" action="<?= e(admin_url('document-hub')) ?>" class="inline-form"><?= csrf_field() ?><input type="hidden" name="_do" value="toggle"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><button class="icon-btn" type="submit" title="Toggle status"><?= lucide($r['status'] === 'published' ? 'toggle-right' : 'toggle-left') ?></button></form>
+                    <form method="post" action="<?= e(admin_url('document-hub')) ?>" data-confirm="Delete this template?" class="inline-form"><?= csrf_field() ?><input type="hidden" name="_do" value="delete"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><button class="icon-btn danger" type="submit" title="Delete"><?= lucide('trash-2') ?></button></form>
                 </div>
-            </div>
+            </div></div>
         <?php endforeach; ?>
     </div>
-    <?php else: ?><div class="empty-state"><div class="icon"><?= lucide('stamp') ?></div>No templates match. <a href="<?= e(admin_url('document-hub?action=create')) ?>">Create one</a>.</div><?php endif; ?>
+    <?php else: ?>
+        <div class="empty-state"><div class="icon"><?= lucide('stamp') ?></div>
+            <p class="es-title"><?= $q !== '' || $catF !== '' ? 'No templates match those filters' : 'No templates yet' ?></p>
+            <p class="es-text"><?= $q !== '' || $catF !== '' ? 'Clear the search or category filter, or create a template for this category.' : 'Install the standard library above, import a JSON export, or build a template from scratch.' ?></p>
+            <div class="es-actions">
+                <a class="btn btn-primary btn-sm" href="<?= e(admin_url('document-hub?action=create')) ?>"><?= lucide('plus') ?> New template</a>
+                <?php if ($q !== '' || $catF !== ''): ?><a class="btn btn-secondary btn-sm" href="<?= e(admin_url('document-hub')) ?>"><?= lucide('x') ?> Clear filters</a><?php endif; ?>
+            </div>
+        </div>
+    <?php endif; ?>
 </div></div>
 <?php include __DIR__ . '/partials/foot.php'; ?>

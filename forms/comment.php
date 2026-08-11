@@ -54,7 +54,7 @@ if ($status === 'pending') {
     if ($notify !== '' && filter_var($notify, FILTER_VALIDATE_EMAIL)) {
         $body = '<p>A new comment is awaiting moderation on <strong>' . e($blog['title']) . '</strong>.</p>'
               . '<p><strong>' . e($name) . '</strong> &lt;' . e($email) . '&gt; wrote:</p>'
-              . '<blockquote style="border-left:3px solid #063566;padding-left:12px;color:#475569;">' . nl2br(e($comment)) . '</blockquote>'
+              . '<blockquote style="border-left:3px solid #0B4E3D;padding-left:12px;color:#475569;">' . nl2br(e($comment)) . '</blockquote>'
               . '<p><a href="' . e(abs_url('admin/comments?action=view&id=' . $cid)) . '">Review it in the admin panel &rarr;</a></p>';
         try { send_mail($notify, 'New blog comment awaiting moderation', $body); } catch (Throwable $e) { /* never block the reader */ }
     }

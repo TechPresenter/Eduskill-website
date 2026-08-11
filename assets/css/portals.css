@@ -1,0 +1,358 @@
+/* =============================================================================
+   ACCESS YOUR PORTAL — the seven-door sign-in chooser
+   -----------------------------------------------------------------------------
+   Loaded by portals.php (and by includes/portal-cards.php wherever the section
+   is dropped in). Geometry comes from --r-*, elevation from --elev-*, motion
+   from --ease-out/--dur, colour from the Theme Engine tokens with the brand
+   palette as the fallback.
+
+   -- WHAT IS REUSED, AND WHAT IS NOT ------------------------------------------
+   The icon plate is .fc-ico, the "Sign in" affordance is .fc-more and the help
+   links are .link-underline — all design-system.css components, applied in the
+   markup. This file now carries only their deltas (size, and re-binding the two
+   hover rules from `.focus-card:hover` to `.portal-tile:hover`), where it used
+   to restate them declaration-for-declaration, down to the same color-mix.
+
+   The card SHELL is deliberately still .portal-tile rather than .focus-card,
+   and this is not an oversight. .focus-card is welded to its own 6-column
+   editorial grid: `grid-column: span 2`, `:nth-child(1),:nth-child(2){span 3}`,
+   plus `:nth-child(n)` and `:nth-child(5)` rules at two breakpoints. Adopting
+   it here would mean fighting four upstream grid-column rules with four
+   overrides — more code, and more fragile, than the shell declarations it would
+   save. .fc-link is skipped for the same kind of reason: it hardcodes
+   `color: var(--text)`, which the dark staff tile would have to override to
+   stay legible, and its ::after has no radius for the ring. (design-system.css
+   §15's `.portal-card`/`.pc-*` is a THIRD variant of this idea and is dead
+   code — nothing includes it. Worth deleting upstream.)
+
+   -- WHY THE GRID LOOKS LIKE THIS ---------------------------------------------
+   Seven is prime, so no column count divides it: 4 columns leaves 4+3, three
+   columns leaves 3+3+1, and a lone tile in a trailing row is the orphan the
+   brief warns about. The fix is not a breakpoint trick, it is the content: one
+   of the seven is not like the others. Admin is for staff, everybody else is
+   public. So the section is 1 + 6 — the staff door is a full-width lead band,
+   and six tiles factor cleanly at every width that matters:
+
+        >1040px    staff band + 3 x 2      (no orphan)
+        <=1040px   staff band + 2 x 3      (no orphan)
+        <=620px    staff band + 1 x 6      (no orphan)
+
+   Six is never capped at 4 across, because a 4-column row would put the last
+   two tiles alone again. Three is the widest the description line stays
+   readable at anyway.
+
+   -- CONTRAST (WCAG AA: 4.5:1 normal, 3:1 large >=18.66px bold or >=24px) -----
+   Section field #F8FCF8      title #151818 17.24:1 · subtitle/help #4B6754 6.02:1
+                              eyebrow --accent-ink #C1481D 4.81:1
+                              focus ring #0B4E3D 9.34:1 (non-text, needs 3:1)
+   Public tile #FFFFFF        name #151818 17.86:1 · description #4B6754 6.24:1
+                              action #0B4E3D 9.67:1
+                              icon #0B4E3D on the 10% primary tint (#E7EDEC) 8.17:1
+                              icon on hover #0B4E3D on #FFE987 7.95:1
+   Staff tile #0B4E3D         name #FFFFFF 9.67:1 · description white .86 7.61:1
+                              action + rule #FFE987 7.95:1
+                              "Staff only" chip #FFFFFF on the white .14 veil 6.59:1
+                              chip icon likewise 6.59:1
+   Yellow CTA #FFE987         heading 7.95:1 · copy 7.97:1 · button label 9.67:1
+                              .link-underline #0B4E3D 7.95:1
+
+   #F15A24 at full strength is 3.37:1 — both as ink and behind white — so it
+   carries no small text anywhere here; every orange is --accent-ink. That token
+   is now derived per-accent by theme_accent_ink() in includes/theme.php and
+   emitted after design-system.css, which is what moved the eyebrow from 4.44:1
+   (design-system.css's fixed 84% mix, a real AA failure at 12.5px/700 on this
+   band) to 4.81:1. The 1px --border hairline (#C1CCB3, 1.67:1 on white) is
+   decoration, not the affordance — a tile is identified by its label, and its
+   focus state is the 9.34:1 ring.
+   ========================================================================== */
+
+.portals-band { background: var(--bg-alt, #F8FCF8); }
+
+/* -----------------------------------------------------------------------------
+   1. THE GRID
+   minmax(0, 1fr) rather than 1fr: a long portal name or an unbroken URL in a
+   description would otherwise set the column's min-content width and push the
+   whole row past the viewport.
+   -------------------------------------------------------------------------- */
+.portals-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(.85rem, 1.8vw, 1.4rem);
+}
+
+/* -----------------------------------------------------------------------------
+   2. TILE — shared shell
+   -------------------------------------------------------------------------- */
+.portal-tile {
+    position: relative;                 /* anchor for the stretched link */
+    min-width: 0;
+    display: flex; flex-direction: column; align-items: flex-start;
+    padding: clamp(1.15rem, 2.2vw, 1.6rem);
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-lg, 20px);
+    transition: transform var(--dur, .3s) var(--ease-out, ease),
+                box-shadow var(--dur, .3s) var(--ease-out, ease),
+                border-color var(--dur, .3s) var(--ease-out, ease);
+}
+.portal-tile:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--elev-4, 0 18px 44px -16px rgba(11,45,35,.22));
+    border-color: color-mix(in srgb, var(--primary, #0B4E3D) 30%, transparent);
+}
+
+/* Icon plate. The markup is class="fc-ico pt-ico", so the 44px grid, the radius,
+   the 10%-primary tint (#E7EDEC, 8.17:1 with the ink) and the transition all
+   come from design-system.css §10. Only two things are local:
+     flex:none  — .portal-tile is a flex column, so without it the plate can be
+                  squeezed on the main axis;
+     the hover  — design-system binds it to `.focus-card:hover .fc-ico`, a
+                  selector that does not exist here. */
+.pt-ico { flex: none; }
+.portal-tile:hover .pt-ico {
+    /* No rotate(-5deg) like .focus-card's: six of these sit in one dense grid
+       and a login chooser should not fidget. Deliberate delta, not an omission. */
+    transform: translateY(-3px);
+    background: var(--yellow, #FFE987);                  /* 7.95:1 with the ink */
+}
+
+/* Wrapper for the small inline icons that sit next to text (the "Staff only"
+   chip, the help links, the CTA button). It carries aria-hidden in the markup,
+   because lucide() emits a bare <i data-lucide> with no attribute hook of its
+   own — the wrapper is what keeps the swapped-in <svg> out of the a11y tree. */
+.pt-i { display: inline-flex; align-items: center; flex: none; }
+
+/* Name — the h3, and the only interactive element in the tile. */
+.pt-name {
+    margin: 0 0 .4rem;
+    font-family: var(--font-head, inherit);
+    font-size: 1.06rem; font-weight: 800; line-height: 1.25; letter-spacing: -.01em;
+    color: var(--text, #151818);                          /* 17.86:1 */
+}
+/* Stretched link: one real anchor covers the tile, so the accessible name, the
+   keyboard stop and the focus ring all stay on it — no click-handling div. */
+.pt-link { color: inherit; text-decoration: none; }
+.pt-link::after {
+    content: ""; position: absolute; inset: 0;
+    border-radius: var(--r-lg, 20px);
+}
+.pt-link:focus-visible { outline: none; }
+/* The ring is drawn on that full-tile overlay, so it frames the whole card —
+   and only for :focus-visible, unlike a :focus-within ring which would also
+   fire on a mouse click. 3px of #0B4E3D at a 3px offset sits on the section
+   field: 9.34:1, and on the staff tile the light gap separates ring from card. */
+.pt-link:focus-visible::after {
+    outline: 3px solid var(--primary, #0B4E3D);
+    outline-offset: 3px;
+}
+
+.pt-desc {
+    margin: 0 0 1rem;
+    font-size: .93rem; line-height: 1.6;
+    color: var(--muted, #4B6754);                         /* 6.24:1 */
+}
+
+/* Action. class="fc-more pt-go" — margin-top:auto, the inline-flex row, the
+   weight, the .88rem size, var(--primary) at 9.67:1 and the 1em arrow with its
+   transition are all .fc-more. aria-hidden in the markup: the anchor above
+   already is the action, so this is the visual affordance only.
+   Only the hover is local, for the same reason as the icon plate — the design
+   system binds it to `.focus-card:hover`. */
+.portal-tile:hover .pt-go svg { transform: translateX(4px); }
+
+/* -----------------------------------------------------------------------------
+   3. STAFF TILE — distinct because it is not for the public
+   -----------------------------------------------------------------------------
+   Not a second accent colour and no gradient: the same flat brand field
+   .cta-band.is-green and .page-hero already use, turned on its side into a
+   full-width band, with the brand-yellow rule those two use to close an edge
+   moved to the inline start. Dark instead of white, wide instead of tall, and
+   labelled "Staff only" — the difference is stated, not decorated.
+   -------------------------------------------------------------------------- */
+.portal-tile.is-staff {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(.9rem, 2.2vw, 1.6rem);
+    padding: clamp(1.15rem, 2.2vw, 1.5rem) clamp(1.15rem, 2.4vw, 1.75rem);
+    background: var(--primary, #0B4E3D);
+    border-color: transparent;
+    border-inline-start: 5px solid var(--yellow, #FFE987);
+}
+.portal-tile.is-staff:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--elev-4, 0 18px 44px -16px rgba(11,45,35,.22));
+    border-color: transparent;
+    border-inline-start-color: var(--yellow, #FFE987);
+}
+.is-staff .pt-body { min-width: 0; }
+.is-staff .pt-ico {
+    width: 52px; height: 52px; margin-bottom: 0;
+    background: var(--yellow, #FFE987);
+    color: var(--primary, #0B4E3D);                       /* 7.95:1 */
+}
+.is-staff .pt-ico svg { width: 25px; height: 25px; }
+.portal-tile.is-staff:hover .pt-ico { background: var(--yellow, #FFE987); }
+
+/* "Staff only" — a white veil chip, the pattern design-system.css uses for a
+   badge on a green field. White on the composite (#2D6758) is 6.58:1. */
+.pt-flag {
+    display: inline-flex; align-items: center; gap: .4rem;
+    margin-bottom: .5rem; padding: .22rem .65rem;
+    border-radius: var(--r-pill, 999px);
+    background: rgba(255, 255, 255, .14);
+    border: 1px solid rgba(255, 255, 255, .30);
+    color: #fff;
+    font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+}
+.pt-flag svg { width: 12px; height: 12px; }
+
+.is-staff .pt-name { color: #fff; }                       /* 9.67:1 */
+.is-staff .pt-desc {
+    margin: 0; color: rgba(255, 255, 255, .86);           /* 7.61:1 */
+}
+.is-staff .pt-go {
+    margin-top: 0; flex: none;
+    color: var(--yellow, #FFE987);                         /* 7.95:1 */
+    font-size: .9rem;
+}
+/* The ring stays #0B4E3D here too rather than turning yellow: it is drawn 3px
+   OUTSIDE the tile, on the pale section field, where yellow would be 1.17:1. */
+
+/* -----------------------------------------------------------------------------
+   4. HELP LINE beneath the grid
+   -------------------------------------------------------------------------- */
+.portals-help {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: .35rem clamp(.75rem, 2vw, 1.5rem);
+    margin: clamp(1.35rem, 2.5vw, 2rem) 0 0;
+    padding-top: clamp(1.1rem, 2vw, 1.5rem);
+    border-top: 1px solid var(--border, #C1CCB3);
+    font-size: .93rem; line-height: 1.6;
+    color: var(--muted, #4B6754);                          /* 6.02:1 */
+}
+/* The links are class="link-underline": the colour (var(--primary), 9.34:1 on
+   this field), text-decoration:none and the whole grow-from-left underline
+   mechanism come from design-system.css §6. This file adds only the icon row.
+   The :focus-visible block that used to sit here restated the global default
+   (design-system.css:270, `2px solid var(--primary)`) and is gone. */
+.portals-help a {
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-weight: 700;
+}
+.portals-help svg { width: 1em; height: 1em; }
+
+/* -----------------------------------------------------------------------------
+   5. CLOSING CTA BAND — secondary choices as links, not outline buttons
+   -----------------------------------------------------------------------------
+   portals.php closes with design-system.css's .cta-band.is-yellow, which passes
+   throughout: heading 7.95:1, copy 7.97:1, and the filled green button's label
+   9.67:1 on a surface that is itself 7.95:1 against the yellow field.
+
+   Its .btn-outline is the one control that does not work on this field: that
+   layer draws the border as `color-mix(primary 45%, transparent)`, which
+   composites to #91A366 on #FFE987 — 2.26:1, under the 3:1 WCAG 1.4.11 floor
+   for the boundary of a control. So the band takes ONE filled button and the
+   two lesser choices become .link-underline text (var(--primary) on yellow,
+   7.95:1), which needs no border to be identifiable. The 45% -> 65% fix in
+   design-system.css §11 is reported separately; nothing here depends on it.
+   -------------------------------------------------------------------------- */
+.portals-cta-links {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: .25rem clamp(1rem, 3vw, 1.75rem);
+    margin: 1.15rem 0 0;
+    font-size: .93rem;
+}
+/* No :focus-visible rule here either — the global `2px solid var(--primary)`
+   default already applies, and on the yellow field that ring is 7.95:1. */
+.portals-cta-links a { font-weight: 700; }
+
+/* -----------------------------------------------------------------------------
+   6. RESPONSIVE — 320px upward, and 44px targets wherever a thumb lands
+   -------------------------------------------------------------------------- */
+@media (max-width: 1040px) {
+    .portals-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* The staff band's three columns need ~520px before the middle one starts
+   squeezing the description to two words a line, so it stacks first. */
+@media (max-width: 720px) {
+    .portal-tile.is-staff {
+        grid-template-columns: auto minmax(0, 1fr);
+        row-gap: .85rem;
+    }
+    .is-staff .pt-go { grid-column: 1 / -1; }
+}
+
+@media (max-width: 620px) {
+    .portals-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 820px) {
+    /* Every tile is far taller than 44px, but the help links are inline text —
+       they get a 44px-high hit box without growing the type. */
+    .portals-help { row-gap: 0; }
+    .portals-help a, .portals-cta-links a { min-height: 44px; display: inline-flex; align-items: center; }
+}
+
+@media (max-width: 380px) {
+    /* 320-380px: the icon and the name compete for the same line in the staff
+       band, so the icon steps down and the tile padding tightens. */
+    .portal-tile { padding: 1rem; }
+    .portal-tile.is-staff { padding: 1rem; border-inline-start-width: 4px; }
+    .is-staff .pt-ico { width: 44px; height: 44px; }
+    .is-staff .pt-ico svg { width: 21px; height: 21px; }
+    .pt-name { font-size: 1rem; }
+    .pt-desc { font-size: .9rem; }
+}
+
+/* -----------------------------------------------------------------------------
+   7. DARK THEME — deliberately absent. Read this before adding one.
+   -----------------------------------------------------------------------------
+   Dark mode does not currently work anywhere on this site, and a per-component
+   dark block written against it does harm rather than nothing.
+
+   includes/theme.php emits its token block as `:root{…}:root[data-theme]{…}`.
+   `:root[data-theme]` has the same specificity (0,2,0) as tailwind.css's
+   `:root[data-theme="dark"]` and loads after it (inline <style>, 7th in <head>;
+   tailwind.css is 1st), so it wins — and includes/header.php stamps data-theme
+   on <html> before paint on EVERY request, so it always matches. Measured with
+   data-theme="dark" set, --surface is still #FFFFFF, --bg-alt #F8FCF8, --text
+   #151818, --brand-700 #174D3D. tailwind's dark palette never appears.
+
+   That is a pre-existing site-wide defect (theme.php's own comment says the
+   duplication is there "so admin-chosen tokens are not silently outranked"), and
+   fixing it means turning on a whole untested — and currently off-brand navy —
+   palette across 150 files. Out of scope here. But the consequence for THIS
+   section had to be dealt with, because the rules still FIRE while the surfaces
+   stay light, so the moon toggle made the light rendering worse:
+
+     · `.pt-ico { background: rgba(255,255,255,.08) }` over a still-white tile
+       composites to #FFFFFF — 1.00:1 against the tile, so the icon's rounded
+       plate vanished completely (it is #E7EDEC, 1.18:1, untoggled);
+     · the staff focus ring switched to --yellow, which on the still-pale
+       section field is 1.17:1 — §3 says in as many words that the ring stays
+       green precisely because yellow fails there;
+     · the ink moved #0B4E3D -> #174D3D and the ring #0B4E3D -> #0B4E3D, i.e.
+       the colour the block said it was switching away from. Both no-ops.
+
+   So the whole block is removed rather than shipped against surfaces that never
+   appear with ratios (6.27 / 4.96 / 4.95:1) that were never real. Restore it —
+   from git history — in the same change that gives theme.php's dark tokens their
+   own `:root[data-theme="dark"]` selector, and re-measure then.
+   -------------------------------------------------------------------------- */
+
+/* -----------------------------------------------------------------------------
+   8. REDUCED MOTION — every transform and transition in this file, off
+   .link-underline's own transition is already killed by design-system.css §7;
+   the :hover rule below is still needed so the affordance survives without it.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .portal-tile, .pt-ico, .pt-go svg { transition: none; }
+    .portal-tile:hover, .portal-tile.is-staff:hover { transform: none; }
+    .portal-tile:hover .pt-ico { transform: none; }
+    .portal-tile:hover .pt-go svg { transform: none; }
+    .portals-help a:hover { background-size: 0% 1.5px; text-decoration: underline; }
+}

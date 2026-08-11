@@ -30,11 +30,20 @@ function current_lang(): string
         return $lang;
     }
     $available = available_languages();
-    if (isset($_GET['lang']) && isset($available[$_GET['lang']])) {
-        $lang = $_GET['lang'];
+    /* Both sources are attacker-controlled and must be scalars before they are
+       used as an array offset: `?lang[]=1` made $_GET['lang'] an array, and in
+       PHP 8 `isset($available[$array])` throws "Illegal offset type", which
+       500'd EVERY page (header.php calls current_lang() on every render). */
+    $qs     = $_GET['lang']       ?? null;
+    $cookie = $_COOKIE['pwf_lang'] ?? null;
+    $qs     = is_string($qs)     ? $qs     : null;
+    $cookie = is_string($cookie) ? $cookie : null;
+
+    if ($qs !== null && isset($available[$qs])) {
+        $lang = $qs;
         setcookie('pwf_lang', $lang, time() + 31536000, '/');
-    } elseif (isset($_COOKIE['pwf_lang']) && isset($available[$_COOKIE['pwf_lang']])) {
-        $lang = $_COOKIE['pwf_lang'];
+    } elseif ($cookie !== null && isset($available[$cookie])) {
+        $lang = $cookie;
     } else {
         $lang = 'en';
     }

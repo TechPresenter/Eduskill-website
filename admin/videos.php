@@ -201,7 +201,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Thumb</th><th>Title</th><th>Category</th><th>Status</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Thumb</th><th>Title</th><th>Category</th><th>Status</th><th>Order</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <?php
@@ -217,13 +217,13 @@ include __DIR__ . '/partials/head.php';
                             <strong><?= e($r['title']) ?></strong><br>
                             <small class="text-muted"><?= e(excerpt($r['description'] ?? '', 12)) ?></small>
                         </td>
-                        <td><?= !empty($r['category']) ? '<span class="pill pill-blue">' . e($r['category']) . '</span>' : '<span class="text-muted">—</span>' ?></td>
+                        <td><?= !empty($r['category']) ? '<span class="pill pill-tag">' . e($r['category']) . '</span>' : '<span class="text-muted">—</span>' ?></td>
                         <td><span class="pill <?= !empty($r['status']) ? 'pill-green' : 'pill-gray' ?>"><?= !empty($r['status']) ? 'Active' : 'Inactive' ?></span></td>
                         <td><?= (int) $r['sort_order'] ?></td>
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('videos?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('videos')) ?>" data-confirm="Delete this video permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('videos')) ?>" data-confirm="Delete this video permanently?" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -238,7 +238,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('clapperboard') ?></div>No videos yet. <a href="<?= e(admin_url('videos?action=create')) ?>">Add your first video</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('clapperboard') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No videos match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No video has that title. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('videos')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('videos?action=create')) ?>"><?= lucide('plus') ?> Add your first video</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No videos yet</p>
+                                <p class="es-text">Videos are embedded by URL — YouTube or Vimeo — and shown on the public video gallery.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('videos?action=create')) ?>"><?= lucide('plus') ?> Add your first video</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

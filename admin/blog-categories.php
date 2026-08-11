@@ -163,7 +163,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Name</th><th>Slug</th><th>Description</th><th>Status</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Name</th><th>Slug</th><th>Description</th><th>Status</th><th>Order</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
@@ -175,7 +175,7 @@ include __DIR__ . '/partials/head.php';
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('blog-categories?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('blog-categories')) ?>" data-confirm="Delete this category permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('blog-categories')) ?>" data-confirm="Delete this category permanently?" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -190,7 +190,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('folders') ?></div>No categories yet. <a href="<?= e(admin_url('blog-categories?action=create')) ?>">Add your first category</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('folders') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No categories match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No category has that name or slug. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('blog-categories')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('blog-categories?action=create')) ?>"><?= lucide('plus') ?> Add your first category</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No categories yet</p>
+                                <p class="es-text">Categories group posts on the public blog index. Add a few before you start writing so posts can be filed as you go.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('blog-categories?action=create')) ?>"><?= lucide('plus') ?> Add your first category</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

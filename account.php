@@ -72,11 +72,32 @@ $actions = [
     ],
     [
         'icon'  => 'star',
-        'tone'  => 'p',          // purple
+        'tone'  => 'p',          // brand accent
         'title' => 'Membership',
         'text'  => 'Become a formal member and unlock deeper ways to contribute to our mission.',
         'url'   => url('membership'),
         'cta'   => 'View Plans',
+    ],
+    /* Learning had no route in from here. The catalogue (/courses), the player
+       (/learn), progress (/my-learning), assignments and exams all exist and
+       work, but this page linked only to /certificates — the END of the journey
+       — so a member who had started a course had no way back to it except by
+       typing the URL. */
+    [
+        'icon'  => 'book-open',
+        'tone'  => 'p',
+        'title' => 'My Learning',
+        'text'  => 'Pick up a course where you left off, track your progress and sit your exams.',
+        'url'   => url('my-learning'),
+        'cta'   => 'Continue Learning',
+    ],
+    [
+        'icon'  => 'graduation-cap',
+        'tone'  => 's',
+        'title' => 'Courses',
+        'text'  => 'Browse the free training we run — digital literacy, health work and tailoring.',
+        'url'   => url('courses'),
+        'cta'   => 'Browse Courses',
     ],
 ];
 
@@ -101,7 +122,7 @@ include __DIR__ . '/includes/header.php';
     <div class="container grid grid-sidebar gap-4 items-start">
 
         <!-- ---------- Profile card ---------- -->
-        <aside class="glass-card reveal" style="text-align:center;position:sticky;top:100px;">
+        <aside class="glass-card reveal sticky-aside" style="text-align:center;position:sticky;top:100px;">
             <div style="position:relative;width:112px;height:112px;margin:0 auto 1rem;">
                 <?php if (!empty($avatar)): ?>
                     <img src="<?= e(image_url($avatar, 'avatar')) ?>" alt="<?= e($name) ?>"
@@ -118,7 +139,7 @@ include __DIR__ . '/includes/header.php';
                 <?php if ($verified): ?>
                     <span title="Verified email"
                           style="position:absolute;right:2px;bottom:2px;width:30px;height:30px;border-radius:50%;
-                                 display:grid;place-items:center;background:var(--grad-green,#58A42F);color:#fff;
+                                 display:grid;place-items:center;background:var(--grad-green,#2F8065);color:#fff;
                                  font-size:.9rem;border:3px solid var(--surface,#fff);"><?= lucide('check') ?></span>
                 <?php endif; ?>
             </div>
@@ -148,6 +169,13 @@ include __DIR__ . '/includes/header.php';
                     <li><?= lucide('clock') ?> Last login <?= e(time_ago($lastLogin)) ?></li>
                 <?php endif; ?>
             </ul>
+
+            <a class="btn btn-primary btn-block mt-3" href="<?= e(url('account-profile')) ?>">
+                <?= lucide('user-round-cog') ?> Manage my profile
+            </a>
+            <a class="btn btn-outline btn-block mt-2" href="<?= e(url('account-profile') . '?tab=giving') ?>">
+                <?= lucide('heart') ?> My giving &amp; receipts
+            </a>
 
             <form method="post" action="<?= e(url('logout')) ?>" class="mt-3">
                 <?= csrf_field() ?>
@@ -184,7 +212,7 @@ include __DIR__ . '/includes/header.php';
             </div>
 
             <?php if ($isLearner): ?>
-            <div class="glass-card reveal mb-4" style="border-top:4px solid #8b5cf6;">
+            <div class="glass-card reveal mb-4" style="border-top:4px solid var(--gold,#E8C52E);">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                     <div>
                         <span class="badge badge-brand"><?= lucide('graduation-cap') ?> Student</span>

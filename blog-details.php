@@ -317,10 +317,10 @@ echo json_ld_article($blog, $blog['author_name'] ?? null);
 
                 <h4 class="mb-2">Share this story</h4>
                 <div class="share-rail-icons flex gap-2 flex-wrap">
-                    <a class="share-btn fb" href="https://www.facebook.com/sharer/sharer.php?u=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on Facebook"><i class="fab fa-facebook-f"></i></a>
-                    <a class="share-btn tw" href="https://twitter.com/intent/tweet?url=<?= e($shareUrlEnc) ?>&amp;text=<?= e($shareTitleEnc) ?>" target="_blank" rel="noopener" aria-label="Share on X"><i class="fab fa-x-twitter"></i></a>
-                    <a class="share-btn li" href="https://www.linkedin.com/sharing/share-offsite/?url=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                    <a class="share-btn wa" href="https://wa.me/?text=<?= e($shareTitleEnc) ?>%20<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    <a class="share-btn fb" href="https://www.facebook.com/sharer/sharer.php?u=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on Facebook"><?= social_svg('facebook') ?></a>
+                    <a class="share-btn tw" href="https://twitter.com/intent/tweet?url=<?= e($shareUrlEnc) ?>&amp;text=<?= e($shareTitleEnc) ?>" target="_blank" rel="noopener" aria-label="Share on X"><?= social_svg('x') ?></a>
+                    <a class="share-btn li" href="https://www.linkedin.com/sharing/share-offsite/?url=<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><?= social_svg('linkedin') ?></a>
+                    <a class="share-btn wa" href="https://wa.me/?text=<?= e($shareTitleEnc) ?>%20<?= e($shareUrlEnc) ?>" target="_blank" rel="noopener" aria-label="Share on WhatsApp"><?= social_svg('whatsapp') ?></a>
                     <a class="share-btn em" href="mailto:?subject=<?= e($shareTitleEnc) ?>&amp;body=<?= e($shareUrlEnc) ?>" aria-label="Share by email"><?= lucide('mail') ?></a>
                 </div>
 

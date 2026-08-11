@@ -63,7 +63,7 @@ if ($slug !== '') {
                         <?= rich_text($project['description'] ?: $project['summary']) ?>
                     </div>
                 </article>
-                <aside class="card-3d reveal delay-1" style="position:sticky;top:90px;">
+                <aside class="card-3d reveal delay-1 sticky-aside" style="position:sticky;top:90px;">
                     <h3 class="card-title">Project Facts</h3>
                     <ul class="list-unstyled" style="display:grid;gap:.65rem;margin:.8rem 0 0;padding:0;list-style:none;">
                         <li><?= lucide('signal') ?> <strong>Status:</strong> <?= e($statusLabel) ?></li>
@@ -135,7 +135,7 @@ include __DIR__ . '/includes/header.php';
                             <h3 class="card-title"><?= e($pj['title']) ?></h3>
                             <p class="card-text"><?= e(excerpt($pj['summary'] ?: $pj['description'], 18)) ?></p>
                             <?php if (!empty($pj['location'])): ?><small class="text-muted"><?= lucide('map-pin') ?> <?= e($pj['location']) ?></small><?php endif; ?>
-                            <div class="mt-2"><a href="<?= e(url('projects?slug=' . $pj['slug'])) ?>" style="color:#063566;font-weight:700;">View project <?= lucide('arrow-right') ?></a></div>
+                            <div class="mt-2"><a class="link-action" href="<?= e(url('projects?slug=' . $pj['slug'])) ?>" style="color:#0B4E3D;font-weight:700;">View project <?= lucide('arrow-right') ?></a></div>
                         </div>
                     </article>
                 <?php endforeach; ?>
@@ -152,7 +152,7 @@ include __DIR__ . '/includes/header.php';
 <!-- ============================== CTA ============================== -->
 <section class="section section-soft">
     <div class="container">
-        <div class="card-3d text-center" style="background:linear-gradient(135deg,#063566,#084881);color:#fff;">
+        <div class="card-3d text-center" style="background:linear-gradient(135deg,#0B4E3D,#174D3D);color:#fff;">
             <h2 class="text-white">Help us start the next project</h2>
             <p style="color:rgba(255,255,255,.9);max-width:620px;margin-inline:auto;">Every contribution moves a village closer to education, health and opportunity.</p>
             <div class="flex flex-wrap justify-center gap-2 mt-3">

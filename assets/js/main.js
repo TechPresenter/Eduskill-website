@@ -1,3 +1,12 @@
+
+/* Run fn once the DOM is parsed — safe to call after DOMContentLoaded too. */
+function pwfReady(fn) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fn, { once: true });
+    } else {
+        fn();
+    }
+}
 /* =============================================================================
    EDUSKILL INDIA FOUNDATION — front-end behaviour (vanilla ES6, no framework)
    -----------------------------------------------------------------------------
@@ -167,16 +176,29 @@
         box.className = 'lightbox';
         box.innerHTML = '<button class="lightbox-close" aria-label="Close">&times;</button>' +
             '<button class="lightbox-nav prev" aria-label="Previous">&#8249;</button>' +
-            '<img alt="">' +
+            '<figure class="lightbox-figure"><img alt=""><figcaption class="lightbox-caption"></figcaption></figure>' +
             '<button class="lightbox-nav next" aria-label="Next">&#8250;</button>';
         document.body.appendChild(box);
         const img = box.querySelector('img');
+        const cap = box.querySelector('.lightbox-caption');
         let current = 0;
 
         const show = (i) => {
             current = (i + triggers.length) % triggers.length;
-            const src = triggers[current].dataset.lightbox || triggers[current].querySelector('img')?.src;
+            const t = triggers[current];
+            const src = t.dataset.lightbox || t.querySelector('img')?.src;
             img.src = src;
+            /* Caption, and with it the alt text: the image had an empty alt and no
+               visible label, so an opened photograph announced nothing at all. */
+            const label = t.dataset.caption || t.querySelector('img')?.alt || '';
+            img.alt = label;
+            cap.textContent = label;
+            cap.hidden = label === '';
+            /* Position in the set, for anyone navigating with the arrow keys. */
+            if (triggers.length > 1) {
+                box.setAttribute('aria-label', 'Image ' + (current + 1) + ' of ' + triggers.length +
+                    (label ? ': ' + label : ''));
+            }
             box.classList.add('is-open');
             document.body.style.overflow = 'hidden';
         };
@@ -314,3 +336,256 @@
     // Expose a tiny helper others can use.
     window.PWF = { applyTheme };
 })();
+
+/* ---------------------------------------------------------------- MEGA MENU
+   One trigger, one panel, both breakpoints. Keyboard-complete: Escape closes
+   and returns focus to the trigger, Tab is trapped inside the open panel, and
+   the trigger's aria-expanded always reflects reality.                        */
+pwfReady(function () {
+    var trigger = document.querySelector('[data-mm-toggle]');
+    var panel   = document.querySelector('[data-mm-panel]');
+    var scrim   = document.querySelector('[data-mm-scrim]');
+    if (!trigger || !panel) { return; }
+
+    var FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
+    var isOpen = false;
+
+    function open() {
+        if (isOpen) { return; }
+        isOpen = true;
+        panel.hidden = false;
+        if (scrim) { scrim.hidden = false; }
+        // Next frame so the transition runs from the hidden start state.
+        requestAnimationFrame(function () {
+            panel.classList.add('is-open');
+            if (scrim) { scrim.classList.add('is-open'); }
+        });
+        trigger.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+
+        /* preventScroll matters here. Moving focus makes the browser scroll the
+           target into view, and the panel is late in the document, so opening
+           the menu threw the page to the bottom — you tapped "Menu" and lost
+           your place. The focus itself is still wanted (keyboard and screen
+           reader users need to land inside the panel); it is only the scrolling
+           side effect that was wrong. */
+        var first = panel.querySelector(FOCUSABLE);
+        if (first) { first.focus({ preventScroll: true }); }
+    }
+
+    function close(returnFocus) {
+        if (!isOpen) { return; }
+        isOpen = false;
+        panel.classList.remove('is-open');
+        if (scrim) { scrim.classList.remove('is-open'); }
+        trigger.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+        window.setTimeout(function () {
+            if (!isOpen) {
+                panel.hidden = true;
+                if (scrim) { scrim.hidden = true; }
+            }
+        }, 300);
+        if (returnFocus) { trigger.focus(); }
+    }
+
+    trigger.addEventListener('click', function () { isOpen ? close(true) : open(); });
+    if (scrim) { scrim.addEventListener('click', function () { close(false); }); }
+
+    /* The drawer's own Close button. The [data-drawer-close] handler further up
+       this file belongs to the ADMIN drawer and never saw this panel, so without
+       this the X would render and do nothing. Delegated, because the panel's
+       contents are built server-side and an accordion can be re-rendered. */
+    panel.addEventListener('click', function (e) {
+        var closer = e.target.closest ? e.target.closest('[data-drawer-close]') : null;
+        if (closer) { e.preventDefault(); close(true); return; }
+        /* An in-page anchor (#section) does not navigate, so the drawer would
+           stay open over the content the visitor just asked to see. */
+        var link = e.target.closest ? e.target.closest('a[href]') : null;
+        if (link && (link.getAttribute('href') || '').charAt(0) === '#') { close(false); }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (!isOpen) { return; }
+        if (e.key === 'Escape') { e.preventDefault(); close(true); return; }
+        if (e.key !== 'Tab') { return; }
+
+        var items = Array.prototype.slice.call(panel.querySelectorAll(FOCUSABLE))
+            .filter(function (el) { return el.offsetParent !== null; });
+        if (!items.length) { return; }
+        var first = items[0], last = items[items.length - 1];
+        // Include the trigger at the boundaries so focus cycles sensibly.
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); trigger.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); trigger.focus(); }
+    });
+
+    // Following a link should not leave the panel open behind the new page.
+    panel.addEventListener('click', function (e) {
+        if (e.target.closest('a[href]')) { close(false); }
+    });
+});
+
+/* ------------------------------------------------- MEGA DROPDOWNS + ACCORDION
+   Desktop: hover or click opens one dropdown at a time, positioned under the
+   header. Mobile: the same tree as an accordion inside the single panel.
+   Keyboard-complete: Escape closes, arrow keys are not hijacked, focus returns
+   to the trigger, and aria-expanded always matches reality.                    */
+pwfReady(function () {
+    var navbar = document.querySelector('.navbar');
+
+    /* ---------- desktop dropdowns ---------- */
+    var triggers = Array.prototype.slice.call(document.querySelectorAll('[data-mm-drop]'));
+    var openDrop = null, hoverTimer = null;
+
+    function dropOf(btn) { return document.getElementById(btn.getAttribute('data-mm-drop')); }
+
+    function positionDrop(el) {
+        // Sit flush beneath the header, whatever its current height is.
+        var r = navbar ? navbar.getBoundingClientRect() : { bottom: 0 };
+        el.style.top = Math.max(0, r.bottom) + 'px';
+    }
+
+    function closeDrop(returnFocus) {
+        if (!openDrop) { return; }
+        var btn = openDrop, el = dropOf(btn);
+        btn.setAttribute('aria-expanded', 'false');
+        if (el) {
+            el.classList.remove('is-open');
+            window.setTimeout(function () { if (!el.classList.contains('is-open')) { el.hidden = true; } }, 260);
+        }
+        openDrop = null;
+        if (returnFocus && btn) { btn.focus(); }
+    }
+
+    function showDrop(btn) {
+        if (openDrop === btn) { return; }
+        closeDrop(false);
+        var el = dropOf(btn);
+        if (!el) { return; }
+        el.hidden = false;
+        positionDrop(el);
+        requestAnimationFrame(function () { el.classList.add('is-open'); });
+        btn.setAttribute('aria-expanded', 'true');
+        openDrop = btn;
+    }
+
+    triggers.forEach(function (btn) {
+        var item = btn.closest('.mm-item');
+        var el   = dropOf(btn);
+
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            openDrop === btn ? closeDrop(true) : showDrop(btn);
+        });
+
+        if (item && window.matchMedia('(hover: hover)').matches) {
+            item.addEventListener('mouseenter', function () {
+                window.clearTimeout(hoverTimer);
+                showDrop(btn);
+            });
+            item.addEventListener('mouseleave', function () {
+                hoverTimer = window.setTimeout(function () { closeDrop(false); }, 160);
+            });
+            if (el) {
+                el.addEventListener('mouseenter', function () { window.clearTimeout(hoverTimer); });
+                el.addEventListener('mouseleave', function () {
+                    hoverTimer = window.setTimeout(function () { closeDrop(false); }, 160);
+                });
+            }
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && openDrop) { e.preventDefault(); closeDrop(true); }
+    });
+    document.addEventListener('click', function (e) {
+        if (openDrop && !e.target.closest('.mm-item') && !e.target.closest('[data-mm-dropdown]')) {
+            closeDrop(false);
+        }
+    });
+    // A dropdown pinned to the header must follow it.
+    window.addEventListener('resize', function () {
+        if (openDrop) { var el = dropOf(openDrop); if (el) { positionDrop(el); } }
+    }, { passive: true });
+    window.addEventListener('scroll', function () {
+        if (openDrop) { var el = dropOf(openDrop); if (el) { positionDrop(el); } }
+    }, { passive: true });
+
+    /* ---------- mobile accordion ---------- */
+    Array.prototype.forEach.call(document.querySelectorAll('[data-mm-acc]'), function (head) {
+        head.addEventListener('click', function () {
+            var body = document.getElementById(head.getAttribute('data-mm-acc'));
+            if (!body) { return; }
+            var isOpen = head.getAttribute('aria-expanded') === 'true';
+            head.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+            body.hidden = isOpen;
+        });
+    });
+});
+
+/* ------------------------------------------------------------ PORTAL SIDEBAR
+   Slide-out drawer of the eight role portals. Modal semantics: scrim click,
+   Escape and the close button all dismiss it; focus is trapped while open and
+   returned to the trigger on close; body scroll is locked.                     */
+pwfReady(function () {
+    var trigger = document.querySelector('[data-ps-toggle]');
+    var drawer  = document.querySelector('[data-ps-drawer]');
+    var scrim   = document.querySelector('[data-ps-scrim]');
+    if (!trigger || !drawer) { return; }
+
+    var FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
+    var open = false;
+
+    function show() {
+        if (open) { return; }
+        open = true;
+        drawer.hidden = false;
+        if (scrim) { scrim.hidden = false; }
+        requestAnimationFrame(function () {
+            drawer.classList.add('is-open');
+            if (scrim) { scrim.classList.add('is-open'); }
+        });
+        trigger.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+        var first = drawer.querySelector('[data-ps-close]') || drawer.querySelector(FOCUSABLE);
+        if (first) { first.focus(); }
+    }
+
+    function hide(returnFocus) {
+        if (!open) { return; }
+        open = false;
+        drawer.classList.remove('is-open');
+        if (scrim) { scrim.classList.remove('is-open'); }
+        trigger.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+        window.setTimeout(function () {
+            if (!open) {
+                drawer.hidden = true;
+                if (scrim) { scrim.hidden = true; }
+            }
+        }, 340);
+        if (returnFocus) { trigger.focus(); }
+    }
+
+    trigger.addEventListener('click', function () { open ? hide(true) : show(); });
+    if (scrim) { scrim.addEventListener('click', function () { hide(false); }); }
+    Array.prototype.forEach.call(drawer.querySelectorAll('[data-ps-close]'), function (b) {
+        b.addEventListener('click', function () { hide(true); });
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (!open) { return; }
+        if (e.key === 'Escape') { e.preventDefault(); hide(true); return; }
+        if (e.key !== 'Tab') { return; }
+        var items = Array.prototype.slice.call(drawer.querySelectorAll(FOCUSABLE))
+            .filter(function (el) { return el.offsetParent !== null; });
+        if (!items.length) { return; }
+        var first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+
+    drawer.addEventListener('click', function (e) {
+        if (e.target.closest('a[href]')) { hide(false); }
+    });
+});

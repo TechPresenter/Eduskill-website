@@ -47,6 +47,36 @@ function pwf_session_start(): void
 }
 
 /* -----------------------------------------------------------------------------
+ | Account-existence timing
+ | -------------------------------------------------------------------------- */
+
+/**
+ * A real bcrypt hash of a string nobody can supply, at the same cost (10) as
+ * every hash stored in `users` and `members`. Verifying against it is the only
+ * portable way to spend the same CPU on a miss as on a hit.
+ */
+const PWF_TIMING_HASH = '$2y$10$sNXqcPZ9KxHySaCF78MuxOtT.oe4hNe4uENuoge6Pz/N.Z//vKvKm';
+
+/**
+ * Spend one password_verify() when no account row was found.
+ *
+ * Both login handlers short-circuited on `!$user || !password_verify(...)`, so
+ * PHP's own || skipped the bcrypt work whenever the address did not exist. The
+ * WORDING was already identical ("Invalid email or password.") and the status
+ * was already 200, but the CLOCK was a clean oracle: measured over HTTP,
+ * an existing address took 177-244 ms and an absent one 39-115 ms; called
+ * directly, 63-96 ms against 2.3-2.8 ms. Zero overlap in either sample, and the
+ * whole gap is one bcrypt (58-64 ms).
+ *
+ * Always returns false, so it drops straight into the existing miss branch.
+ */
+function pwf_equalise_login_time(string $password): bool
+{
+    password_verify($password, PWF_TIMING_HASH);
+    return false;
+}
+
+/* -----------------------------------------------------------------------------
  | Login-attempt throttling
  | -------------------------------------------------------------------------- */
 
@@ -62,14 +92,61 @@ function login_throttle_ip(): string
     return function_exists('sec_client_ip') ? sec_client_ip() : client_ip();
 }
 
-function failed_login_count(string $email): int
+/**
+ * How many failures an account may collect, as a multiple of the IP allowance,
+ * before the ACCOUNT itself is gated.
+ *
+ * The counter used to be a flat `email = :email OR ip_address = :ip`, which put
+ * both scopes on the same 5-attempt budget and cost two things:
+ *
+ *   DoS — anyone, from anywhere, could lock a known address out of login for the
+ *   whole window with 5 POSTs. All nine admin accounts are named after published
+ *   role words (admin@, staff@, school@…), so the addresses are not a secret.
+ *
+ *   Enumeration — login_needs_captcha() consults this BEFORE any password check,
+ *   so a single POST from a clean IP distinguished "address with recent failed
+ *   logins" from "address with none": admin@ answered captcha_shown=YES while an
+ *   unseen address answered no.
+ *
+ * At 5x, a targeted lockout costs 25 attempts instead of 5 and a stranger's
+ * CAPTCHA needs 15 instead of 3 — by which point an attack really is in progress
+ * on that account and gating it is the right answer. The per-IP budget is
+ * untouched, so a single attacker is slowed exactly as before.
+ */
+const PWF_EMAIL_LOCK_FACTOR = 5;
+
+/** Failures from this client IP inside the window. */
+function failed_login_ip_count(): int
 {
     $mins  = function_exists('sec_lockout_mins') ? sec_lockout_mins() : LOGIN_LOCKOUT_MINS;
-    $since = date('Y-m-d H:i:s', time() - $mins * 60);
     return (int) db_value(
         'SELECT COUNT(*) FROM login_attempts
-         WHERE success = 0 AND created_at >= :since AND (email = :email OR ip_address = :ip)',
-        [':since' => $since, ':email' => $email, ':ip' => login_throttle_ip()]
+         WHERE success = 0 AND created_at >= :since AND ip_address = :ip',
+        [':since' => date('Y-m-d H:i:s', time() - $mins * 60), ':ip' => login_throttle_ip()]
+    );
+}
+
+/** Failures against this account inside the window, from any IP. */
+function failed_login_email_count(string $email): int
+{
+    $mins  = function_exists('sec_lockout_mins') ? sec_lockout_mins() : LOGIN_LOCKOUT_MINS;
+    return (int) db_value(
+        'SELECT COUNT(*) FROM login_attempts
+         WHERE success = 0 AND created_at >= :since AND email = :email',
+        [':since' => date('Y-m-d H:i:s', time() - $mins * 60), ':email' => $email]
+    );
+}
+
+/**
+ * The effective count every threshold is compared against: whichever scope is
+ * further through its own budget. Callers keep comparing it to the same
+ * sec_lockout_max() / sec_captcha_after() numbers as before.
+ */
+function failed_login_count(string $email): int
+{
+    return max(
+        failed_login_ip_count(),
+        intdiv(failed_login_email_count($email), PWF_EMAIL_LOCK_FACTOR)
     );
 }
 
@@ -118,7 +195,11 @@ function login(string $email, string $password): array
         [':email' => $email]
     );
 
-    if (!$user || !password_verify($password, $user['password'])) {
+    // The no-row branch verifies against PWF_TIMING_HASH so a miss costs the same
+    // bcrypt as a hit — see pwf_equalise_login_time().
+    $ok = $user ? password_verify($password, $user['password'])
+                : pwf_equalise_login_time($password);
+    if (!$ok) {
         record_login_attempt($email, false);
         return ['success' => false, 'message' => 'Invalid email or password.'];
     }
@@ -203,7 +284,25 @@ function twofa_lockout_result(): array
 function finish_2fa_login(string $code): array
 {
     $id = (int) ($_SESSION['_2fa_user'] ?? 0);
-    $user = $id ? find('users', $id) : null;
+
+    /* Re-fetch with the SAME filters the password stage used.
+       This was find('users', $id), and find() (functions.php:107) is a bare
+       "SELECT * FROM users WHERE id = :id" with no deleted_at and no status
+       filter — so an admin who was soft-deleted or suspended AFTER passing the
+       password stage could still finish the handshake and receive a full session
+       from complete_admin_login(). login() filters deleted_at in SQL
+       (auth.php:194) and remember_attempt() checks both (auth_security.php:121);
+       this was the one path that checked neither. The window is bounded by
+       TWOFA_HANDSHAKE_SECS below, but "bounded" is not "closed", and revoking an
+       admin's access is exactly the moment this matters.
+
+       The refusal is deliberately worded as an expired session: an account that
+       has just been disabled must not learn which of the two it was. */
+    $user = $id ? db_row(
+        'SELECT * FROM users WHERE id = :id AND deleted_at IS NULL AND status = :st LIMIT 1',
+        [':id' => $id, ':st' => 'active']
+    ) : null;
+
     if (!$user) {
         abort_2fa_login();
         return ['success' => false, 'message' => 'Your session expired. Please sign in again.'];
@@ -327,8 +426,17 @@ function user_can(string $permissionSlug): bool
     if (empty($user['role_id'])) {
         return true; // no role assigned == unrestricted super admin
     }
+    /* One definition of "super admin", shared with includes/auth_router.php and
+       rbac.php:rbac_is_super() — the list used to be inlined here and there, in
+       two places that could drift apart. auth_is_super_role() carries the same
+       set, so behaviour is unchanged; the point is that there is now one place to
+       change it. The function_exists() guard keeps auth.php usable on its own
+       (bootstrap loads auth_router.php later, at line 44). */
     $role = find('roles', (int) $user['role_id']);
-    if ($role && in_array($role['slug'], ['super-admin', 'administrator'], true)) {
+    $slug = (string) ($role['slug'] ?? '');
+    if ($role && (function_exists('auth_is_super_role')
+            ? auth_is_super_role($slug)
+            : in_array($slug, ['super-admin', 'administrator'], true))) {
         return true;
     }
     return (bool) db_value(

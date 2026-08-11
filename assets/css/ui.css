@@ -18,7 +18,7 @@
 /* 1. ------------------------------------------------------------- LOCAL TOKENS
    Derived from the theme tokens so components stay in sync automatically.     */
 :root {
-    --ui-ring: 0 0 0 4px var(--ring, rgba(8, 72, 129, .35));
+    --ui-ring: 0 0 0 4px var(--ring, rgba(23,77,61, .35));
     --ui-lift: var(--hover-lift, 4px);
     --ui-t: var(--transition, 250ms cubic-bezier(.4, 0, .2, 1));
     --ui-gap: clamp(.75rem, 2vw, 1.25rem);
@@ -30,7 +30,7 @@
    (:focus-visible), keyboard users always do — including inside components
    that previously set `outline:none`.                                         */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-    outline: 3px solid var(--secondary, #084881);
+    outline: 3px solid var(--secondary, #174D3D);
     outline-offset: 2px;
     border-radius: var(--radius-sm, 10px);
 }
@@ -64,9 +64,9 @@
    variants (.btn-3d, .btn-glow, .btn-grad, .btn-social) — these are shared,
    non-visual properties so they can never clobber a variant's look. */
 .btn, .ui-btn {
-    --btn-bg: var(--primary, #063566);
+    --btn-bg: var(--primary, #0B4E3D);
     --btn-fg: #fff;
-    --btn-shadow: 0 10px 22px -12px rgba(6, 53, 102, .7);
+    --btn-shadow: 0 10px 22px -12px rgba(11,78,61, .7);
     position: relative;
     display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
     font: inherit; font-size: .95rem; font-weight: 700; line-height: 1.15;
@@ -89,26 +89,26 @@
 .ui-btn[disabled], .ui-btn:disabled { opacity: .55; pointer-events: none; box-shadow: none; transform: none; }
 
 /* variants — each only redefines the three custom properties */
-.btn-primary   { --btn-bg: var(--primary, #063566); }
-.btn-primary:hover { --btn-bg: var(--secondary, #084881); }
-.btn-secondary { --btn-bg: var(--surface, #fff); --btn-fg: var(--primary, #063566); --btn-shadow: var(--shadow-sm); border-color: var(--border, #E5E7EB); }
-.btn-secondary:hover { --btn-bg: var(--primary, #063566); --btn-fg: #fff; }
-.btn-outline   { --btn-bg: transparent; --btn-fg: var(--primary, #063566); --btn-shadow: none; border-color: currentColor; }
-.btn-outline:hover { --btn-bg: var(--primary, #063566); --btn-fg: #fff; border-color: transparent; }
+.btn-primary   { --btn-bg: var(--primary, #0B4E3D); }
+.btn-primary:hover { --btn-bg: var(--secondary, #174D3D); }
+.btn-secondary { --btn-bg: var(--surface, #fff); --btn-fg: var(--primary, #0B4E3D); --btn-shadow: var(--shadow-sm); border-color: var(--border, #E5E7EB); }
+.btn-secondary:hover { --btn-bg: var(--primary, #0B4E3D); --btn-fg: #fff; }
+.btn-outline   { --btn-bg: transparent; --btn-fg: var(--primary, #0B4E3D); --btn-shadow: none; border-color: currentColor; }
+.btn-outline:hover { --btn-bg: var(--primary, #0B4E3D); --btn-fg: #fff; border-color: transparent; }
 .btn-ghost     { --btn-bg: transparent; --btn-fg: var(--text-soft, #374151); --btn-shadow: none; }
-.btn-ghost:hover { --btn-bg: var(--surface-2, #F4F8FC); --btn-fg: var(--text, #063566); }
-.btn-success   { --btn-bg: var(--green, #58A42F); --btn-shadow: 0 10px 22px -12px rgba(88,164,47,.75); }
-.btn-success:hover { --btn-bg: var(--green-dark, #308629); }
+.btn-ghost:hover { --btn-bg: var(--surface-2, #F4F8FC); --btn-fg: var(--text, #0B4E3D); }
+.btn-success   { --btn-bg: var(--green, #2F8065); --btn-shadow: 0 10px 22px -12px rgba(47,128,101,.75); }
+.btn-success:hover { --btn-bg: var(--green-dark, #1F5C48); }
 .btn-danger    { --btn-bg: var(--danger, #DC2626); --btn-shadow: 0 10px 22px -12px rgba(220,38,38,.7); }
-.btn-warning   { --btn-bg: var(--orange, #E67B1D); --btn-shadow: 0 10px 22px -12px rgba(230,123,29,.7); }
-.btn-info      { --btn-bg: var(--secondary, #084881); }
-.btn-white     { --btn-bg: #fff; --btn-fg: var(--primary, #063566); }
+.btn-warning   { --btn-bg: var(--orange, #F15A24); --btn-shadow: 0 10px 22px -12px rgba(241,90,36,.7); }
+.btn-info      { --btn-bg: var(--secondary, #174D3D); }
+.btn-white     { --btn-bg: #fff; --btn-fg: var(--primary, #0B4E3D); }
 /* the donate / hero CTA: gradient + 3D base edge */
 .btn-donate, .btn-cta {
-    --btn-bg: var(--grad-donate, linear-gradient(135deg, #E67B1D, #F59E0B));
-    box-shadow: 0 5px 0 #A85410, 0 14px 30px -10px rgba(230, 123, 29, .7);
+    --btn-bg: var(--grad-donate, linear-gradient(135deg, #F15A24, #E8C52E));
+    box-shadow: 0 5px 0 #A85410, 0 14px 30px -10px rgba(241,90,36, .7);
 }
-.btn-donate:hover, .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #A85410, 0 20px 40px -10px rgba(230, 123, 29, .85); }
+.btn-donate:hover, .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #A85410, 0 20px 40px -10px rgba(241,90,36, .85); }
 .btn-donate:active, .btn-cta:active { transform: translateY(1px); box-shadow: 0 2px 0 #A85410; }
 /* sizes + layout */
 .btn-sm { padding: .48rem .85rem; font-size: .84rem; border-radius: var(--radius-sm, 9px); }
@@ -134,12 +134,12 @@
     overflow: hidden;
     transition: transform var(--ui-t), box-shadow var(--ui-t), border-color var(--ui-t);
 }
-.ui-card:hover { transform: translateY(calc(var(--ui-lift) * -1)); box-shadow: var(--shadow-lg); border-color: color-mix(in srgb, var(--primary, #063566) 35%, transparent); }
+.ui-card:hover { transform: translateY(calc(var(--ui-lift) * -1)); box-shadow: var(--shadow-lg); border-color: color-mix(in srgb, var(--primary, #0B4E3D) 35%, transparent); }
 .ui-card__media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--surface-2); }
 .ui-card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2, .7, .3, 1); }
 .ui-card:hover .ui-card__media img { transform: scale(1.06); }
 .ui-card__body { padding: var(--ui-pad-card); display: flex; flex-direction: column; gap: .45rem; flex: 1; }
-.ui-card__title { font-size: 1.12rem; font-weight: 800; line-height: 1.3; margin: 0; color: var(--primary, #063566); }
+.ui-card__title { font-size: 1.12rem; font-weight: 800; line-height: 1.3; margin: 0; color: var(--primary, #0B4E3D); }
 .ui-card__text { font-size: .9rem; color: var(--muted, #6B7280); line-height: 1.6; margin: 0; }
 .ui-card__foot { margin-top: auto; padding-top: .9rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 /* responsive auto grid used by every listing page */
@@ -155,30 +155,30 @@
 .form-control, .form-select, .form-textarea {
     width: 100%; padding: .68rem .85rem;
     border: 1.5px solid var(--border, #E5E7EB); border-radius: var(--radius-sm, 10px);
-    background: var(--surface, #fff); color: var(--text, #063566);
+    background: var(--surface, #fff); color: var(--text, #0B4E3D);
     font: inherit; font-size: .94rem;
     transition: border-color var(--ui-t), box-shadow var(--ui-t), background var(--ui-t);
 }
 .ui-input::placeholder, .form-control::placeholder { color: var(--muted, #6B7280); opacity: .85; }
-.ui-input:hover, .form-control:hover, .form-select:hover, .form-textarea:hover { border-color: color-mix(in srgb, var(--secondary, #084881) 45%, transparent); }
+.ui-input:hover, .form-control:hover, .form-select:hover, .form-textarea:hover { border-color: color-mix(in srgb, var(--secondary, #174D3D) 45%, transparent); }
 .ui-input:focus, .ui-select:focus, .ui-textarea:focus,
 .form-control:focus, .form-select:focus, .form-textarea:focus {
     outline: none;                                  /* replaced by the ring below */
-    border-color: var(--secondary, #084881);
+    border-color: var(--secondary, #174D3D);
     box-shadow: var(--ui-ring);
 }
 .ui-textarea, .form-textarea { min-height: 110px; resize: vertical; }
 .ui-hint { font-size: .78rem; color: var(--muted, #6B7280); }
 .ui-error { font-size: .8rem; color: var(--danger, #DC2626); font-weight: 600; }
 .is-invalid, .ui-input[aria-invalid="true"] { border-color: var(--danger, #DC2626) !important; }
-.is-valid { border-color: var(--green, #58A42F) !important; }
+.is-valid { border-color: var(--green, #2F8065) !important; }
 /* input with a leading icon */
 .ui-input-icon { position: relative; display: block; }
 .ui-input-icon > svg { position: absolute; left: .8rem; top: 50%; transform: translateY(-50%); width: 1.05em; height: 1.05em; color: var(--muted); pointer-events: none; }
 .ui-input-icon > .ui-input, .ui-input-icon > .form-control { padding-left: 2.5rem; }
 /* checkbox / radio */
 .ui-check { display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; font-size: .92rem; }
-.ui-check input { accent-color: var(--primary, #063566); width: 1.05rem; height: 1.05rem; }
+.ui-check input { accent-color: var(--primary, #0B4E3D); width: 1.05rem; height: 1.05rem; }
 /* actions row */
 .ui-actions { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; padding-top: 1.1rem; border-top: 1px solid var(--border); margin-top: .4rem; }
 
@@ -194,7 +194,7 @@
 }
 .ui-table td { padding: .8rem 1rem; border-bottom: 1px solid var(--border-soft, #EEF2F7); vertical-align: middle; }
 .ui-table tbody tr { transition: background var(--ui-t); }
-.ui-table tbody tr:hover { background: color-mix(in srgb, var(--primary, #063566) 4%, transparent); }
+.ui-table tbody tr:hover { background: color-mix(in srgb, var(--primary, #0B4E3D) 4%, transparent); }
 .ui-table tbody tr:last-child td { border-bottom: 0; }
 /* stack into cards on phones — needs data-label on each cell */
 @media (max-width: 620px) {
@@ -209,11 +209,11 @@
     display: inline-flex; align-items: center; gap: .3rem;
     padding: .28rem .65rem; border-radius: 999px;
     font-size: .74rem; font-weight: 800; line-height: 1.2;
-    background: color-mix(in srgb, var(--primary, #063566) 12%, transparent);
-    color: var(--primary, #063566);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 12%, transparent);
+    color: var(--primary, #0B4E3D);
 }
-.badge-success, .ui-badge--success { background: color-mix(in srgb, var(--green, #58A42F) 15%, transparent); color: var(--green-dark, #308629); }
-.badge-warning, .ui-badge--warning { background: color-mix(in srgb, var(--orange, #E67B1D) 16%, transparent); color: #9A5313; }
+.badge-success, .ui-badge--success { background: color-mix(in srgb, var(--green, #2F8065) 15%, transparent); color: var(--green-dark, #1F5C48); }
+.badge-warning, .ui-badge--warning { background: color-mix(in srgb, var(--orange, #F15A24) 16%, transparent); color: #9A5313; }
 .badge-danger,  .ui-badge--danger  { background: color-mix(in srgb, var(--danger, #DC2626) 13%, transparent); color: #B91C1C; }
 .badge-muted,   .ui-badge--muted   { background: var(--surface-2); color: var(--muted); }
 
@@ -224,9 +224,9 @@
     background: var(--surface-2); border-color: var(--border); color: var(--text-soft);
 }
 .ui-alert svg, .alert svg { flex: 0 0 auto; margin-top: .12rem; }
-.alert-info,    .ui-alert--info    { background: color-mix(in srgb, var(--secondary, #084881) 8%, transparent);  border-color: color-mix(in srgb, var(--secondary, #084881) 28%, transparent); }
-.alert-success, .ui-alert--success { background: color-mix(in srgb, var(--green, #58A42F) 10%, transparent);     border-color: color-mix(in srgb, var(--green, #58A42F) 32%, transparent); }
-.alert-warning, .ui-alert--warning { background: color-mix(in srgb, var(--orange, #E67B1D) 10%, transparent);    border-color: color-mix(in srgb, var(--orange, #E67B1D) 34%, transparent); }
+.alert-info,    .ui-alert--info    { background: color-mix(in srgb, var(--secondary, #174D3D) 8%, transparent);  border-color: color-mix(in srgb, var(--secondary, #174D3D) 28%, transparent); }
+.alert-success, .ui-alert--success { background: color-mix(in srgb, var(--green, #2F8065) 10%, transparent);     border-color: color-mix(in srgb, var(--green, #2F8065) 32%, transparent); }
+.alert-warning, .ui-alert--warning { background: color-mix(in srgb, var(--orange, #F15A24) 10%, transparent);    border-color: color-mix(in srgb, var(--orange, #F15A24) 34%, transparent); }
 .alert-danger, .alert-error, .ui-alert--danger { background: color-mix(in srgb, var(--danger, #DC2626) 8%, transparent); border-color: color-mix(in srgb, var(--danger, #DC2626) 30%, transparent); }
 
 /* 8. --------------------------------------------------------------- TABS & ACCORDION */
@@ -275,7 +275,7 @@
 .ui-pagination a:hover, .pagination a:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
 .ui-pagination .is-active, .pagination .active, .pagination .current {
     background: var(--grad-brand, var(--primary)); color: #fff; border-color: transparent;
-    box-shadow: 0 8px 18px -10px rgba(6, 53, 102, .7);
+    box-shadow: 0 8px 18px -10px rgba(11,78,61, .7);
 }
 .ui-pagination .is-disabled, .pagination .disabled { opacity: .45; pointer-events: none; }
 
@@ -287,7 +287,7 @@
 
 /* 10. ------------------------------------------------- MODAL · DROPDOWN · TOOLTIP */
 .ui-modal { border: 0; padding: 0; background: transparent; max-width: min(92vw, 560px); width: 100%; }
-.ui-modal::backdrop { background: rgba(6, 53, 102, .5); backdrop-filter: blur(4px); }
+.ui-modal::backdrop { background: rgba(11,78,61, .5); backdrop-filter: blur(4px); }
 .ui-modal__panel {
     background: var(--surface); border-radius: var(--radius-lg, 20px);
     box-shadow: var(--shadow-lg); overflow: hidden; border: 1px solid var(--border);
@@ -325,7 +325,7 @@
 .ui-empty__icon {
     width: 68px; height: 68px; margin: 0 auto 1.1rem; display: grid; place-items: center;
     border-radius: var(--radius-lg); color: var(--primary);
-    background: color-mix(in srgb, var(--primary, #063566) 10%, transparent);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 10%, transparent);
 }
 .ui-empty__icon svg { width: 30px; height: 30px; }
 .ui-empty h3 { margin: 0 0 .35rem; color: var(--text); font-size: 1.1rem; }
@@ -385,7 +385,7 @@ table { max-width: 100%; }
 /* 13.2 HIGH — the focus ring was a 35%-alpha wash (~1.9:1 on white).
    A solid 3px brand outline gives a clearly visible, AA-compliant indicator. */
 :where(a, button, input, select, textarea, summary, [tabindex], .btn, .nav-link):focus-visible {
-    outline: 3px solid var(--secondary, #084881);
+    outline: 3px solid var(--secondary, #174D3D);
     outline-offset: 2px;
 }
 /* On dark/branded surfaces the navy ring would disappear — use white there. */
@@ -400,14 +400,14 @@ table { max-width: 100%; }
 .btn-donate, .btn-cta, .ui-btn--donate {
     --btn-bg: linear-gradient(135deg, #A85410 0%, #C2610F 100%);   /* 5.33:1 / 4.25:1 */
 }
-.btn-success, .ui-btn--success { --btn-bg: #308629; }              /* 4.60:1 */
+.btn-success, .ui-btn--success { --btn-bg: #1F5C48; }              /* 4.60:1 */
 .btn-warning { --btn-bg: #A85410; }                                /* 5.33:1 */
 .btn-accent  { background: #A85410 !important; }                   /* overrides legacy .btn-accent */
 
 /* 13.4 HIGH — badge label colours on their own tinted backgrounds were 1.9:1
    and 3.0:1. These pairs are 5.05:1 and 5.88:1. */
-.badge-accent,  .ui-badge--warning { background: rgba(230,123,29,.16); color: #8A4A11; }
-.badge-success, .ui-badge--success { background: rgba(88,164,47,.16);  color: #2A6B1F; }
+.badge-accent,  .ui-badge--warning { background: rgba(241,90,36,.16); color: #8A4A11; }
+.badge-success, .ui-badge--success { background: rgba(47,128,101,.16);  color: #2A6B1F; }
 .alert-success { color: #2A6B1F; }
 
 /* 13.5 MEDIUM — decorative icons must not be announced. Anything that is purely
@@ -418,7 +418,7 @@ table { max-width: 100%; }
 /* 13.6 MEDIUM — reduced motion must actually STOP infinite animations, not just
    run them at 0.01ms forever (which still burns a compositor frame budget). */
 @media (prefers-reduced-motion: reduce) {
-    .hx-blob, .hx-img, .marquee-track, .pulse, .footer-aurora,
+    .hx-blob, .hx-img, .marquee-track, .pulse,
     [class*="float"], [class*="shimmer"], .ui-skeleton::after {
         animation: none !important;
     }
@@ -431,8 +431,12 @@ table { max-width: 100%; }
 .otp-inputs input { width: clamp(2.4rem, 12vw, 3.25rem); min-width: 0; flex: 0 1 auto; }
 
 /* 13.8 HIGH (responsive) — between 769px and 992px the desktop nav had no
-   hamburger and overflowed. Show the drawer toggle across that band too. */
-@media (max-width: 992px) {
+   hamburger and overflowed. Show the drawer toggle across that band too.
+   Raised 992 → 1100: seven top-level items plus search, theme toggle, Login and
+   the Donate CTA do not fit a 1000px bar, so the CTA — the single most important
+   control in the header — was being clipped off the right edge across the whole
+   993–1100px band. The drawer now takes over before that happens. */
+@media (max-width: 1100px) {
     .nav-menu { display: none; }
     .nav-toggle { display: inline-flex; }
 }
@@ -451,96 +455,99 @@ table { max-width: 100%; }
    ============================================================================= */
 
 /* 14.1 Persistent chevron bullet on every sitemap link. This is ONE static
-   marker — the earlier bug was two markers appearing together on hover. */
+   marker — the earlier bug was two markers appearing together on hover.
+   The marker sits at low contrast and takes the hero's yellow on hover; a full
+   orange chevron on all ~45 links made the sitemap the loudest thing on the
+   page. Hover no longer switches font-weight either — that re-flowed the label
+   under the cursor on every pass. */
 .footer-premium .footer-col ul li { position: relative; }
 .footer-premium .footer-col ul a {
     display: inline-flex; align-items: center; gap: .5rem;
-    padding: .2rem 0; color: #B7CCE2; font-weight: 500; line-height: 1.5;
-    transition: color .22s ease, text-shadow .22s ease, transform .22s ease;
+    padding: .2rem 0; color: var(--f-ink-2); font-weight: 500; line-height: 1.5;
+    transition: color .22s ease, transform .22s ease;
 }
 .footer-premium .footer-col ul a::before {
     content: ""; flex: 0 0 auto; width: .42rem; height: .42rem;
-    border-right: 2px solid var(--orange, #E67B1D);
-    border-bottom: 2px solid var(--orange, #E67B1D);
-    transform: rotate(-45deg); transition: border-color .22s ease, transform .22s ease;
+    border-right: 2px solid rgba(255,255,255,.42);
+    border-bottom: 2px solid rgba(255,255,255,.42);
+    transform: rotate(-45deg); transition: border-color .22s ease;
 }
 .footer-premium .footer-col ul a::after { content: none !important; }  /* kill the legacy 2nd marker */
 .footer-premium .footer-col ul a:hover,
 .footer-premium .footer-col ul a:focus-visible {
-    color: #fff; font-weight: 700; transform: translateX(2px);
-    text-shadow: 0 0 10px rgba(255,255,255,.5), 0 0 20px rgba(230,123,29,.35);
+    color: #fff; transform: translateX(2px);
 }
-.footer-premium .footer-col ul a:hover::before { border-color: #fff; }
+.footer-premium .footer-col ul a:hover::before,
+.footer-premium .footer-col ul a:focus-visible::before { border-color: var(--f-accent); }
 
-/* 14.2 Column headings — orange underline accent as in the reference. */
+/* 14.2 Column headings — the hero's yellow → gold rule under each label. */
 .footer-premium .footer-col h4 {
     color: #fff; font-size: .98rem; font-weight: 800; letter-spacing: .01em;
     position: relative; padding-bottom: .55rem; margin-bottom: .9rem;
 }
 .footer-premium .footer-col h4::after {
-    content: ""; position: absolute; left: 0; bottom: 0; width: 34px; height: 3px;
-    border-radius: 3px; background: var(--orange, #E67B1D);
+    content: ""; position: absolute; left: 0; bottom: 0; width: 32px; height: 2px;
+    border-radius: 2px; background: linear-gradient(90deg, var(--f-accent), var(--f-gold));
 }
 
-/* 14.3 Newsletter block: full-bleed card with the orange CTA. */
+/* 14.3 Newsletter block: joined pill field + solid accent CTA. */
 .footer-newsletter {
-    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+    background: var(--f-glass); border: 1px solid var(--f-line);
     border-radius: var(--radius-lg, 20px); padding: clamp(1.2rem, 3vw, 1.8rem);
-    backdrop-filter: blur(10px);
 }
 .footer-newsletter h3 { color: #fff; font-size: clamp(1.15rem, 2.4vw, 1.5rem); font-weight: 800; margin-bottom: .35rem; }
 .footer-newsletter .newsletter-form { display: flex; gap: 0; margin-top: 1rem; flex-wrap: wrap; }
 .footer-newsletter .newsletter-form input {
     flex: 1 1 200px; min-width: 0; border-radius: 999px 0 0 999px;
-    border: 1px solid rgba(255,255,255,.2); border-right: 0;
-    background: rgba(255,255,255,.08); color: #fff; padding: .85rem 1.2rem;
+    border: 1px solid var(--f-line); border-right: 0;
+    background: rgba(255,255,255,.07); color: #fff; padding: .85rem 1.2rem;
 }
-.footer-newsletter .newsletter-form input::placeholder { color: #93A9C2; }
+.footer-newsletter .newsletter-form input::placeholder { color: rgba(255,255,255,.45); }
 .footer-newsletter .newsletter-form .btn {
     border-radius: 0 999px 999px 0; padding-inline: 1.5rem;
-    background: var(--grad-donate, linear-gradient(135deg,#E67B1D,#F59E0B)); color: #fff; border: 0;
+    background: var(--f-cta); color: #fff; border: 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.34);
 }
 @media (max-width: 520px) {
-    .footer-newsletter .newsletter-form input { border-radius: 999px; border-right: 1px solid rgba(255,255,255,.2); }
+    .footer-newsletter .newsletter-form input { border-radius: 999px; border-right: 1px solid var(--f-line); }
     .footer-newsletter .newsletter-form .btn { border-radius: 999px; width: 100%; margin-top: .5rem; }
 }
 
-/* 14.4 Brand column: orange rule under the logo lockup, like the reference. */
+/* 14.4 Brand column: a short rule under the logo lockup, in the hero's yellow. */
 .footer-brand-col .nav-brand { padding-bottom: 1rem; position: relative; }
 .footer-brand-col .nav-brand::after {
-    content: ""; position: absolute; left: 0; bottom: 0; width: 56px; height: 3px;
-    border-radius: 3px; background: var(--orange, #E67B1D);
+    content: ""; position: absolute; left: 0; bottom: 0; width: 56px; height: 2px;
+    border-radius: 2px; background: linear-gradient(90deg, var(--f-accent), var(--f-gold));
 }
 
 /* 14.5 Trust strip: boxed icons, evenly divided, wraps cleanly on mobile. */
 .footer-trust {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
     gap: .4rem 1rem; margin-top: 2rem; padding: 1.1rem 1.3rem;
-    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+    background: var(--f-glass); border: 1px solid var(--f-line);
     border-radius: var(--radius, 14px);
 }
 .footer-trust span {
     display: inline-flex; align-items: center; gap: .7rem;
-    font-size: .88rem; font-weight: 600; color: #C7D9EC; line-height: 1.35;
+    font-size: .88rem; font-weight: 600; color: var(--f-ink); line-height: 1.35;
 }
-.footer-trust span + span { border-left: 1px solid rgba(255,255,255,.12); padding-left: 1rem; }
+.footer-trust span + span { border-left: 1px solid var(--f-line); padding-left: 1rem; }
 .footer-trust svg {
     width: 2.1rem; height: 2.1rem; flex: 0 0 auto; padding: .45rem; border-radius: 10px;
-    color: var(--orange, #E67B1D); background: rgba(230,123,29,.14);
+    color: var(--f-accent); background: color-mix(in srgb, var(--f-accent) 14%, transparent);
 }
 @media (max-width: 700px) {
     .footer-trust span + span { border-left: 0; padding-left: 0; }
 }
 
-/* 14.6 Social pills */
+/* 14.6 Social pills — one uniform treatment, filling with the hero's yellow. */
 .footer-premium .social-links a {
     width: 42px; height: 42px; border-radius: 50%;
-    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); color: #D6E4F2;
+    background: var(--f-glass); border: 1px solid var(--f-line); color: rgba(255,255,255,.86);
 }
 .footer-premium .social-links a:hover {
-    background: var(--grad-donate, linear-gradient(135deg,#E67B1D,#F59E0B));
-    border-color: transparent; color: #fff; transform: translateY(-3px);
-    box-shadow: 0 10px 22px -8px rgba(230,123,29,.6);
+    background: var(--f-accent); border-color: transparent;
+    color: var(--primary, #0B4E3D); transform: translateY(-2px);
 }
 
 /* =============================================================================
@@ -550,65 +557,60 @@ table { max-width: 100%; }
    background-position only (compositor-friendly), and the whole thing goes
    static under prefers-reduced-motion.
    ============================================================================= */
+/* -----------------------------------------------------------------------------
+   Announcement bar — a quiet ivory strip, not a light show.
+
+   This previously ran a 300%-wide panning 4-stop gradient, a looping sheen
+   sweep and eight floating particles, all above the fold and all animating
+   forever. Three simultaneous infinite animations competed with the hero for
+   attention and never stopped costing paint. It now reads as a calm editorial
+   notice: warm ivory field, brand-green text, and a single pill CTA carrying
+   the only colour. Motion is limited to hover.
+   -------------------------------------------------------------------------- */
 .announcement-bar.ann-premium {
-    --ann-fg: #fff;
-    position: relative; isolation: isolate; overflow: hidden;
+    --ann-bg: var(--ivory, #FEFEF1);
+    --ann-fg: var(--primary, #0B4E3D);
+    position: relative; isolation: isolate;
     display: flex; align-items: center; gap: .75rem;
-    padding: .62rem clamp(2.6rem, 5vw, 3.2rem) .62rem clamp(.9rem, 3vw, 1.4rem);
-    color: var(--ann-fg); text-align: left;
-    /* moving 4-stop brand gradient */
-    background: linear-gradient(110deg,
-        var(--primary,  #063566) 0%,
-        var(--secondary,#084881) 26%,
-        var(--green,    #58A42F) 52%,
-        var(--orange,   #E67B1D) 74%,
-        var(--primary,  #063566) 100%);
-    background-size: 300% 100%;
-    animation: ann-pan 18s linear infinite;
-    box-shadow: inset 0 -1px 0 rgba(255,255,255,.14);
+    padding: .68rem clamp(2.6rem, 5vw, 3.2rem) .68rem clamp(.9rem, 3vw, 1.4rem);
+    background: var(--ann-bg); color: var(--ann-fg); text-align: left;
+    border-bottom: 1px solid var(--border, #C1CCB3);
 }
-/* admin picked a custom colour → honour it, drop the animation */
-.announcement-bar.ann-premium.ann-solid { background: var(--ann-bg); animation: none; }
-@keyframes ann-pan { to { background-position: -300% 0; } }
+/* Admin picked a custom colour → honour it. */
+.announcement-bar.ann-premium.ann-solid { background: var(--ann-bg); }
 
-/* soft light sweep across the bar */
-.announcement-bar.ann-premium::after {
-    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
-    background-size: 220% 100%;
-    animation: ann-sheen 7s ease-in-out infinite;
-}
-@keyframes ann-sheen { 0%,100% { background-position: 160% 0; } 55% { background-position: -60% 0; } }
-
-/* floating particles */
-.ann-particles { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-.ann-particles i {
-    position: absolute; bottom: -6px; width: 6px; height: 6px; border-radius: 50%;
-    background: rgba(255,255,255,.55); filter: blur(.3px);
-    animation: ann-float linear infinite;
-}
-.ann-particles i:nth-child(1) { left:  6%; width: 5px;  height: 5px;  animation-duration: 11s; animation-delay: 0s;   }
-.ann-particles i:nth-child(2) { left: 19%; width: 3px;  height: 3px;  animation-duration: 14s; animation-delay: 1.6s; }
-.ann-particles i:nth-child(3) { left: 33%; width: 7px;  height: 7px;  animation-duration:  9s; animation-delay: 3.1s; }
-.ann-particles i:nth-child(4) { left: 47%; width: 4px;  height: 4px;  animation-duration: 13s; animation-delay: .7s;  }
-.ann-particles i:nth-child(5) { left: 61%; width: 6px;  height: 6px;  animation-duration: 10s; animation-delay: 2.4s; }
-.ann-particles i:nth-child(6) { left: 74%; width: 3px;  height: 3px;  animation-duration: 15s; animation-delay: 4.2s; }
-.ann-particles i:nth-child(7) { left: 86%; width: 5px;  height: 5px;  animation-duration: 12s; animation-delay: 1.1s; }
-.ann-particles i:nth-child(8) { left: 94%; width: 4px;  height: 4px;  animation-duration:  8s; animation-delay: 5.3s; }
-@keyframes ann-float {
-    0%   { transform: translateY(0) scale(.7);        opacity: 0; }
-    12%  {                                            opacity: .85; }
-    80%  {                                            opacity: .5; }
-    100% { transform: translateY(-46px) scale(1.15);  opacity: 0; }
-}
-
-/* content sits above the effects */
 .announcement-bar.ann-premium .ann-inner {
     position: relative; z-index: 2;
-    display: flex; align-items: center; justify-content: center; gap: .7rem;
+    display: flex; align-items: center; justify-content: center; gap: .8rem;
     flex-wrap: wrap; width: 100%; margin-inline: auto; max-width: var(--container, 1200px);
-    font-size: .88rem; line-height: 1.4;
+    font-size: .92rem; font-weight: 600; line-height: 1.4; letter-spacing: -.005em;
 }
+
+/* Pill CTA — the one saturated element in the strip.
+   Yellow on ivory is only a 1.20:1 pair, so the pill had no discernible edge
+   against the bar; the hairline gives it the 3:1 boundary a control needs. */
+.announcement-bar.ann-premium .ann-cta {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .48rem 1.15rem; border-radius: 999px;
+    background: var(--yellow, #FFE987); color: var(--primary, #0B4E3D);
+    font-weight: 800; font-size: .88rem; text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--primary, #0B4E3D) 55%, transparent);
+    transition: transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s ease, background .2s ease;
+}
+.announcement-bar.ann-premium .ann-cta:hover {
+    background: var(--gold, #E8C52E); transform: translateY(-1px);
+    box-shadow: 0 6px 16px -6px rgba(11,78,61,.45);
+}
+.announcement-bar.ann-premium .ann-cta:focus-visible {
+    outline: 2px solid var(--primary, #0B4E3D); outline-offset: 2px;
+}
+.announcement-bar.ann-premium .ann-cta svg { width: 1em; height: 1em; transition: transform .2s ease; }
+.announcement-bar.ann-premium .ann-cta:hover svg { transform: translateX(2px); }
+
+/* Hand-drawn arrow pointing at the CTA — decorative, hidden from AT and on mobile. */
+.ann-doodle { flex: none; width: 46px; height: 22px; color: var(--muted, #4B6754); opacity: .55; }
+.ann-doodle svg { width: 100%; height: 100%; display: block; }
+@media (max-width: 720px) { .ann-doodle { display: none; } }
 
 /* "News" pill */
 .ann-badge {
@@ -620,26 +622,24 @@ table { max-width: 100%; }
 }
 .ann-badge svg { width: .95em; height: .95em; }
 
-/* gradient shimmer text */
+/* The message reads as solid text in the bar's own ink.
+   It was previously painted with a white→cream→green→blue gradient clipped
+   through the glyphs and panned on an 8s loop. That was built for the old dark
+   announcement bar; once the bar became a warm ivory strip the gradient
+   rendered near-white letters on a near-white field — measured contrast about
+   1.1:1, i.e. the notice was effectively invisible. Solid --ann-fg on --ann-bg
+   is 9.67:1. The .ann-solid override that used to undo the gradient for
+   admin-chosen colours is no longer needed: there is no gradient to undo. */
 .ann-text {
     font-weight: 700; letter-spacing: .01em;
-    background: linear-gradient(100deg, #fff 20%, #FFE7C2 38%, #BFF0A3 52%, #CFE6FF 66%, #fff 84%);
-    background-size: 220% 100%;
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
-    animation: ann-textshift 8s linear infinite;
-}
-@keyframes ann-textshift { to { background-position: -220% 0; } }
-/* a custom admin colour must stay readable — drop the gradient text there */
-.ann-solid .ann-text {
-    background: none; -webkit-text-fill-color: currentColor; color: var(--ann-fg); animation: none;
+    color: var(--ann-fg); -webkit-text-fill-color: var(--ann-fg);
 }
 
 /* CTA pill */
 .ann-cta {
     display: inline-flex; align-items: center; gap: .35rem; flex: 0 0 auto;
     padding: .32rem .85rem; border-radius: 999px;
-    background: #fff; color: var(--primary, #063566) !important;   /* beats the generic footer/link colour */
+    background: #fff; color: var(--primary, #0B4E3D) !important;   /* beats the generic footer/link colour */
     font-size: .8rem; font-weight: 800; text-decoration: none;
     box-shadow: 0 4px 14px -4px rgba(0,0,0,.35);
     transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
@@ -649,14 +649,18 @@ table { max-width: 100%; }
 
 /* close button — absolutely placed but with reserved padding so it can never
    sit on top of the message (the old bar overlapped on narrow screens) */
+/* Tinted from the bar's own ink rather than white-on-white: the translucent
+   white border and fill it used to carry were built for a dark bar and left the
+   dismiss control with no visible edge on the ivory strip. */
 .announcement-bar.ann-premium .ann-close {
     position: absolute; z-index: 3; right: clamp(.5rem, 2vw, .9rem); top: 50%; transform: translateY(-50%);
     width: 26px; height: 26px; display: grid; place-items: center;
-    border: 1px solid rgba(255,255,255,.3); border-radius: 50%;
-    background: rgba(255,255,255,.16); color: var(--ann-fg);
+    border: 1px solid color-mix(in srgb, var(--ann-fg) 40%, transparent); border-radius: 50%;
+    background: color-mix(in srgb, var(--ann-fg) 7%, transparent); color: var(--ann-fg);
     font-size: 1rem; line-height: 1; cursor: pointer; transition: background .2s ease, transform .2s ease;
 }
-.announcement-bar.ann-premium .ann-close:hover { background: rgba(255,255,255,.34); transform: translateY(-50%) rotate(90deg); }
+.announcement-bar.ann-premium .ann-close:hover { background: color-mix(in srgb, var(--ann-fg) 16%, transparent); transform: translateY(-50%) rotate(90deg); }
+.announcement-bar.ann-premium .ann-close:focus-visible { outline: 2px solid var(--ann-fg); outline-offset: 2px; }
 
 /* graceful dismiss */
 .announcement-bar.is-dismissed {
@@ -670,12 +674,12 @@ table { max-width: 100%; }
     .ann-badge { display: none; }              /* keep the message + CTA readable */
 }
 @media (prefers-reduced-motion: reduce) {
-    .announcement-bar.ann-premium,
-    .announcement-bar.ann-premium::after,
-    .ann-particles i,
-    .ann-text { animation: none !important; }
-    .ann-text { background-position: 0 0; }
-    .ann-particles { display: none; }
+    /* The panning background, the eight floating .ann-particles and the
+       gradient-shimmer text this block used to switch off no longer exist, so
+       only the CTA's hover lift is left to hold still. */
+    .announcement-bar.ann-premium .ann-cta { transition: none; }
+    .announcement-bar.ann-premium .ann-cta:hover { transform: none; }
+    .announcement-bar.ann-premium .ann-close:hover { transform: translateY(-50%); }
 }
 
 /* =============================================================================
@@ -688,20 +692,20 @@ table { max-width: 100%; }
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
 }
 .cause-card {
-    --cc: var(--primary, #063566);
+    --cc: var(--primary, #0B4E3D);
     position: relative; isolation: isolate; overflow: hidden;
     display: flex; flex-direction: column; align-items: center; text-align: center;
     padding: clamp(1.6rem, 3vw, 2.1rem) clamp(1.2rem, 2.5vw, 1.6rem) clamp(1.3rem, 2.5vw, 1.6rem);
     background: var(--surface, #fff);
     border: 1px solid var(--border, #E5E7EB);
     border-radius: clamp(16px, 2vw, 22px);
-    box-shadow: 0 1px 2px rgba(6,53,102,.04), 0 20px 44px -30px rgba(6,53,102,.45);
+    box-shadow: 0 1px 2px rgba(11,78,61,.04), 0 20px 44px -30px rgba(11,78,61,.45);
     transition: transform .28s cubic-bezier(.34,1.2,.64,1), box-shadow .28s ease, border-color .28s ease;
 }
 .cause-card:hover {
     transform: translateY(-7px);
     border-color: color-mix(in srgb, var(--cc) 45%, transparent);
-    box-shadow: 0 1px 2px rgba(6,53,102,.05), 0 34px 66px -30px color-mix(in srgb, var(--cc) 55%, transparent);
+    box-shadow: 0 1px 2px rgba(11,78,61,.05), 0 34px 66px -30px color-mix(in srgb, var(--cc) 55%, transparent);
 }
 /* accent rule across the top */
 .cause-card .cc-rule { position: absolute; inset: 0 0 auto 0; height: 5px; background: var(--cc-grad, var(--cc)); z-index: 2; }
@@ -724,7 +728,7 @@ table { max-width: 100%; }
 /* typography */
 .cause-card .cc-title {
     font-size: 1.12rem; font-weight: 800; line-height: 1.3; letter-spacing: -.012em;
-    color: var(--primary, #063566); margin: 0 0 .45rem;
+    color: var(--primary, #0B4E3D); margin: 0 0 .45rem;
 }
 .cause-card:hover .cc-title { color: var(--cc); }
 .cause-card .cc-text {
@@ -756,13 +760,13 @@ table { max-width: 100%; }
 .section-causes {
     position: relative; isolation: isolate;
     background:
-        radial-gradient(60rem 30rem at 12% -10%, color-mix(in srgb, var(--primary,#063566) 7%, transparent), transparent 60%),
-        radial-gradient(50rem 28rem at 92% 8%,  color-mix(in srgb, var(--green,#58A42F) 7%, transparent), transparent 60%),
+        radial-gradient(60rem 30rem at 12% -10%, color-mix(in srgb, var(--primary,#0B4E3D) 7%, transparent), transparent 60%),
+        radial-gradient(50rem 28rem at 92% 8%,  color-mix(in srgb, var(--green,#2F8065) 7%, transparent), transparent 60%),
         linear-gradient(180deg, var(--bg, #fff), var(--bg-alt, #F1F6FB));
 }
 .section-causes::before {
     content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
-    background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--primary,#063566) 14%, transparent) 1px, transparent 0);
+    background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--primary,#0B4E3D) 14%, transparent) 1px, transparent 0);
     background-size: 26px 26px;
     -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
     mask-image: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
@@ -780,7 +784,7 @@ table { max-width: 100%; }
     background: var(--surface, #fff); color: var(--text-soft, #374151); cursor: pointer;
     transition: color .2s ease, border-color .2s ease, background .2s ease, transform .2s ease;
 }
-.nav-search-trigger:hover { color: var(--primary, #063566); border-color: var(--primary, #063566); transform: translateY(-1px); }
+.nav-search-trigger:hover { color: var(--primary, #0B4E3D); border-color: var(--primary, #0B4E3D); transform: translateY(-1px); }
 .nav-search-trigger svg { width: 18px; height: 18px; }
 
 .nav-search-box {
@@ -796,12 +800,12 @@ table { max-width: 100%; }
     border-color: var(--border, #E5E7EB); box-shadow: var(--shadow-sm);
 }
 .nav-search.is-open .nav-search-trigger { display: none; }
-.nav-search-box:focus-within { border-color: var(--secondary, #084881); box-shadow: 0 0 0 4px var(--ring); }
+.nav-search-box:focus-within { border-color: var(--secondary, #174D3D); box-shadow: 0 0 0 4px var(--ring); }
 .nav-search-box .nsb-ico { display: inline-flex; color: var(--muted, #6B7280); flex: 0 0 auto; }
 .nav-search-box .nsb-ico svg { width: 16px; height: 16px; }
 .nav-search-box input {
     flex: 1 1 auto; min-width: 0; border: 0; background: none; outline: none;
-    font: inherit; font-size: .9rem; color: var(--text, #063566); padding: .35rem 0;
+    font: inherit; font-size: .9rem; color: var(--text, #0B4E3D); padding: .35rem 0;
 }
 .nav-search-box input::placeholder { color: var(--muted, #6B7280); }
 .nsb-mic, .nsb-clear {
@@ -809,13 +813,13 @@ table { max-width: 100%; }
     border: 0; border-radius: 50%; background: transparent; color: var(--muted, #6B7280); cursor: pointer;
     transition: background .18s ease, color .18s ease, transform .18s ease;
 }
-.nsb-mic:hover, .nsb-clear:hover { background: var(--surface-2, #F4F8FC); color: var(--primary, #063566); }
+.nsb-mic:hover, .nsb-clear:hover { background: var(--surface-2, #F4F8FC); color: var(--primary, #0B4E3D); }
 .nsb-mic svg, .nsb-clear svg { width: 15px; height: 15px; }
 /* live mic state — pulsing ring while the browser is listening */
-.nsb-mic.is-listening { background: var(--orange, #E67B1D); color: #fff; animation: nsb-pulse 1.3s ease-in-out infinite; }
+.nsb-mic.is-listening { background: var(--orange, #F15A24); color: #fff; animation: nsb-pulse 1.3s ease-in-out infinite; }
 @keyframes nsb-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(230,123,29,.55); }
-    50%      { box-shadow: 0 0 0 7px rgba(230,123,29,0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(241,90,36,.55); }
+    50%      { box-shadow: 0 0 0 7px rgba(241,90,36,0); }
 }
 @media (prefers-reduced-motion: reduce) {
     .nav-search-box { transition: none; }
@@ -845,26 +849,25 @@ table { max-width: 100%; }
     transition: background .2s ease, transform .2s ease, color .2s ease;
 }
 .mega-link:hover { background: var(--surface-2, #F4F8FC); transform: translateX(3px); }
+/* Icon tiles — ONE treatment for every item. This used to cycle six hues
+   through --mi-grad (navy, green, orange, cyan, purple, pink), so the header
+   dropdown carried three colours that appear nowhere else in the brand and the
+   icon set read as if it came from several families. A single green tint that
+   fills solid on hover keeps the dropdown quiet and the icons consistent. */
 .mega-link .mi {
     flex: 0 0 auto; width: 38px; height: 38px; display: grid; place-items: center;
-    border-radius: 11px; color: #fff; background: var(--mi-grad, var(--grad-brand));
-    box-shadow: 0 8px 16px -8px var(--mi-shadow, rgba(6,53,102,.6));
-    transition: transform .25s cubic-bezier(.34,1.4,.64,1);
+    border-radius: 11px;
+    color: var(--primary, #0B4E3D);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 10%, transparent);
+    box-shadow: none;
+    transition: background .25s ease, color .25s ease, transform .25s cubic-bezier(.34,1.4,.64,1);
 }
-.mega-link:hover .mi { transform: translateY(-2px) scale(1.07) rotate(-4deg); }
+.mega-link:hover .mi { background: var(--primary, #0B4E3D); color: #fff; transform: translateY(-2px); }
 .mega-link .mi svg { width: 18px; height: 18px; }
 .mega-link .mtxt { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
-.mega-link .mtxt strong { font-size: .92rem; font-weight: 700; color: var(--primary, #063566); line-height: 1.3; }
-.mega-link:hover .mtxt strong { color: var(--mi-color, var(--secondary, #084881)); }
-.mega-link .mtxt small { font-size: .76rem; color: var(--muted, #6B7280); line-height: 1.45; }
-
-/* cycling accent palette — 6 brand-harmonious hues */
-.mega-col .mega-link:nth-child(6n+1) { --mi-grad: linear-gradient(135deg,#063566,#0A5AA0); --mi-color:#063566; --mi-shadow:rgba(6,53,102,.6); }
-.mega-col .mega-link:nth-child(6n+2) { --mi-grad: linear-gradient(135deg,#58A42F,#308629); --mi-color:#2A6B1F; --mi-shadow:rgba(88,164,47,.55); }
-.mega-col .mega-link:nth-child(6n+3) { --mi-grad: linear-gradient(135deg,#E67B1D,#F59E0B); --mi-color:#9A5313; --mi-shadow:rgba(230,123,29,.55); }
-.mega-col .mega-link:nth-child(6n+4) { --mi-grad: linear-gradient(135deg,#0891B2,#0E7490); --mi-color:#0E7490; --mi-shadow:rgba(8,145,178,.5); }
-.mega-col .mega-link:nth-child(6n+5) { --mi-grad: linear-gradient(135deg,#7C3AED,#5B21B6); --mi-color:#5B21B6; --mi-shadow:rgba(124,58,237,.5); }
-.mega-col .mega-link:nth-child(6n+6) { --mi-grad: linear-gradient(135deg,#DB2777,#9D174D); --mi-color:#9D174D; --mi-shadow:rgba(219,39,119,.5); }
+.mega-link .mtxt strong { font-size: .92rem; font-weight: 700; color: var(--text, #151818); line-height: 1.3; }
+.mega-link:hover .mtxt strong { color: var(--primary, #0B4E3D); }
+.mega-link .mtxt small { font-size: .76rem; color: var(--muted, #4B6754); line-height: 1.45; }
 
 /* feature strip at the foot of the mega panel */
 .mega-feature {
@@ -902,10 +905,10 @@ table { max-width: 100%; }
     color: #fff !important; border: 0 !important;
     border-radius: 999px !important; padding: .85rem 1.2rem !important;
     font-size: .98rem !important; font-weight: 800 !important;
-    box-shadow: 0 12px 26px -12px rgba(6,53,102,.75) !important;
+    box-shadow: 0 12px 26px -12px rgba(11,78,61,.75) !important;
     margin-bottom: 1rem;
 }
-.mbx-compose:hover { transform: translateY(-2px); box-shadow: 0 18px 34px -12px rgba(6,53,102,.85) !important; }
+.mbx-compose:hover { transform: translateY(-2px); box-shadow: 0 18px 34px -12px rgba(11,78,61,.85) !important; }
 
 .mbx-rail-sep {
     font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
@@ -929,7 +932,7 @@ table { max-width: 100%; }
 }
 .mbx-folder.is-active {
     background: var(--grad-brand); color: #fff;
-    box-shadow: 0 10px 20px -12px rgba(6,53,102,.8);
+    box-shadow: 0 10px 20px -12px rgba(11,78,61,.8);
 }
 .mbx-folder.is-active .mf-ic { color: #fff; }
 .mbx-folder.is-active .mf-count { background: rgba(255,255,255,.24); color: #fff; }
@@ -952,20 +955,29 @@ table { max-width: 100%; }
    21. FIXES: mega-menu icon tiles + mailbox (corrected to the REAL class names)
    ============================================================================= */
 
-/* 21.1 premium.css:581 sets `.mega-link .mi { background:none !important }`,
-   which killed the gradient tile while my white icon colour still applied —
-   white glyph on no background = invisible. Restore the tile with matching
-   !important, and size it explicitly since that rule also set width/height auto. */
+/* 21.1 premium.css sets `.mega-link .mi { background:none !important }`, which
+   kills the tile while the icon colour still applies — an invisible glyph on no
+   background. The tile is restored with matching !important and an explicit size
+   (that rule also sets width/height auto).
+
+   One flat green tint, filling solid green on hover — matching §18 above. It
+   previously painted `--mi-grad`, the six-hue cycle (navy/green/orange/cyan/
+   purple/pink) that put off-palette colour in the header dropdown, and lit it
+   with a navy drop shadow. */
 .mega-link .mi {
     width: 40px !important; height: 40px !important;
     border-radius: 11px !important;
-    background: var(--mi-grad, var(--grad-brand)) !important;
-    color: #fff !important;
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 10%, transparent) !important;
+    color: var(--primary, #0B4E3D) !important;
     display: grid !important; place-items: center;
-    box-shadow: 0 8px 16px -8px var(--mi-shadow, rgba(6,53,102,.55));
+    box-shadow: none;
+    transition: background .25s ease, color .25s ease, transform .25s cubic-bezier(.34,1.4,.64,1);
 }
 .mega-link .mi svg { width: 19px !important; height: 19px !important; stroke-width: 2.1; }
-.mega-link:hover .mi { background: var(--mi-grad, var(--grad-brand)) !important; filter: brightness(1.08); }
+.mega-link:hover .mi {
+    background: var(--primary, #0B4E3D) !important; color: #fff !important;
+    filter: none; transform: translateY(-2px);
+}
 
 /* 21.2 Mailbox — these are the class names the template actually renders
    (.mbx-item / .mbx-who / .mbx-subj / .mbx-prev / .mbx-when …). */
@@ -1006,14 +1018,14 @@ table { max-width: 100%; }
 .mbx-prev { font-size: .86rem; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mbx-when { margin-left: auto; font-size: .78rem; color: var(--muted); white-space: nowrap; flex: 0 0 auto; }
 /* priority accent stripes */
-.mbx-item.pr-high   { box-shadow: inset 3px 0 0 var(--orange, #E67B1D); }
+.mbx-item.pr-high   { box-shadow: inset 3px 0 0 var(--orange, #F15A24); }
 .mbx-item.pr-urgent { box-shadow: inset 3px 0 0 var(--danger, #DC2626); }
 /* star / important toggles */
 .mbx-star, .mbx-imp { background: none; border: 0; cursor: pointer; color: var(--muted); display: inline-flex; padding: .15rem; border-radius: 6px; transition: color .18s ease, transform .18s ease; }
 .mbx-star:hover, .mbx-imp:hover { transform: scale(1.15); }
-.mbx-star.is-on, .mbx-star.on { color: var(--orange, #E67B1D); }
+.mbx-star.is-on, .mbx-star.on { color: var(--orange, #F15A24); }
 .mbx-star.is-on svg, .mbx-star.on svg { fill: currentColor; }
-.mbx-imp.is-on, .mbx-imp.on { color: var(--orange, #E67B1D); }
+.mbx-imp.is-on, .mbx-imp.on { color: var(--orange, #F15A24); }
 
 /* panes */
 .mbx-list, .mbx-list-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg, 18px); overflow: hidden; }
@@ -1034,14 +1046,14 @@ table { max-width: 100%; }
 }
 .cursor-dot {
     width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%;
-    background: var(--orange, #E67B1D);
-    box-shadow: 0 0 10px 2px color-mix(in srgb, var(--orange, #E67B1D) 65%, transparent);
+    background: var(--orange, #F15A24);
+    box-shadow: 0 0 10px 2px color-mix(in srgb, var(--orange, #F15A24) 65%, transparent);
     transition: width .18s ease, height .18s ease, margin .18s ease, background .25s ease;
 }
 .cursor-ring {
     width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%;
-    border: 2px solid color-mix(in srgb, var(--primary, #063566) 55%, transparent);
-    background: radial-gradient(circle, color-mix(in srgb, var(--secondary,#084881) 12%, transparent), transparent 70%);
+    border: 2px solid color-mix(in srgb, var(--primary, #0B4E3D) 55%, transparent);
+    background: radial-gradient(circle, color-mix(in srgb, var(--secondary,#174D3D) 12%, transparent), transparent 70%);
     backdrop-filter: blur(1px);
     transition: width .25s cubic-bezier(.34,1.4,.64,1), height .25s cubic-bezier(.34,1.4,.64,1),
                 margin .25s cubic-bezier(.34,1.4,.64,1), border-color .25s ease, opacity .25s ease;
@@ -1049,18 +1061,18 @@ table { max-width: 100%; }
 /* interactive targets: ring blooms, dot shrinks */
 body.cursor-hot .cursor-ring {
     width: 62px; height: 62px; margin: -31px 0 0 -31px;
-    border-color: color-mix(in srgb, var(--green, #58A42F) 75%, transparent);
-    background: radial-gradient(circle, color-mix(in srgb, var(--green,#58A42F) 16%, transparent), transparent 70%);
+    border-color: color-mix(in srgb, var(--green, #2F8065) 75%, transparent);
+    background: radial-gradient(circle, color-mix(in srgb, var(--green,#2F8065) 16%, transparent), transparent 70%);
 }
-body.cursor-hot .cursor-dot { width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; background: var(--green, #58A42F); }
+body.cursor-hot .cursor-dot { width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; background: var(--green, #2F8065); }
 /* click pulse */
-body.cursor-press .cursor-ring { width: 26px; height: 26px; margin: -13px 0 0 -13px; border-color: var(--orange, #E67B1D); }
+body.cursor-press .cursor-ring { width: 26px; height: 26px; margin: -13px 0 0 -13px; border-color: var(--orange, #F15A24); }
 
 /* trail sparks — hue set inline by JS from the brand palette */
 .cursor-spark {
     width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
-    background: var(--spark, #E67B1D);
-    box-shadow: 0 0 8px 1px var(--spark, #E67B1D);
+    background: var(--spark, #F15A24);
+    box-shadow: 0 0 8px 1px var(--spark, #F15A24);
     animation: cursor-fade .75s cubic-bezier(.2,.7,.3,1) forwards;
 }
 @keyframes cursor-fade {
@@ -1074,546 +1086,270 @@ body.cursor-press .cursor-ring { width: 26px; height: 26px; margin: -13px 0 0 -1
 }
 
 /* =============================================================================
-   23. PARTNERS & SPONSORS  — 3D glass cards on an infinite marquee
-   Works with or without uploaded logos: when a logo is missing we render a
-   colourful gradient monogram so the section still looks designed.
+   23. PARTNERS & SPONSORS — a clean logo wall
+   -----------------------------------------------------------------------------
+   Muted by default, the organisation's own colour on hover, one quiet fade.
+
+   This replaced a 3D glass marquee: cards floated on a 7s loop, scrolled
+   infinitely on a 42s loop, tilted in perspective on hover, and cycled a
+   six-hue gradient wash (navy, green, orange, cyan, purple, pink) that also
+   coloured a gradient monogram and a white-on-gradient tooltip. Three of those
+   hues are not in the palette, the white tooltip text measured 2.9–3.7:1, and
+   the monogram name label 1.5:1. A supporter wall is also the one place on the
+   page where the *supporter's* mark should carry the colour, not ours.
    ============================================================================= */
-/* overflow-x only: `overflow:hidden` would also clip the tooltip vertically */
-.section-partners { position: relative; isolation: isolate; overflow-x: clip; overflow-y: visible; }
+.section-partners { position: relative; isolation: isolate; overflow-x: clip; }
 .section-partners .section-subtitle { max-width: 56ch; margin-inline: auto; }
-/* ambient gradient blobs */
-.pn-blob { position: absolute; z-index: -1; border-radius: 50%; filter: blur(80px); opacity: .5; pointer-events: none; }
-.pn-b1 { width: 420px; height: 420px; top: -160px; left: -120px;
-         background: radial-gradient(circle, color-mix(in srgb, var(--primary,#063566) 55%, transparent), transparent 70%); }
-.pn-b2 { width: 360px; height: 360px; bottom: -150px; right: -90px;
-         background: radial-gradient(circle, color-mix(in srgb, var(--green,#58A42F) 50%, transparent), transparent 70%); }
 
-/* ---- infinite marquee ---- */
-.pn-marquee {
-    position: relative; margin-top: 2.5rem;
-    /* Generous top padding so a hovered card's tooltip has physical room to sit
-       inside this box (it is positioned ~44px above the card). */
-    padding: 3.5rem 0 1.5rem;
-}
-/* Edge fade is painted as OVERLAYS rather than `mask-image`: a mask clips to its
-   box, which erased the tooltip whenever it extended past the marquee. */
-.pn-marquee::before, .pn-marquee::after {
-    content: ""; position: absolute; top: 0; bottom: 0; width: clamp(40px, 8%, 120px);
-    z-index: 4; pointer-events: none;
-}
-.pn-marquee::before { left: 0;  background: linear-gradient(90deg, var(--bg, #fff), transparent); }
-.pn-marquee::after  { right: 0; background: linear-gradient(270deg, var(--bg, #fff), transparent); }
-.pn-track {
-    display: flex; gap: clamp(.9rem, 2vw, 1.5rem); width: max-content;
-    animation: pn-scroll 42s linear infinite;
-    perspective: 1000px;                       /* enables the 3D card tilt */
-}
-.pn-marquee:hover .pn-track,
-.pn-marquee:focus-within .pn-track { animation-play-state: paused; }
-@keyframes pn-scroll { to { transform: translateX(-50%); } }   /* list is duplicated, so -50% loops seamlessly */
+/* One soft bloom, low enough to never compete with the marks. */
+.pn-blob { position: absolute; z-index: -1; border-radius: 50%; filter: blur(90px); pointer-events: none; }
+.pn-b1 { width: 460px; height: 460px; top: -190px; left: -140px; opacity: .16;
+         background: radial-gradient(circle, var(--yellow, #FFE987), transparent 70%); }
+.pn-b2 { display: none; }
 
-/* ---- glass card ---- */
+/* ---- The wall ----------------------------------------------------------- */
+.pn-wall {
+    margin-top: clamp(2rem, 4vw, 3rem);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    gap: 1px;                                  /* hairlines between cells */
+    background: var(--border, #C1CCB3);
+    border: 1px solid var(--border, #C1CCB3);
+    border-radius: var(--r-lg, 20px);
+    overflow: hidden;                          /* clips the cells to the radius */
+}
 .pn-card {
-    --pn-a: var(--primary, #063566);
-    --pn-b: var(--secondary, #084881);
-    position: relative; flex: 0 0 auto;
+    position: relative;
     display: grid; place-items: center;
-    width: clamp(160px, 20vw, 210px); min-height: 116px; padding: 1.1rem 1.2rem;
-    border-radius: 20px; text-decoration: none;
-    background: color-mix(in srgb, var(--surface, #fff) 78%, transparent);
-    border: 1px solid color-mix(in srgb, var(--pn-a) 18%, var(--border, #E5E7EB));
-    box-shadow: 0 1px 2px rgba(6,53,102,.05), 0 18px 40px -30px rgba(6,53,102,.45);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    transform-style: preserve-3d;
-    transition: transform .38s cubic-bezier(.22,1,.36,1), box-shadow .38s ease, border-color .3s ease;
-    animation: pn-float 7s ease-in-out infinite;
-    animation-delay: calc(var(--pn-i, 0) * -1.1s);
+    min-height: 132px; padding: 1.5rem 1.25rem;
+    background: var(--surface, #fff);
+    text-decoration: none;
+    transition: background var(--dur, .3s) var(--ease-out, ease);
 }
-/* colourful gradient wash per card (cycles through the brand palette) */
-.pn-card::before {
-    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; opacity: .1;
-    background: linear-gradient(135deg, var(--pn-a), var(--pn-b));
-    transition: opacity .35s ease;
-}
-.pn-card:nth-child(6n+1) { --pn-a:#063566; --pn-b:#0A5AA0; }
-.pn-card:nth-child(6n+2) { --pn-a:#58A42F; --pn-b:#308629; }
-.pn-card:nth-child(6n+3) { --pn-a:#E67B1D; --pn-b:#F59E0B; }
-.pn-card:nth-child(6n+4) { --pn-a:#0891B2; --pn-b:#0E7490; }
-.pn-card:nth-child(6n+5) { --pn-a:#7C3AED; --pn-b:#5B21B6; }
-.pn-card:nth-child(6n+6) { --pn-a:#DB2777; --pn-b:#9D174D; }
+.pn-card:hover, .pn-card:focus-visible { background: var(--ivory, #FEFEF1); }
+.pn-card:focus-visible { outline: 2px solid var(--primary, #0B4E3D); outline-offset: -2px; z-index: 2; }
+.pn-inner { display: grid; place-items: center; gap: .6rem; text-align: center; }
 
-/* 3D hover — lift, tilt, scale, glow */
-.pn-card:hover, .pn-card:focus-visible {
-    transform: translateY(-10px) scale(1.05) rotateX(7deg) rotateY(-7deg);
-    border-color: color-mix(in srgb, var(--pn-a) 55%, transparent);
-    box-shadow: 0 1px 2px rgba(6,53,102,.06),
-                0 28px 56px -22px color-mix(in srgb, var(--pn-a) 60%, transparent),
-                0 0 0 1px color-mix(in srgb, var(--pn-a) 22%, transparent);
-    z-index: 3;
+/* Logos sit muted-green and desaturated, then come up in their own colour. */
+.pn-logo {
+    max-height: 54px; width: auto; object-fit: contain;
+    filter: grayscale(1) opacity(.55);
+    transition: filter var(--dur-slow, .6s) var(--ease-out, ease);
 }
-.pn-card:hover::before, .pn-card:focus-visible::before { opacity: .22; }
-.pn-inner { display: grid; place-items: center; gap: .5rem; transform: translateZ(26px); }
+.pn-card:hover .pn-logo, .pn-card:focus-visible .pn-logo { filter: none; }
 
-/* logo + monogram */
-.pn-logo { max-height: 56px; width: auto; object-fit: contain; filter: grayscale(1); opacity: .8; transition: filter .35s ease, opacity .35s ease; }
-.pn-card:hover .pn-logo { filter: none; opacity: 1; }
+/* No logo uploaded — a flat monogram tile in the brand green. */
 .pn-mono {
-    width: 52px; height: 52px; display: grid; place-items: center; border-radius: 15px;
-    background: linear-gradient(135deg, var(--pn-a), var(--pn-b)); color: #fff;
-    font-size: 1.15rem; font-weight: 800; letter-spacing: .02em;
-    box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--pn-a) 80%, transparent);
-    transition: transform .35s cubic-bezier(.34,1.4,.64,1);
+    width: 50px; height: 50px; display: grid; place-items: center; border-radius: var(--r-sm, 10px);
+    background: color-mix(in srgb, var(--primary, #0B4E3D) 10%, transparent);
+    color: var(--primary, #0B4E3D);
+    font-size: 1.1rem; font-weight: 800; letter-spacing: .02em;
+    transition: background var(--dur, .3s) var(--ease-out, ease), color var(--dur, .3s) var(--ease-out, ease);
 }
-.pn-card:hover .pn-mono { transform: rotate(-6deg) scale(1.08); }
+.pn-card:hover .pn-mono, .pn-card:focus-visible .pn-mono {
+    background: var(--primary, #0B4E3D); color: #fff;
+}
 .pn-name {
-    font-size: .84rem; font-weight: 700; line-height: 1.3; text-align: center;
-    color: var(--text-soft, #374151); max-width: 15ch;
+    font-size: .84rem; font-weight: 700; line-height: 1.35;
+    color: var(--muted, #4B6754); max-width: 16ch;
+    transition: color var(--dur, .3s) var(--ease-out, ease);
 }
-.pn-card:hover .pn-name { color: var(--pn-a); }
+.pn-card:hover .pn-name, .pn-card:focus-visible .pn-name { color: var(--primary, #0B4E3D); }
 
-/* colourful tooltip with arrow */
-.pn-tip {
-    position: absolute; bottom: calc(100% + 12px); left: 50%; translate: -50% 0;
-    /* The card is `transform-style: preserve-3d`, so this child lives in its 3D
-       space. Without its own Z it renders BEHIND the card face (which sits at
-       translateZ(26px)); lifting it to 60px puts it clearly in front. */
-    transform: translateZ(60px) translateY(6px) scale(.94);
-    padding: .38rem .8rem; border-radius: 10px; white-space: nowrap;
-    background: linear-gradient(135deg, var(--pn-a), var(--pn-b)); color: #fff;
-    font-size: .78rem; font-weight: 700; letter-spacing: .01em;
-    box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--pn-a) 70%, transparent);
-    opacity: 0; visibility: hidden; transform: translateY(6px) scale(.94);
-    transition: opacity .25s ease, transform .25s cubic-bezier(.34,1.4,.64,1), visibility .25s;
-    pointer-events: none; z-index: 5;
+/* An outbound mark, shown only where the row actually links out. */
+.pn-out {
+    position: absolute; top: .7rem; right: .7rem;
+    width: 16px; height: 16px; color: var(--muted, #4B6754);
+    opacity: 0; transform: translate(-2px, 2px);
+    transition: opacity var(--dur, .3s) var(--ease-out, ease), transform var(--dur, .3s) var(--ease-out, ease);
 }
-.pn-tip::after {                                  /* the little arrow */
-    content: ""; position: absolute; top: 100%; left: 50%; translate: -50% -50%;
-    width: 9px; height: 9px; rotate: 45deg;
-    background: var(--pn-b);
-}
-.pn-card:hover .pn-tip, .pn-card:focus-visible .pn-tip {
-    opacity: 1; visibility: visible;
-    transform: translateZ(60px) translateY(0) scale(1);   /* keep the Z-lift */
-}
-
-/* gentle float */
-@keyframes pn-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+.pn-card:hover .pn-out, .pn-card:focus-visible .pn-out { opacity: .75; transform: none; }
 
 @media (max-width: 640px) {
-    .pn-card { width: clamp(140px, 44vw, 170px); min-height: 104px; }
-    .pn-track { animation-duration: 30s; }
+    .pn-wall { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pn-card { min-height: 116px; padding: 1.15rem .9rem; }
+    .pn-logo { max-height: 44px; }
 }
-/* Motion-safe: stop the marquee and the float, keep the layout scrollable. */
 @media (prefers-reduced-motion: reduce) {
-    .pn-track { animation: none; flex-wrap: wrap; width: auto; justify-content: center; }
-    .pn-card { animation: none; }
-    .pn-marquee { overflow-x: auto; }
-    .pn-card:hover, .pn-card:focus-visible { transform: translateY(-4px); }
+    .pn-card, .pn-logo, .pn-mono, .pn-name, .pn-out { transition: none; }
 }
 /* =============================================================================
-   PREMIUM FOOTER — visual layer only
+   FOOTER — FINISH LAYER (colour, state and lighting only)
    -----------------------------------------------------------------------------
-   Enhances background, colour, lighting and motion ONLY. No layout, spacing,
-   sizing or structural property is touched, so the footer keeps its exact
-   composition (logo, newsletter, 5 columns, social row, legal bar).
+   The footer field, ink and accents are declared once as --f-* custom
+   properties on `.footer` (see the token block in tailwind.css). Everything
+   here consumes them, so the footer can never drift away from the palette the
+   hero slider is painted in: brand green field, yellow highlight, gold second
+   accent, orange for the one call to action.
 
-   Every animation is transform/opacity/background-position (GPU-composited),
-   the decorative layers are pointer-events:none, and the whole system stops
-   under prefers-reduced-motion.
+   What this replaced: a decorative layer running eleven simultaneous infinite
+   animations below the fold — a panning mesh background, an SVG noise overlay,
+   four blurred aurora blobs, a rotating conic "aurora ribbon", ten twinkling
+   stars, a light sweep crossing the whole footer, an animated gradient border
+   and idle pulse on the newsletter card, gradient-animated heading text, three
+   flowing hairline dividers, bobbing contact icons and per-network neon social
+   hovers. It also painted the footer navy while the hero was green.
 
-   Palette: navy #071B3A · royal #0D47A1 · indigo #1E3A8A · purple #6D28D9
-            cyan #06B6D4 · orange #FF8A00 · pink #EC4899
+   The composition is untouched — logo lockup, newsletter, five link columns,
+   social row, trust strip, legal bar all keep their exact structure and
+   spacing. Only the finish changed.
    ============================================================================= */
 
-.footer.footer-premium {
-    --f-navy:   #071B3A;
-    --f-royal:  #0D47A1;
-    --f-indigo: #1E3A8A;
-    --f-purple: #6D28D9;
-    --f-cyan:   #06B6D4;
-    --f-orange: #FF8A00;
-    --f-pink:   #EC4899;
+/* ---- Decorative layers that no longer exist ------------------------------
+   The gradient hairline is the .footer-topline element and the soft blooms are
+   part of the footer's own background gradient, so these pseudo-elements (and
+   the ones the removed layers introduced) must not paint anything. */
+.footer.footer-premium::before,
+.footer.footer-premium::after,
+.footer-premium .container:first-of-type::before,
+.footer-premium .footer-newsletter::before,
+.footer-premium .footer-newsletter::after { content: none; }
 
-    position: relative;
-    isolation: isolate;
-    /* Layer 1 — slow-moving mesh gradient */
-    background:
-        radial-gradient(60rem 40rem at 10% 0%,   color-mix(in srgb, var(--f-royal) 55%, transparent), transparent 60%),
-        radial-gradient(50rem 34rem at 90% 12%,  color-mix(in srgb, var(--f-purple) 42%, transparent), transparent 62%),
-        radial-gradient(46rem 30rem at 74% 96%,  color-mix(in srgb, var(--f-cyan) 30%, transparent), transparent 60%),
-        radial-gradient(40rem 28rem at 22% 100%, color-mix(in srgb, var(--f-orange) 22%, transparent), transparent 60%),
-        linear-gradient(165deg, var(--f-indigo) 0%, var(--f-navy) 55%, #04122A 100%);
-    background-size: 200% 200%, 190% 190%, 210% 210%, 180% 180%, 100% 100%;
-    animation: f-mesh 24s ease-in-out infinite alternate;
-}
-@keyframes f-mesh {
-    0%   { background-position: 0% 0%,   100% 0%,  50% 100%, 0% 100%, 0 0; }
-    50%  { background-position: 30% 20%,  70% 25%, 25% 75%,  35% 70%, 0 0; }
-    100% { background-position: 10% 40%,  90% 10%, 65% 85%,  10% 90%, 0 0; }
-}
+/* ---- Brand column -------------------------------------------------------- */
+.footer-premium .footer-brand-col .footer-about-text { color: var(--f-ink); }
+.footer-premium .footer-brand-col .brand-logo { border-radius: 12px; box-shadow: none; }
+.footer-premium .footer-brand-col .brand-name small { color: var(--f-ink-2); }
 
-/* ---- Layer 2: noise texture (inline SVG, ~0.3 KB, no request) ---- */
-.footer.footer-premium > .footer-topline + * ,
-.footer.footer-premium::after {
-    /* keeps the existing ::before hairline intact */
+/* ---- Contact rows — quiet glass tiles, yellow glyphs --------------------- */
+.footer-premium .footer-contact li { color: var(--f-ink); }
+.footer-premium .footer-contact .fc-ico {
+    background: rgba(255,255,255,.07);
+    border: 1px solid var(--f-line);
+    color: var(--f-accent);
+    box-shadow: none;
+    animation: none;
 }
-.footer.footer-premium::after {
-    content: "";
-    position: absolute; inset: 0; z-index: -1; pointer-events: none;
-    opacity: .16; mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
-}
+.footer-premium .footer-contact li:hover .fc-ico { transform: none; }
+.footer-premium .footer-contact a { color: var(--f-ink); }
+.footer-premium .footer-contact a:hover { color: #fff; }
 
-/* ---- Layer 3: animated top hairline (replaces the static rule) ---- */
-.footer.footer-premium::before {
-    background: linear-gradient(90deg,
-        var(--f-cyan), var(--f-royal), var(--f-purple), var(--f-pink), var(--f-orange), var(--f-cyan));
-    background-size: 300% 100%;
-    animation: f-hairline 14s linear infinite;
-    box-shadow: 0 0 18px color-mix(in srgb, var(--f-cyan) 55%, transparent);
-}
-@keyframes f-hairline { to { background-position: -300% 0; } }
-
-/* =============================================================================
-   AURORA + BLOBS  — reuses the existing .footer-aurora > span elements
-   ============================================================================= */
-.footer-premium .footer-aurora {
-    position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
-}
-.footer-premium .footer-aurora span {
-    position: absolute; display: block; border-radius: 50%;
-    filter: blur(70px); opacity: .45;
-    will-change: transform;
-    animation: f-drift 22s ease-in-out infinite;
-}
-.footer-premium .footer-aurora span:nth-child(1) {
-    width: 46vw; height: 46vw; max-width: 620px; max-height: 620px; top: -18%; left: -8%;
-    background: radial-gradient(circle, var(--f-royal), transparent 68%);
-}
-.footer-premium .footer-aurora span:nth-child(2) {
-    width: 38vw; height: 38vw; max-width: 520px; max-height: 520px; top: 8%; right: -10%;
-    background: radial-gradient(circle, var(--f-purple), transparent 68%);
-    animation-duration: 26s; animation-delay: -7s;
-}
-.footer-premium .footer-aurora span:nth-child(3) {
-    width: 34vw; height: 34vw; max-width: 460px; max-height: 460px; bottom: -14%; left: 26%;
-    background: radial-gradient(circle, var(--f-cyan), transparent 68%);
-    animation-duration: 19s; animation-delay: -12s; opacity: .32;
-}
-.footer-premium .footer-aurora span:nth-child(4) {
-    width: 30vw; height: 30vw; max-width: 400px; max-height: 400px; bottom: 2%; right: 18%;
-    background: radial-gradient(circle, var(--f-orange), transparent 70%);
-    animation-duration: 30s; animation-delay: -4s; opacity: .26;
-}
-@keyframes f-drift {
-    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-    33%      { transform: translate3d(3.5vw, -2.5vw, 0) scale(1.12); }
-    66%      { transform: translate3d(-2.5vw, 2vw, 0) scale(.92); }
-}
-
-/* ---- Aurora ribbons + twinkling stars (pure CSS, zero extra DOM) ---- */
-.footer-premium .footer-aurora::before {
-    content: ""; position: absolute; inset: -25% -10%;
-    background:
-        conic-gradient(from 200deg at 50% 50%,
-            transparent 0deg,
-            color-mix(in srgb, var(--f-cyan) 26%, transparent) 40deg,
-            transparent 90deg,
-            color-mix(in srgb, var(--f-pink) 20%, transparent) 150deg,
-            transparent 220deg,
-            color-mix(in srgb, var(--f-purple) 24%, transparent) 290deg,
-            transparent 360deg);
-    filter: blur(60px); opacity: .5;
-    animation: f-aurora 28s linear infinite;
-    will-change: transform;
-}
-@keyframes f-aurora { to { transform: rotate(360deg); } }
-
-/* tiny glowing stars — one element, many box-shadows */
-.footer-premium .footer-aurora::after {
-    content: ""; position: absolute; inset: 0;
-    background-image:
-        radial-gradient(1.5px 1.5px at 12% 22%, #fff, transparent),
-        radial-gradient(1px 1px   at 28% 64%, color-mix(in srgb, var(--f-cyan) 90%, #fff), transparent),
-        radial-gradient(1.5px 1.5px at 44% 16%, #fff, transparent),
-        radial-gradient(1px 1px   at 58% 78%, color-mix(in srgb, var(--f-pink) 85%, #fff), transparent),
-        radial-gradient(1.5px 1.5px at 71% 34%, #fff, transparent),
-        radial-gradient(1px 1px   at 83% 60%, color-mix(in srgb, var(--f-orange) 85%, #fff), transparent),
-        radial-gradient(1.5px 1.5px at 92% 18%, #fff, transparent),
-        radial-gradient(1px 1px   at 8%  82%, #fff, transparent),
-        radial-gradient(1px 1px   at 36% 92%, color-mix(in srgb, var(--f-cyan) 80%, #fff), transparent),
-        radial-gradient(1.5px 1.5px at 64% 8%, #fff, transparent);
-    opacity: .55;
-    animation: f-twinkle 6s ease-in-out infinite;
-}
-@keyframes f-twinkle { 0%, 100% { opacity: .25; } 50% { opacity: .7; } }
-
-/* ---- Moving light sweep across the whole footer ---- */
-.footer-premium .container:first-of-type::before {
-    content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 34%;
-    z-index: -1; pointer-events: none;
-    background: linear-gradient(100deg, transparent, rgba(255,255,255,.055), transparent);
-    animation: f-sweep 11s ease-in-out infinite;
-    will-change: transform;
-}
-@keyframes f-sweep { 0% { transform: translateX(0); } 60%, 100% { transform: translateX(420%); } }
-
-/* =============================================================================
-   NEWSLETTER CARD — glass + animated gradient border + glow
-   ============================================================================= */
+/* ---- Newsletter card ----------------------------------------------------- */
 .footer-premium .footer-newsletter {
-    position: relative; isolation: isolate;
-    background: rgba(255, 255, 255, .06);
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-    border-color: transparent;
-    box-shadow:
-        0 20px 50px -24px rgba(0, 0, 0, .65),
-        inset 0 1px 0 rgba(255, 255, 255, .14);
-    transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s ease;
+    background: var(--f-glass);
+    border: 1px solid var(--f-line);
+    box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    transform: none;
 }
-.footer-premium .footer-newsletter::before {
-    content: ""; position: absolute; inset: 0; z-index: -1;
-    border-radius: inherit; padding: 1.5px;
-    background: linear-gradient(130deg, var(--f-cyan), var(--f-royal), var(--f-purple), var(--f-orange), var(--f-cyan));
-    background-size: 300% 300%;
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor; mask-composite: exclude;
-    animation: f-border 10s linear infinite;
-}
-@keyframes f-border { to { background-position: 300% 50%; } }
-.footer-premium .footer-newsletter:hover {
-    transform: translateY(-4px);
-    box-shadow:
-        0 30px 66px -26px rgba(0, 0, 0, .75),
-        0 0 40px -12px color-mix(in srgb, var(--f-cyan) 45%, transparent),
-        inset 0 1px 0 rgba(255, 255, 255, .2);
-}
-/* glow accents behind the card */
-.footer-premium .footer-newsletter::after {
-    content: ""; position: absolute; z-index: -2; inset: 10% -6% -10% -6%;
-    background:
-        radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--f-orange) 34%, transparent), transparent 60%),
-        radial-gradient(circle at 82% 80%, color-mix(in srgb, var(--f-cyan) 34%, transparent), transparent 60%);
-    filter: blur(42px); opacity: .55; pointer-events: none;
-}
+.footer-premium .footer-newsletter:hover { transform: none; box-shadow: none; }
+.footer-premium .footer-newsletter h3 { color: #fff; }
+.footer-premium .footer-newsletter h3 svg { color: var(--f-accent); }
+.footer-premium .footer-newsletter p { color: var(--f-ink); }
 
-/* =============================================================================
-   INPUT — frosted glass, animated border, gradient focus glow
-   ============================================================================= */
 .footer-premium .newsletter-form input {
-    background: rgba(255, 255, 255, .08);
-    border-color: rgba(255, 255, 255, .18);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
-    transition: border-color .28s ease, box-shadow .28s ease, background .28s ease;
+    background: rgba(255,255,255,.07);
+    border-color: var(--f-line);
+    color: #fff;
+    box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
 }
-.footer-premium .newsletter-form input::placeholder {
-    color: rgba(199, 217, 236, .7); transition: opacity .3s ease, transform .3s ease;
-}
+.footer-premium .newsletter-form input::placeholder { color: rgba(255,255,255,.45); transform: none; }
 .footer-premium .newsletter-form input:focus {
-    background: rgba(255, 255, 255, .13);
-    border-color: color-mix(in srgb, var(--f-cyan) 70%, transparent);
-    box-shadow:
-        0 0 0 4px color-mix(in srgb, var(--f-cyan) 22%, transparent),
-        0 0 26px -6px color-mix(in srgb, var(--f-cyan) 60%, transparent);
+    background: rgba(255,255,255,.11);
+    border-color: var(--f-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--f-accent) 20%, transparent);
 }
-.footer-premium .newsletter-form input:focus::placeholder { opacity: .45; transform: translateX(4px); }
+.footer-premium .newsletter-form input:focus::placeholder { opacity: .6; transform: none; }
 
-/* =============================================================================
-   BUTTONS — gradient, glow, shine sweep, pulse (size/position untouched)
-   ============================================================================= */
+/* Both footer CTAs are the same solid accent. The page already carries an
+   orange Donate in the navbar and in the hero; a shining, pulsing, gradient
+   third variant made the footer the loudest of the three. */
 .footer-premium .newsletter-form .btn,
 .footer-premium .footer-newsletter .btn-glow {
-    position: relative; overflow: hidden; border: 0; color: #fff;
-    background: linear-gradient(120deg, var(--f-orange), var(--f-pink) 55%, var(--f-purple));
-    background-size: 200% 100%;
-    box-shadow:
-        0 10px 26px -10px color-mix(in srgb, var(--f-orange) 70%, transparent),
-        0 0 0 1px rgba(255, 255, 255, .12) inset;
-    transition: background-position .55s ease, transform .25s cubic-bezier(.34,1.4,.64,1), box-shadow .3s ease;
+    background: var(--f-cta);
+    color: #fff;
+    border: 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.34);
+    animation: none;
+    transition: background var(--transition), transform var(--transition);
 }
 .footer-premium .newsletter-form .btn:hover,
 .footer-premium .footer-newsletter .btn-glow:hover {
-    background-position: 100% 0; transform: translateY(-2px) scale(1.02);
-    box-shadow:
-        0 18px 38px -12px color-mix(in srgb, var(--f-pink) 75%, transparent),
-        0 0 30px -6px color-mix(in srgb, var(--f-orange) 60%, transparent);
+    background: color-mix(in srgb, var(--f-cta) 88%, #000);
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.48);
 }
-/* shine sweep */
 .footer-premium .newsletter-form .btn::after,
-.footer-premium .footer-newsletter .btn-glow::after {
-    content: ""; position: absolute; inset: 0;
-    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.45) 50%, transparent 65%);
-    background-size: 250% 100%; background-position: 200% 0;
-    transition: background-position .75s ease; pointer-events: none;
-}
-.footer-premium .newsletter-form .btn:hover::after,
-.footer-premium .footer-newsletter .btn-glow:hover::after { background-position: -60% 0; }
-/* soft idle pulse on the donate CTA */
-.footer-premium .footer-newsletter .btn-glow { animation: f-pulse 3.4s ease-in-out infinite; }
-@keyframes f-pulse {
-    0%, 100% { box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--f-orange) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--f-orange) 42%, transparent); }
-    50%      { box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--f-orange) 70%, transparent), 0 0 0 12px transparent; }
-}
+.footer-premium .footer-newsletter .btn-glow::after { content: none; }
 
-/* =============================================================================
-   COLUMN HEADINGS — animated gradient text + light-sweep underline
-   ============================================================================= */
+/* ---- Column headings — solid white with the yellow → gold rule ----------- */
 .footer-premium h4 {
-    background: linear-gradient(100deg, #fff 15%, var(--f-cyan) 40%, #fff 60%, var(--f-orange) 85%, #fff);
-    background-size: 250% 100%;
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
-    animation: f-headpan 9s linear infinite;
+    color: #fff; -webkit-text-fill-color: #fff;
+    background: none; animation: none;
 }
-@keyframes f-headpan { to { background-position: -250% 0; } }
 .footer-premium h4::after {
-    background: linear-gradient(90deg, var(--f-cyan), var(--f-orange), var(--f-pink));
-    background-size: 200% 100%;
-    box-shadow: 0 0 12px color-mix(in srgb, var(--f-cyan) 60%, transparent);
-    animation: f-headpan 6s linear infinite;
+    background: linear-gradient(90deg, var(--f-accent), var(--f-gold));
+    box-shadow: none; animation: none;
 }
 
-/* =============================================================================
-   LINKS — gradient hover, animated underline, slide + glow
-   ============================================================================= */
-.footer-premium .footer-col ul a {
-    position: relative; transition: color .28s ease, transform .28s ease, text-shadow .28s ease;
-}
-.footer-premium .footer-col ul a:hover {
-    color: #fff; transform: translateX(4px);
-    text-shadow: 0 0 14px color-mix(in srgb, var(--f-cyan) 65%, transparent);
-}
+/* ---- Sitemap links ------------------------------------------------------- */
+.footer-premium .footer-col ul a { color: var(--f-ink-2); }
 .footer-premium .footer-col ul a::before {
-    background: linear-gradient(90deg, var(--f-cyan), var(--f-orange));
-    box-shadow: 0 0 8px color-mix(in srgb, var(--f-cyan) 70%, transparent);
+    background: none; box-shadow: none;
+    border-right: 2px solid rgba(255,255,255,.42);
+    border-bottom: 2px solid rgba(255,255,255,.42);
 }
+.footer-premium .footer-col ul a:hover { color: #fff; text-shadow: none; transform: translateX(2px); }
+.footer-premium .footer-col ul a:hover::before { border-color: var(--f-accent); }
 
-/* =============================================================================
-   CONTACT ICONS — gradient glass circles with pulse
-   ============================================================================= */
-.footer-premium .footer-contact .fc-ico {
-    background: linear-gradient(135deg, color-mix(in srgb, var(--f-royal) 85%, transparent), color-mix(in srgb, var(--f-cyan) 70%, transparent));
-    border: 1px solid rgba(255, 255, 255, .18);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--f-cyan) 60%, transparent);
-    color: #fff;
-    transition: transform .3s cubic-bezier(.34,1.4,.64,1), box-shadow .3s ease;
-    animation: f-bob 5.5s ease-in-out infinite;
-}
-.footer-premium .footer-contact li:nth-child(2) .fc-ico {
-    background: linear-gradient(135deg, color-mix(in srgb, var(--f-purple) 85%, transparent), color-mix(in srgb, var(--f-pink) 70%, transparent));
-    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--f-pink) 60%, transparent);
-    animation-delay: -1.8s;
-}
-.footer-premium .footer-contact li:nth-child(3) .fc-ico {
-    background: linear-gradient(135deg, color-mix(in srgb, var(--f-orange) 88%, transparent), #FFB454);
-    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--f-orange) 60%, transparent);
-    animation-delay: -3.4s;
-}
-.footer-premium .footer-contact li:hover .fc-ico { transform: translateY(-3px) scale(1.1); }
-@keyframes f-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-
-/* =============================================================================
-   SOCIAL ICONS — glass circles, unique colour each, neon hover + rotate
-   ============================================================================= */
+/* ---- Social row ---------------------------------------------------------- */
 .footer-premium .social-links a {
-    position: relative; overflow: hidden;
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(255, 255, 255, .16);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    color: #E6F0FA;
-    transition: transform .32s cubic-bezier(.34,1.4,.64,1), box-shadow .32s ease, background .32s ease, color .32s ease;
-    animation: f-bob 6s ease-in-out infinite;
+    background: var(--f-glass);
+    border: 1px solid var(--f-line);
+    color: rgba(255,255,255,.86);
+    box-shadow: none;
+    animation: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    transition: background var(--transition), color var(--transition),
+                border-color var(--transition), transform var(--transition);
 }
-.footer-premium .social-links a:nth-child(1) { --s: #1877F2; animation-delay: -0s;   }  /* facebook  */
-.footer-premium .social-links a:nth-child(2) { --s: #0EA5E9; animation-delay: -1.2s; }  /* x/twitter */
-.footer-premium .social-links a:nth-child(3) { --s: #EC4899; animation-delay: -2.4s; }  /* instagram */
-.footer-premium .social-links a:nth-child(4) { --s: #FF0000; animation-delay: -3.6s; }  /* youtube   */
-.footer-premium .social-links a:nth-child(5) { --s: #0A66C2; animation-delay: -4.8s; }  /* linkedin  */
-.footer-premium .social-links a:nth-child(6) { --s: #25D366; animation-delay: -6s;   }  /* whatsapp  */
+.footer-premium .social-links a::after,
+.footer-premium .social-links a::before { content: none; }
 .footer-premium .social-links a:hover {
-    color: #fff;
-    background: linear-gradient(135deg, var(--s, var(--f-cyan)), color-mix(in srgb, var(--s, var(--f-cyan)) 55%, #000));
+    background: var(--f-accent);
+    color: var(--primary, #0B4E3D);
     border-color: transparent;
-    transform: translateY(-4px) scale(1.1) rotate(4deg);
-    box-shadow:
-        0 12px 26px -8px color-mix(in srgb, var(--s, var(--f-cyan)) 75%, transparent),
-        0 0 26px -4px color-mix(in srgb, var(--s, var(--f-cyan)) 65%, transparent);
+    transform: translateY(-2px);
+    box-shadow: none;
 }
-/* ripple on hover */
-.footer-premium .social-links a::after {
-    content: ""; position: absolute; inset: 0; border-radius: inherit;
-    background: radial-gradient(circle, rgba(255,255,255,.5), transparent 60%);
-    opacity: 0; transform: scale(.4); transition: opacity .45s ease, transform .45s ease;
-    pointer-events: none;
-}
-.footer-premium .social-links a:hover::after { opacity: .32; transform: scale(1.4); }
 
-/* =============================================================================
-   DIVIDERS — animated gradient lines with a travelling light
-   ============================================================================= */
+/* ---- Dividers — one flat hairline each, no travelling light -------------- */
 .footer-premium .footer-top,
 .footer-premium .footer-trust,
-.footer-premium .footer-bottom {
-    position: relative; border-color: transparent !important;   /* replaces the flat 1px rule */
-}
+.footer-premium .footer-bottom { position: relative; }
 .footer-premium .footer-top::after,
 .footer-premium .footer-trust::before,
-.footer-premium .footer-bottom::before {
-    content: ""; position: absolute; left: 0; right: 0; height: 1px; pointer-events: none;
-    background: linear-gradient(90deg,
-        transparent, color-mix(in srgb, var(--f-cyan) 55%, transparent) 20%,
-        color-mix(in srgb, var(--f-purple) 60%, transparent) 50%,
-        color-mix(in srgb, var(--f-orange) 55%, transparent) 80%, transparent);
-    background-size: 200% 100%;
-    animation: f-lineflow 12s linear infinite;
-}
-.footer-premium .footer-top::after   { bottom: 0; }
-.footer-premium .footer-trust::before { top: 0; }
-.footer-premium .footer-bottom::before { top: 0; }
-@keyframes f-lineflow { to { background-position: -200% 0; } }
+.footer-premium .footer-bottom::before { content: none; }
+.footer-premium .footer-top { border-bottom: 1px solid var(--f-line); }
+.footer-premium .footer-bottom { border-top: 1px solid var(--f-line); }
 
-/* trust strip icons pick up the accent */
-.footer-premium .footer-trust svg { color: var(--f-cyan); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--f-cyan) 60%, transparent)); }
-.footer-premium .footer-heart { color: var(--f-pink); filter: drop-shadow(0 0 8px color-mix(in srgb, var(--f-pink) 70%, transparent)); }
-.footer-premium .footer-bottom a:hover { color: var(--f-orange); }
+/* ---- Trust strip + legal bar -------------------------------------------- */
+.footer-premium .footer-trust svg { color: var(--f-accent); filter: none; }
+.footer-premium .footer-heart { color: var(--f-flame); filter: none; }
+.footer-premium .footer-bottom p { color: var(--f-ink-2); }
+.footer-premium .footer-bottom a,
+.footer-premium .footer-legal a { color: var(--f-ink-2); }
+.footer-premium .footer-bottom a:hover,
+.footer-premium .footer-legal a:hover { color: #fff; }
 
-/* brand logo gets a soft halo */
-.footer-premium .footer-brand-col .brand-logo {
-    box-shadow: 0 0 26px -6px color-mix(in srgb, var(--f-cyan) 55%, transparent);
-    border-radius: 12px;
-}
+/* ---- Footer widgets (admin-placed blocks) -------------------------------- */
+.footer-premium .footer-widgets { border-top: 1px solid var(--f-line); }
+.footer-premium .footer-widget a { color: var(--f-ink); }
+.footer-premium .footer-widget a:hover { color: #fff; }
+.footer-premium .footer-widget .widget-contact li { color: var(--f-ink); }
 
-/* =============================================================================
-   PERFORMANCE + MOTION SAFETY
-   ============================================================================= */
+/* ---- Motion ------------------------------------------------------------
+   Only two hover transitions and the link nudge remain, so there is nothing
+   left to switch off beyond honouring the OS setting on those. */
 @media (prefers-reduced-motion: reduce) {
-    .footer.footer-premium,
-    .footer.footer-premium::before,
-    .footer-premium .footer-aurora span,
-    .footer-premium .footer-aurora::before,
-    .footer-premium .footer-aurora::after,
-    .footer-premium .container:first-of-type::before,
-    .footer-premium .footer-newsletter::before,
-    .footer-premium h4, .footer-premium h4::after,
-    .footer-premium .footer-contact .fc-ico,
     .footer-premium .social-links a,
-    .footer-premium .footer-newsletter .btn-glow,
-    .footer-premium .footer-top::after,
-    .footer-premium .footer-trust::before,
-    .footer-premium .footer-bottom::before {
-        animation: none !important;
-    }
-    .footer-premium h4 { -webkit-text-fill-color: #fff; color: #fff; }
-}
-/* Small screens: fewer blur layers so paint stays cheap on mobile GPUs. */
-@media (max-width: 640px) {
-    .footer-premium .footer-aurora span:nth-child(3),
-    .footer-premium .footer-aurora span:nth-child(4) { display: none; }
-    .footer-premium .footer-aurora::before { filter: blur(40px); opacity: .35; }
-    .footer.footer-premium::after { opacity: .1; }
+    .footer-premium .footer-col ul a,
+    .footer-premium .newsletter-form .btn,
+    .footer-premium .footer-newsletter .btn-glow { transition: none; }
+    .footer-premium .social-links a:hover,
+    .footer-premium .footer-col ul a:hover,
+    .footer-premium .newsletter-form .btn:hover,
+    .footer-premium .footer-newsletter .btn-glow:hover { transform: none; }
 }
 
 /* =============================================================================

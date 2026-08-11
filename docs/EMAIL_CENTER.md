@@ -11,14 +11,17 @@ open/click tracking) rather than replacing it.
 ## 1. Install / upgrade
 
 ```bash
-C:\xampp\mysql\bin\mysql.exe -u root pwf < database\schema_v21.sql
-C:\xampp\php\php.exe database\seed_email.php
+C:\xampp\mysql\bin\mysql.exe -u root pwf < database\eduskill.sql
 ```
 
-`schema_v21.sql` adds the mail store and CRM tables (idempotent). `seed_email.php`
-seeds the **26 premium templates**, a default signature, a default mail account,
-demo mailbox messages and demo contacts (all additive / safe to re-run; pass
-`--force` to overwrite template bodies).
+There is one SQL file for the whole project. On a database that already holds
+real data, run **Section 2 only** (see the banner inside the file). The tables
+and settings this module needs are listed below.
+
+The mail store and CRM tables ship in the single SQL file, already seeded
+with the **32 premium templates**, a default signature, a default mail account
+and demo contacts. (These were previously added by `schema_v21.sql` plus a
+`seed_email.php` script; both are gone — their output is baked into the dump.)
 
 ---
 

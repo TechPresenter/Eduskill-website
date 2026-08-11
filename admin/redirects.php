@@ -85,11 +85,17 @@ if ($action === 'create' || $action === 'edit') {
     include __DIR__ . '/partials/head.php';
     ?>
     <div class="admin-page-head">
-        <div><h1><?= e($page_title) ?></h1><span class="muted">Redirects / <?= $action === 'edit' ? 'Edit' : 'Create' ?></span></div>
+        <div><h1><?= lucide('route') ?> <?= e($page_title) ?></h1><span class="muted">Redirects / <?= $action === 'edit' ? 'Edit' : 'Create' ?></span></div>
         <a class="btn btn-secondary" href="<?= e(admin_url('redirects')) ?>">← Back to list</a>
     </div>
 
     <div class="panel">
+        <div class="panel-head">
+            <h2 class="panel-title"><?= lucide('shuffle') ?> Redirect rule</h2>
+            <?php if ($action === 'edit'): ?>
+                <span class="pill <?= !empty($row['status']) ? 'pill-green' : 'pill-gray' ?>"><?= !empty($row['status']) ? 'Active' : 'Inactive' ?></span>
+            <?php endif; ?>
+        </div>
         <form class="admin-form panel-body" method="post" action="<?= e(admin_url('redirects')) ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="_do" value="save">
@@ -98,13 +104,13 @@ if ($action === 'create' || $action === 'edit') {
             <div class="form-group">
                 <label class="form-label">Source URL <span class="req">*</span></label>
                 <input class="form-control" name="source_url" required value="<?= e($row['source_url'] ?? '') ?>" placeholder="/old-page">
-                <small class="text-muted">The path visitors request (must be unique), e.g. <code>/old-page</code>.</small>
+                <span class="form-hint">The path visitors request (must be unique), e.g. <code>/old-page</code>.</span>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Target URL <span class="req">*</span></label>
                 <input class="form-control" name="target_url" required value="<?= e($row['target_url'] ?? '') ?>" placeholder="/new-page">
-                <small class="text-muted">Where they are sent, e.g. <code>/new-page</code> or a full URL.</small>
+                <span class="form-hint">Where they are sent, e.g. <code>/new-page</code> or a full URL.</span>
             </div>
 
             <div class="grid-2">
@@ -119,7 +125,7 @@ if ($action === 'create' || $action === 'edit') {
                 <div class="form-group">
                     <label class="form-label">Hits</label>
                     <input class="form-control" type="text" value="<?= (int) ($row['hits'] ?? 0) ?>" readonly>
-                    <small class="text-muted">Times this redirect has been followed.</small>
+                    <span class="form-hint">Times this redirect has been followed.</span>
                 </div>
             </div>
 
@@ -150,34 +156,41 @@ $p = paginate("SELECT * FROM $table WHERE $where ORDER BY id DESC", $params, 15)
 include __DIR__ . '/partials/head.php';
 ?>
 <div class="admin-page-head">
-    <div><h1>Redirect Manager</h1><span class="muted"><?= (int) $p['total'] ?> total</span></div>
-    <a class="btn btn-primary" href="<?= e(admin_url('redirects?action=create')) ?>">+ Add Redirect</a>
+    <div><h1><?= lucide('route') ?> Redirect Manager</h1><span class="muted"><?= (int) $p['total'] ?> total</span></div>
+    <a class="btn btn-primary" href="<?= e(admin_url('redirects?action=create')) ?>"><?= lucide('plus') ?> Add Redirect</a>
 </div>
 
 <div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title"><?= lucide('shuffle') ?> Redirect rules</h2>
+        <span class="pill pill-tag"><?= (int) $p['total'] ?> rules</span>
+    </div>
     <div class="panel-body">
         <div class="data-toolbar">
             <form class="search" method="get" action="<?= e(admin_url('redirects')) ?>">
                 <input class="form-control" type="search" name="q" value="<?= e($search) ?>" placeholder="Search redirects…">
             </form>
+            <?php if ($search !== ''): ?>
+                <a class="btn btn-ghost btn-sm" href="<?= e(admin_url('redirects')) ?>">Clear search</a>
+            <?php endif; ?>
         </div>
 
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Source</th><th>Target</th><th>Code</th><th>Hits</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Source</th><th>Target</th><th>Code</th><th>Hits</th><th>Status</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
                         <td><code><?= e($r['source_url']) ?></code></td>
                         <td><code><?= e($r['target_url']) ?></code></td>
-                        <td><span class="pill <?= (int) $r['status_code'] === 301 ? 'pill-blue' : 'pill-amber' ?>"><?= (int) $r['status_code'] ?></span></td>
+                        <td><span class="pill <?= 'pill-tag' ?>"><?= (int) $r['status_code'] ?></span></td>
                         <td><?= (int) $r['hits'] ?></td>
                         <td><span class="pill <?= !empty($r['status']) ? 'pill-green' : 'pill-gray' ?>"><?= !empty($r['status']) ? 'Active' : 'Inactive' ?></span></td>
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('redirects?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('redirects')) ?>" data-confirm="Delete this redirect permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('redirects')) ?>" data-confirm="Delete this redirect permanently?">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -192,7 +205,24 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('shuffle') ?></div>No redirects yet. <a href="<?= e(admin_url('redirects?action=create')) ?>">Add your first redirect</a>.</div>
+            <?php /* Shared .empty-state shape — swap for the admin_ui.php helper once it ships. */ ?>
+            <div class="empty-state">
+                <div class="icon"><?= lucide('shuffle') ?></div>
+                <?php if ($search !== ''): ?>
+                    <p class="es-title">No redirects match &ldquo;<?= e($search) ?>&rdquo;</p>
+                    <p class="es-text">No rule has that source or target URL. Clear the search to see every rule.</p>
+                    <div class="es-actions">
+                        <a class="btn btn-secondary" href="<?= e(admin_url('redirects')) ?>">Clear search</a>
+                        <a class="btn btn-primary" href="<?= e(admin_url('redirects?action=create')) ?>"><?= lucide('plus') ?> Add Redirect</a>
+                    </div>
+                <?php else: ?>
+                    <p class="es-title">No redirects yet</p>
+                    <p class="es-text">Add a rule when a page moves, so old links keep working instead of returning a 404. Use 301 for a permanent move, 302 while you are still deciding.</p>
+                    <div class="es-actions">
+                        <a class="btn btn-primary" href="<?= e(admin_url('redirects?action=create')) ?>"><?= lucide('plus') ?> Add your first redirect</a>
+                    </div>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
     </div>
 </div>

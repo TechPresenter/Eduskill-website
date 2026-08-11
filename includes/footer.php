@@ -61,17 +61,24 @@ try {
 
     <footer class="footer footer-premium">
         <div class="footer-topline"></div>
-        <div class="footer-aurora" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <?php /* The four <span> aurora blobs that used to sit here drove animated,
+                 blurred, screen-blended colour washes across the footer. The soft
+                 blooms are now part of the footer's own background gradient (see
+                 the `.footer` token block in tailwind.css), which needs no DOM,
+                 no blur layers and no animation. */ ?>
         <div class="container" style="padding-top:3.5rem;">
 
             <!-- Footer top: brand + newsletter -->
             <div class="footer-top">
                 <div class="footer-brand-col">
                     <div class="nav-brand" style="color:#fff;margin-bottom:1.1rem;">
-                        <img class="brand-logo" src="<?= e(asset('images/logo-128.webp')) ?>" alt="<?= e($siteName) ?> logo" width="56" height="56">
+                        <img class="brand-logo" src="<?= e(brand_logo_url()) ?>" alt="<?= e($siteName) ?> logo" width="56" height="56">
+                        <?php /* The kicker used a hardcoded blue-grey (#9fb0cc) left over from
+                                 the navy footer; it now reads through the footer's own --f-ink-2
+                                 token so it stays a warm neutral on the brand-green field. */ ?>
                         <span class="brand-name" style="color:#fff;line-height:1.15;">
                             <?= e($siteName) ?>
-                            <small style="display:block;font-size:.62rem;font-weight:600;letter-spacing:.06em;color:#9fb0cc;text-transform:uppercase;">Registered Non-Profit · Bihar</small>
+                            <small style="display:block;font-size:.62rem;font-weight:600;letter-spacing:.06em;color:var(--f-ink-2);text-transform:uppercase;">Registered Non-Profit · Bihar</small>
                         </span>
                     </div>
                     <p class="footer-about-text"><?= e(get_setting('footer_about', 'EDUSKILL INDIA FOUNDATION works across Bihar to empower communities through education, healthcare, skill development and relief — spreading hope and creating lasting change.')) ?></p>
@@ -82,9 +89,9 @@ try {
                     </ul>
                     <div class="social-links">
                         <?php if ($socials): foreach ($socials as $s): ?>
-                            <a href="<?= e(safe_href($s['url'])) ?>" target="_blank" rel="noopener" aria-label="<?= e($s['platform']) ?>"><?= social_fa($s['platform']) ?></a>
+                            <a href="<?= e(safe_href($s['url'])) ?>" target="_blank" rel="noopener" aria-label="<?= e($s['platform']) ?>"><?= social_svg($s['platform']) ?></a>
                         <?php endforeach; else: ?>
-                            <a href="#" aria-label="Facebook"><?= social_fa('facebook') ?></a><a href="#" aria-label="Twitter"><?= social_fa('x') ?></a><a href="#" aria-label="Instagram"><?= social_fa('instagram') ?></a><a href="#" aria-label="YouTube"><?= social_fa('youtube') ?></a>
+                            <a href="#" aria-label="Facebook"><?= social_svg('facebook') ?></a><a href="#" aria-label="Twitter"><?= social_svg('x') ?></a><a href="#" aria-label="Instagram"><?= social_svg('instagram') ?></a><a href="#" aria-label="YouTube"><?= social_svg('youtube') ?></a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -117,7 +124,9 @@ try {
                     'Scholarships' => 'scholarship', 'Skill Development' => 'skill-development',
                     'Campaigns' => 'campaigns', 'Verify Certificate' => 'verify-certificate',
                 ],
-                'Get Involved' => [
+                /* Renamed from "Get Involved", which is retired sitewide — the
+                   primary navigation now groups these under "Support our work". */
+                'Support Our Work' => [
                     'Volunteer' => 'volunteer', 'Internship' => 'internship', 'Membership' => 'membership',
                     'Careers' => 'career', 'Become a Partner' => 'become-partner', 'Donate' => 'donate',
                     'Feedback' => 'feedback',
@@ -129,7 +138,7 @@ try {
                 ],
                 'Company' => [
                     'Contact Us' => 'contact', 'Search' => 'search', 'Sitemap' => 'sitemap-page',
-                    'Login' => 'login', 'Sign Up' => 'signup', 'My Account' => 'account',
+                    'Sign In' => 'portals', 'Sign Up' => 'signup', 'My Account' => 'account',
                     'Privacy Policy' => 'privacy-policy', 'Terms & Conditions' => 'terms',
                     'Refund Policy' => 'refund-policy', 'Disclaimer' => 'disclaimer', 'Cookie Policy' => 'cookie-policy',
                 ],
@@ -179,7 +188,8 @@ try {
                     <a href="<?= e(url('cookie-policy')) ?>">Cookies</a>
                     <a href="<?= e(url('sitemap-page')) ?>">Sitemap</a>
                 </nav>
-                <a class="footer-adminlock" href="<?= e(admin_url('login')) ?>" title="Admin login" aria-label="Admin login" rel="nofollow"><?= lucide('lock') ?></a>
+                <?php /* The admin login is intentionally not linked from the public footer —
+                         reach it directly at /admin/login. */ ?>
             </div>
         </div>
     </footer>
@@ -190,7 +200,7 @@ try {
             $waNumber = preg_replace('/\D/', '', get_setting('whatsapp_number', get_setting('contact_phone', SITE_PHONE)));
             if ($waNumber):
         ?>
-        <a class="fabtn whatsapp" href="https://wa.me/<?= e($waNumber) ?>" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" title="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a class="fabtn whatsapp" href="https://wa.me/<?= e($waNumber) ?>" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" title="Chat on WhatsApp"><?= social_svg('whatsapp') ?></a>
         <?php endif; ?>
         <a class="fabtn donate" href="<?= e(url('donate')) ?>" aria-label="Donate" title="Donate Now"><?= lucide('heart') ?></a>
     </div>
@@ -281,5 +291,13 @@ try {
     echo faq_section_assets(); ?>
     <?php $customJsFooter = (string) get_setting('custom_js_footer', '');
     if (trim($customJsFooter) !== ''): ?><script id="pwf-custom-js-footer"><?= $customJsFooter ?></script><?php endif; ?>
+<?php /* Mega-menu overlays live here, NOT inside <header class="navbar">:
+         that element sets backdrop-filter (making it the containing block
+         for position:fixed children) and z-index:900 (a stacking context),
+         which broke the scrim, the dropdown offsets and the layering. */
+if (function_exists('mega_menu_overlays')) { echo mega_menu_overlays(); } ?>
+<?php /* Portal drawer: one organised home for the eight role logins. */
+require_once __DIR__ . '/portal-sidebar.php';
+echo portal_sidebar_render(); ?>
 </body>
 </html>

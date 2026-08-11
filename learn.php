@@ -109,7 +109,7 @@ function lesson_embed(array $l): string
                 <h2 class="mb-0"><?= e($course['title']) ?></h2></div>
             <div style="min-width:200px;">
                 <div style="background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden;">
-                    <div style="background:var(--brand-600,#063566);height:100%;width:<?= (int) round((float) $enr['progress_percent']) ?>%;"></div>
+                    <div style="background:var(--brand-600,#0B4E3D);height:100%;width:<?= (int) round((float) $enr['progress_percent']) ?>%;"></div>
                 </div>
                 <small class="text-muted"><?= (int) round((float) $enr['progress_percent']) ?>% complete</small>
             </div>
@@ -117,14 +117,14 @@ function lesson_embed(array $l): string
 
         <div class="grid grid-sidebar gap-4 items-start">
             <!-- Lesson list -->
-            <aside class="glass-card reveal" style="position:sticky;top:100px;">
+            <aside class="glass-card reveal sticky-aside" style="position:sticky;top:100px;">
                 <h3 class="mb-2">Lessons</h3>
                 <ul style="list-style:none;padding:0;margin:0;">
                     <?php foreach ($lessons as $i => $l): $isCur = $current && (int) $l['id'] === (int) $current['id']; ?>
                         <li style="margin-bottom:.3rem;">
                             <a href="<?= e(url('learn?course=' . $courseId . '&lesson=' . (int) $l['id'])) ?>"
                                style="display:flex;gap:.5rem;align-items:center;padding:.5rem .6rem;border-radius:8px;text-decoration:none;color:inherit;<?= $isCur ? 'background:var(--brand-50,#eff6ff);font-weight:700;' : '' ?>">
-                                <span style="flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;<?= !empty($done[(int) $l['id']]) ? 'background:#58A42F;color:#fff;' : 'background:#e5e7eb;color:#6b7280;' ?>">
+                                <span style="flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;<?= !empty($done[(int) $l['id']]) ? 'background:#2F8065;color:#fff;' : 'background:#e5e7eb;color:#6b7280;' ?>">
                                     <?= !empty($done[(int) $l['id']]) ? '✓' : ($i + 1) ?>
                                 </span>
                                 <span style="font-size:.9rem;"><?= e($l['title']) ?></span>

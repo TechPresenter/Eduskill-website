@@ -166,12 +166,20 @@ and this file is harmless (`.md` is blocked from the web by `.htaccess`).
 
 ---
 
-## Step 6 — Import the database ⚠️ (the important gotcha)
+## Step 6 — Import the database
 
-Every `.sql` file starts with `USE \`pwf\`;` and `schema.sql` also runs
-`CREATE DATABASE IF NOT EXISTS \`pwf\``. Your Hostinger DB is **not** named `pwf`
-and your DB user **cannot** create or use one — so an as-is import fails with
-*"Unknown database 'pwf'"* / *"Access denied"*. Handle it one of two ways.
+This used to be the gotcha: the old per-version SQL files each began with
+`USE \`pwf\`;` and the base file ran `CREATE DATABASE IF NOT EXISTS \`pwf\``.
+Your Hostinger database is not named `pwf` and your DB user cannot create one,
+so an as-is import failed with *"Unknown database 'pwf'"* / *"Access denied"*.
+
+**That is fixed.** `database/eduskill.sql` contains no `CREATE DATABASE` and no
+`USE`, so it imports into whatever database you have selected, whatever it is
+called. The one thing you must still do is **click into your database in the
+left sidebar first** — otherwise phpMyAdmin has nothing selected and the import
+fails with *"No database selected"*.
+
+Two ways to populate it.
 
 ### Option A — Migrate your existing local data (recommended)
 
@@ -183,53 +191,45 @@ and your DB user **cannot** create or use one — so an as-is import fails with
 3. This carries all your content, settings, and the admin account in one shot and
    sidesteps the per-file `USE` problem. Done — skip to Step 7.
 
-### Option B — Import the schema chain fresh
+### Option B — Import the database fresh
 
-If you want a clean database from the shipped SQL files:
+There is **one** SQL file: `database/eduskill.sql`. It has no `CREATE DATABASE`
+and no `USE`, so there is nothing to strip and no database name to rewrite — it
+applies to whichever database you have selected.
 
-1. **Strip the DB-name lines** from `database/schema.sql`: delete the
-   `CREATE DATABASE IF NOT EXISTS \`pwf\`` line and the `USE \`pwf\`;` line. In
-   *every* `database/*.sql` file, replace the exact token `` `pwf` ``
-   (backtick-pwf-backtick) with `` `u1234567_pwf` ``. (Match only the
-   backtick-wrapped token so you don't touch the `pwf_add_column` procedure name
-   or seed emails like `@pwf.test`.)
-2. Import **in this exact order** into your `u1234567_pwf` database via phpMyAdmin
-   (each file is only KB-sized):
-   - `schema.sql`  ← base, **import once only** (not idempotent)
-   - `schema_v2.sql`, `schema_v3.sql`, … `schema_v28.sql`  ← **ascending numeric
-     order** (v10 after v9, not after v1); all idempotent
-   - `sample_data.sql`  ← **required** — this is what creates the first admin user
-3. A complete import is ~130 tables (InnoDB, utf8mb4).
+1. phpMyAdmin → **click into** your database in the left sidebar.
+2. **Import** tab → `database/eduskill.sql` → **Go**.
+3. A complete import is **130 tables** (InnoDB, utf8mb4).
 
-> **SSH alternative** (most plans have it — hPanel → Advanced → SSH Access).
-> After Option-B step 1, from the project dir:
+The file has two sections. On an empty database run the whole thing — Section 2
+is idempotent and applies cleanly on top. On a database that already holds real
+data, run **Section 2 only**; Section 1 begins every table with
+`DROP TABLE IF EXISTS`.
+
+> **SSH alternative** (hPanel → Advanced → SSH Access), from the project dir:
 > ```bash
 > DB=u1234567_pwf; U=u1234567_admin
-> mysql -h localhost -u $U -p $DB < database/schema.sql
-> for i in $(seq 2 28); do mysql -h localhost -u $U -p'PASSWORD' $DB < database/schema_v$i.sql; done
-> mysql -h localhost -u $U -p $DB < database/sample_data.sql
+> mysql -h localhost -u $U -p $DB < database/eduskill.sql
 > ```
 
-**Default admin login** (from `sample_data.sql`): `/admin/login` ·
-`admin@eduskillindia.org` · **`Admin@123`** — change this on first login (Step 10).
+**Default admin login:** `/admin/login` · `admin@eduskillindia.org` ·
+**`Admin@123`**. The shipped file sets `must_change_password = 1`, so the site
+sends you to a password form before any other admin page will load. That is
+deliberate: this password is published in the public repo.
 
 ---
 
-## Step 7 — Run the PHP seeders (email templates)
+## Step 7 — (removed)
 
-Two one-time seeders populate email templates and the Email Center defaults:
+The two one-time PHP seeders (`seed_v6.php`, `seed_email.php`) no longer exist.
+Everything they produced — the membership and Email Center templates, the default
+signature and mail account — is already inside `database/eduskill.sql`, so
+importing that file is all you need.
 
-```bash
-php database/seed_v6.php      # 4 membership templates + membership_cron_token
-php database/seed_email.php   # 26 templates + default mailbox/signature
-```
+One thing they used to generate is deliberately NOT seeded: the membership cron
+token ships **empty**, so no two installations share a trigger token. Generate
+yours in **Admin → Membership Settings**.
 
-Run them over **SSH** (the `database/` folder is web-blocked, so they aren't
-reachable by browser). No SSH? Temporarily copy each into `public_html`, open it
-once in the browser, then **delete it**. Both are additive/idempotent. (If you used
-Option A and your local DB already has these, you can skip this step.)
-
----
 
 ## Step 8 — Set writable permissions
 

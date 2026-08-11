@@ -119,7 +119,7 @@ if ($action === 'create' || $action === 'edit') {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Card accent colour</label>
-                    <input class="form-control" type="color" name="color" value="<?= e($row['color'] ?? '#063566') ?>">
+                    <input class="form-control" type="color" name="color" value="<?= e($row['color'] ?? '#0B4E3D') ?>">
                     <small class="form-hint">Shown on the membership card & tier badge.</small>
                 </div>
             </div>

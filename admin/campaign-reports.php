@@ -109,7 +109,7 @@ include __DIR__ . '/partials/head.php';
         <div class="panel"><div class="panel-body">
             <h3 class="mb-2">Progress</h3>
             <div class="progress" style="height:10px;background:var(--surface-2,#e5e7eb);border-radius:999px;overflow:hidden;">
-                <div class="progress-bar" style="width:<?= (int) $prog['percent'] ?>%;height:100%;background:#58A42F;"></div>
+                <div class="progress-bar" style="width:<?= (int) $prog['percent'] ?>%;height:100%;background:#2F8065;"></div>
             </div>
             <small class="text-muted"><?= e(money($prog['raised'], $sym, 0)) ?> of <?= e(money($prog['goal'], $sym, 0)) ?> (<?= e($prog['percent']) ?>%)</small>
             <div class="table-wrap" style="margin-top:1rem;"><table class="admin-table"><tbody>
@@ -182,8 +182,8 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Collected',
                 data: <?= json_encode($trendValues) ?>,
-                borderColor: '#58A42F',
-                backgroundColor: 'rgba(88,164,47,.12)',
+                borderColor: '#2F8065',
+                backgroundColor: 'rgba(47,128,101,.12)',
                 fill: true,
                 tension: .35,
                 pointRadius: 2,

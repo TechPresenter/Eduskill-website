@@ -71,7 +71,7 @@ Base URL (local): `http://localhost/pwf`
 
 ## 6. Security & performance spot checks
 
-- [ ] `includes/functions.php`, `config.php`, `database/schema.sql` via browser → 403
+- [ ] `includes/functions.php`, `config.php`, `database/eduskill.sql` via browser → 403
 - [ ] Uploaded file URL with `.php` → not executed (served as text / denied)
 - [ ] Response headers include `X-Frame-Options`, `X-Content-Type-Options`, CSP
 - [ ] Page source shows `<link ... tailwind.css?v=…>` (cache-busting)

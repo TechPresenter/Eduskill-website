@@ -290,7 +290,7 @@ if ($action === 'create' || $action === 'edit') {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Flags</label>
-                    <div class="flex flex-wrap gap-3" style="padding-top:.45rem;">
+                    <div class="flex flex-wrap gap-3" style="padding-top: var(--sp-2);">
                         <label class="checkbox"><input type="checkbox" name="is_featured" value="1" <?= !empty($row['is_featured']) ? 'checked' : '' ?>> <?= lucide('star') ?> Featured</label>
                         <label class="checkbox"><input type="checkbox" name="is_breaking" value="1" <?= !empty($row['is_breaking']) ? 'checked' : '' ?>> <?= lucide('zap') ?> Breaking</label>
                         <label class="checkbox"><input type="checkbox" name="is_sticky" value="1" <?= !empty($row['is_sticky']) ? 'checked' : '' ?>> <?= lucide('pin') ?> Sticky</label>
@@ -298,9 +298,12 @@ if ($action === 'create' || $action === 'edit') {
                 </div>
             </div>
 
-            <details class="panel" style="margin:.25rem 0 1rem;"<?= (!empty($row['meta_title']) || !empty($row['meta_description']) || !empty($row['canonical_url']) || !empty($row['og_image'])) ? ' open' : '' ?>>
-                <summary style="cursor:pointer;font-weight:700;padding:.85rem 1rem;list-style:none;"><?= lucide('search') ?> SEO &amp; Social meta <span class="text-muted" style="font-weight:400;">(optional — overrides the auto values)</span></summary>
-                <div class="panel-body" style="padding-top:.25rem;">
+            <details class="panel" style="margin: var(--sp-1) 0 var(--sp-4);"<?= (!empty($row['meta_title']) || !empty($row['meta_description']) || !empty($row['canonical_url']) || !empty($row['og_image'])) ? ' open' : '' ?>>
+                <summary style="cursor:pointer;list-style:none;padding: var(--sp-3) var(--sp-4);">
+                    <h2 class="panel-title"><?= lucide('search') ?> SEO &amp; Social meta</h2>
+                    <span class="text-muted">(optional — overrides the auto values)</span>
+                </summary>
+                <div class="panel-body" style="padding-top: var(--sp-1);">
                     <div class="form-group"><label class="form-label">Meta title</label>
                         <input class="form-control" name="meta_title" maxlength="191" value="<?= e($row['meta_title'] ?? '') ?>" placeholder="Defaults to the post title"></div>
                     <div class="form-group"><label class="form-label">Meta description</label>
@@ -365,7 +368,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Image</th><th>Title</th><th>Category</th><th>Status</th><th>Flags</th><th>Published</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Image</th><th>Title</th><th>Category</th><th>Status</th><th>Flags</th><th>Published</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
@@ -380,9 +383,10 @@ include __DIR__ . '/partials/head.php';
                         <td>
                             <?php
                             $flags = [];
-                            if (!empty($r['is_featured'])) $flags[] = '<span title="Featured" style="color:#E67B1D;">' . lucide('star') . '</span>';
-                            if (!empty($r['is_breaking'])) $flags[] = '<span title="Breaking" style="color:#dc2626;">' . lucide('zap') . '</span>';
-                            if (!empty($r['is_sticky']))   $flags[] = '<span title="Sticky" style="color:#063566;">' . lucide('pin') . '</span>';
+                            // Flags carry a label, not a bare colour — admin-ds.css adds the glyph.
+                            if (!empty($r['is_featured'])) $flags[] = '<span class="pill pill-blue">Featured</span>';
+                            if (!empty($r['is_breaking'])) $flags[] = '<span class="pill pill-amber">Breaking</span>';
+                            if (!empty($r['is_sticky']))   $flags[] = '<span class="pill pill-gray">Sticky</span>';
                             echo $flags ? implode(' ', $flags) : '<span class="text-muted">—</span>';
                             ?>
                         </td>
@@ -390,7 +394,7 @@ include __DIR__ . '/partials/head.php';
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('blogs?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('blogs')) ?>" data-confirm="Delete this blog post permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('blogs')) ?>" data-confirm="Delete this blog post permanently?" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -405,7 +409,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('clipboard-pen') ?></div>No blog posts yet. <a href="<?= e(admin_url('blogs?action=create')) ?>">Add your first post</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('clipboard-pen') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No blog posts match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No post has that title or slug. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('blogs')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('blogs?action=create')) ?>"><?= lucide('plus') ?> Add your first post</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No blog posts yet</p>
+                                <p class="es-text">Posts are the dated, categorised part of the site. Write one and it appears on the blog index as soon as you publish.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('blogs?action=create')) ?>"><?= lucide('plus') ?> Add your first post</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

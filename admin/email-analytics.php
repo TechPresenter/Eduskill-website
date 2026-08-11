@@ -78,10 +78,10 @@ $campaigns = db_all("SELECT id, name, subject, status, total, sent_count,
 
 /* Headline rate cards + raw-count tiles (all straight from ec_dashboard_stats). */
 $rateCards = [
-    ['Delivery rate', $stats['deliver_rate'], $stats['delivered'], 'delivered',    'mail-check',           '#58A42F'],
+    ['Delivery rate', $stats['deliver_rate'], $stats['delivered'], 'delivered',    'mail-check',           '#2F8065'],
     ['Open rate',     $stats['open_rate'],    $stats['opened'],    'opened',       'mail-open',            '#8b5cf6'],
-    ['Click rate',    $stats['click_rate'],   $stats['clicked'],   'clicked',      'mouse-pointer-click',  '#084881'],
-    ['Bounce rate',   $stats['bounce_rate'],  $stats['bounced'],   'bounced',      'undo-2',               '#E67B1D'],
+    ['Click rate',    $stats['click_rate'],   $stats['clicked'],   'clicked',      'mouse-pointer-click',  '#174D3D'],
+    ['Bounce rate',   $stats['bounce_rate'],  $stats['bounced'],   'bounced',      'undo-2',               '#F15A24'],
 ];
 $rawTiles = [
     ['Sent',         $stats['sent'],         'send',         'g-blue'],
@@ -95,8 +95,8 @@ $rawTiles = [
 ];
 
 /* Doughnut palette (cycled per slice). */
-$donutColors = ['#6366f1', '#084881', '#58A42F', '#E67B1D', '#ef4444', '#8b5cf6',
-                '#ec4899', '#14b8a6', '#E67B1D', '#084881', '#84cc16', '#64748b'];
+$donutColors = ['#6366f1', '#174D3D', '#2F8065', '#F15A24', '#ef4444', '#8b5cf6',
+                '#ec4899', '#14b8a6', '#F15A24', '#174D3D', '#84cc16', '#64748b'];
 
 $hasSeriesData = false;
 foreach ($series as $s) { if ($s['sent'] || $s['opened'] || $s['clicked']) { $hasSeriesData = true; break; } }
@@ -149,9 +149,9 @@ include __DIR__ . '/partials/head.php';
     <div class="panel-head">
       <h3 class="panel-title"><?= lucide('trending-up') ?> Daily Activity</h3>
       <div class="ea-legend-mini">
-        <span><i style="background:#063566"></i>Sent</span>
+        <span><i style="background:#0B4E3D"></i>Sent</span>
         <span><i style="background:#8b5cf6"></i>Opened</span>
-        <span><i style="background:#084881"></i>Clicked</span>
+        <span><i style="background:#174D3D"></i>Clicked</span>
       </div>
     </div>
     <div class="panel-body">
@@ -303,10 +303,10 @@ include __DIR__ . '/partials/head.php';
 .ea-tile-ic{position:absolute;right:10px;top:10px;opacity:.32;}.ea-tile-ic svg{width:24px;height:24px;}
 .ea-tile-val{font-size:1.5rem;font-weight:800;line-height:1;}
 .ea-tile-lbl{font-size:.74rem;opacity:.92;margin-top:4px;font-weight:600;}
-.g-blue{background:linear-gradient(135deg,#063566,#084881);}.g-green{background:linear-gradient(135deg,#308629,#58A42F);}
-.g-violet{background:linear-gradient(135deg,#084881,#a855f7);}.g-cyan{background:linear-gradient(135deg,#084881,#084881);}
-.g-amber{background:linear-gradient(135deg,#b45309,#E67B1D);}.g-red{background:linear-gradient(135deg,#b91c1c,#ef4444);}
-.g-orange{background:linear-gradient(135deg,#c2410c,#E67B1D);}.g-slate{background:linear-gradient(135deg,#475569,#64748b);}
+.g-blue{background:linear-gradient(135deg,#0B4E3D,#174D3D);}.g-green{background:linear-gradient(135deg,#1F5C48,#2F8065);}
+.g-violet{background:linear-gradient(135deg,#174D3D,#a855f7);}.g-cyan{background:linear-gradient(135deg,#174D3D,#174D3D);}
+.g-amber{background:linear-gradient(135deg,#b45309,#F15A24);}.g-red{background:linear-gradient(135deg,#b91c1c,#ef4444);}
+.g-orange{background:linear-gradient(135deg,#c2410c,#F15A24);}.g-slate{background:linear-gradient(135deg,#475569,#64748b);}
 /* Trend legend */
 .ea-legend-mini{display:flex;gap:14px;font-size:.78rem;color:var(--text-soft);}
 .ea-legend-mini span{display:inline-flex;align-items:center;gap:6px;}
@@ -330,8 +330,8 @@ include __DIR__ . '/partials/head.php';
 .ea-compare td strong{display:block;}
 .ea-subj{display:block;font-size:.76rem;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ea-rate-chip{display:inline-block;padding:2px 8px;border-radius:20px;font-weight:700;font-size:.8rem;}
-.ea-rate-chip.is-good{background:rgba(88,164,47,.14);color:#58A42F;}
-.ea-rate-chip.is-mid{background:rgba(230,123,29,.16);color:#b45309;}
+.ea-rate-chip.is-good{background:rgba(47,128,101,.14);color:#2F8065;}
+.ea-rate-chip.is-mid{background:rgba(241,90,36,.16);color:#b45309;}
 .ea-rate-chip.is-zero{background:var(--surface-2);color:var(--muted);}
 :root[data-theme="dark"] .ea-rate-chip.is-mid{color:#fbbf24;}
 @media(max-width:1100px){.ea-tiles{grid-template-columns:repeat(4,1fr);}.ea-donut-grid{grid-template-columns:1fr;}}
@@ -358,9 +358,9 @@ include __DIR__ . '/partials/head.php';
       data: {
         labels: S.map(function (r) { return r.label; }),
         datasets: [
-          { label: 'Sent',    data: S.map(function (r) { return r.sent; }),    borderColor: '#063566', backgroundColor: 'rgba(6,53,102,.08)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4 },
+          { label: 'Sent',    data: S.map(function (r) { return r.sent; }),    borderColor: '#0B4E3D', backgroundColor: 'rgba(11,78,61,.08)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4 },
           { label: 'Opened',  data: S.map(function (r) { return r.opened; }),  borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.06)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4 },
-          { label: 'Clicked', data: S.map(function (r) { return r.clicked; }), borderColor: '#084881', backgroundColor: 'rgba(6,182,212,.06)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4 }
+          { label: 'Clicked', data: S.map(function (r) { return r.clicked; }), borderColor: '#174D3D', backgroundColor: 'rgba(6,182,212,.06)', fill: true, tension: .4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4 }
         ]
       },
       options: {

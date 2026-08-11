@@ -153,12 +153,12 @@ if (empty($headerMenus)) {
             <?php endif; ?>
             <div class="tu-social">
                 <?php if ($navSocials): foreach ($navSocials as $s): ?>
-                    <a href="<?= e(safe_href($s['url'])) ?>" target="_blank" rel="noopener" aria-label="<?= e($s['platform']) ?>"><?= social_fa($s['platform']) ?></a>
+                    <a href="<?= e(safe_href($s['url'])) ?>" target="_blank" rel="noopener" aria-label="<?= e($s['platform']) ?>"><?= social_svg($s['platform']) ?></a>
                 <?php endforeach; else: ?>
-                    <a href="#" aria-label="Facebook"><?= social_fa('facebook') ?></a>
-                    <a href="#" aria-label="Twitter"><?= social_fa('x') ?></a>
-                    <a href="#" aria-label="Instagram"><?= social_fa('instagram') ?></a>
-                    <a href="#" aria-label="YouTube"><?= social_fa('youtube') ?></a>
+                    <a href="#" aria-label="Facebook"><?= social_svg('facebook') ?></a>
+                    <a href="#" aria-label="Twitter"><?= social_svg('x') ?></a>
+                    <a href="#" aria-label="Instagram"><?= social_svg('instagram') ?></a>
+                    <a href="#" aria-label="YouTube"><?= social_svg('youtube') ?></a>
                 <?php endif; ?>
             </div>
         </div>
@@ -169,86 +169,15 @@ if (empty($headerMenus)) {
 <header class="navbar <?= get_setting('header_sticky', '1') === '1' ? '' : 'nav-static' ?>" data-navbar>
     <div class="container nav-inner">
         <a class="nav-brand" href="<?= e(url('/')) ?>" aria-label="<?= e($siteName ?? SITE_NAME) ?> home">
-            <img class="brand-logo" src="<?= e(!empty($logo) ? upload_url($logo) : asset('images/logo-128.webp')) ?>" alt="<?= e($siteName ?? SITE_NAME) ?> logo" width="52" height="52">
+            <img class="brand-logo" src="<?= e(brand_logo_url()) ?>" alt="<?= e($siteName ?? SITE_NAME) ?> logo" width="52" height="52">
             <span class="brand-name">
                 <?= e($siteName ?? SITE_NAME) ?>
                 <small>Empowering Communities</small>
             </span>
         </a>
 
-        <nav aria-label="Primary">
-            <ul class="nav-menu">
-                <?php
-                // Small icon hint for mega-menu links, matched by keyword.
-                $menuIcon = static function (string $t): string {
-                    $t = strtolower($t);
-                    foreach ([
-                        'home'=>'home','about'=>'info','media'=>'clapperboard','contact'=>'phone','involve'=>'hand-heart','get involved'=>'hand-heart',
-                        'who'=>'users','mission'=>'target','vision'=>'eye','management'=>'landmark','ngo'=>'clipboard-list','team'=>'users',
-                        'program'=>'target','skill'=>'wrench','campaign'=>'megaphone','achievement'=>'trophy','story'=>'book-open',
-                        'gallery'=>'image','video'=>'video','blog'=>'pen-line','resource'=>'download','event'=>'calendar-days','calendar'=>'calendar-heart',
-                        'volunteer'=>'hand-heart','internship'=>'graduation-cap','feedback'=>'message-square','member'=>'id-card','career'=>'briefcase','cause'=>'heart',
-                    ] as $k=>$ic) { if (str_contains($t,$k)) return $ic; }
-                    return 'chevron-right';
-                };
-                // Short description hint for mega-menu links, matched by keyword.
-                $menuDesc = static function (string $t): string {
-                    $t = strtolower($t);
-                    foreach ([
-                        'who'=>'Our story & identity','mission'=>'What drives us','vision'=>"Where we're headed",
-                        'management'=>'Board & governance','ngo'=>'Registration & legal','team'=>'The people behind us',
-                        'program'=>'How we create impact','skill'=>'Training for livelihoods','campaign'=>'Active fundraisers',
-                        'achievement'=>'Milestones & awards','certificate'=>'Recognition & trust','story'=>"Lives we've changed",
-                        'gallery'=>'Photos from the field','video'=>'Watch our work','blog'=>'News & articles',
-                        'resource'=>'Reports & downloads','event'=>'Upcoming & past','calendar'=>'Awareness days',
-                        'volunteer'=>'Give your time','internship'=>'Learn & contribute','feedback'=>'Share your thoughts',
-                        'member'=>'Join the community','career'=>'Work with us','cause'=>'Issues we support','contact'=>'Get in touch',
-                    ] as $k=>$d) { if (str_contains($t,$k)) return $d; }
-                    return '';
-                };
-                foreach ($headerMenus as $m):
-                    $kids = $m['children'] ?? [];
-                    $isMega = count($kids) >= 3;
-                    $hasKids = !empty($kids); ?>
-                    <li class="<?= $isMega ? 'has-mega' : ($hasKids ? 'has-dropdown' : '') ?>">
-                        <a class="nav-link <?= active_menu(ltrim($m['url'] === '/' ? 'index' : $m['url'], '/')) ?>"
-                           href="<?= e(nav_href($m['url'])) ?>"><?= e(nav_label($m)) ?></a>
-                        <?php if ($isMega): $cols = array_chunk($kids, (int) ceil(count($kids) / 2)); ?>
-                            <div class="mega-menu">
-                                <div class="mega-grid">
-                                    <?php foreach ($cols as $col): ?>
-                                        <div class="mega-col">
-                                            <?php foreach ($col as $c): ?>
-                                                <a class="mega-link" href="<?= e(nav_href($c['url'])) ?>">
-                                                    <span class="mi"><?= lucide($menuIcon($c['title'])) ?></span>
-                                                    <span class="mtxt">
-                                                        <strong><?= e(nav_label($c)) ?></strong>
-                                                        <?php $d = $menuDesc($c['title']); if ($d): ?><small><?= e($d) ?></small><?php endif; ?>
-                                                    </span>
-                                                </a>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                                <div class="mega-feature">
-                                    <img src="<?= e(asset('images/logo-128.webp')) ?>" alt="" width="46" height="46">
-                                    <div class="mf-text">
-                                        <strong><?= e(nav_label($m)) ?> — get involved</strong>
-                                        <span>Your support helps us reach more communities across Bihar.</span>
-                                    </div>
-                                    <a class="btn btn-white btn-sm" href="<?= e(url('donate')) ?>"><?= lucide('heart') ?> Donate</a>
-                                </div>
-                            </div>
-                        <?php elseif ($hasKids): ?>
-                            <ul class="nav-dropdown">
-                                <?php foreach ($kids as $c): ?>
-                                    <li><a href="<?= e(nav_href($c['url'])) ?>"><?= e(nav_label($c)) ?></a></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php endif; ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
+        <nav class="mm-nav" aria-label="Primary">
+            <?php require_once __DIR__ . '/megamenu.php'; echo mega_menu_render(); ?>
         </nav>
 
         <div class="nav-actions">
@@ -271,45 +200,14 @@ if (empty($headerMenus)) {
             <?php if (is_member_logged_in()): $mem = current_member(); ?>
                 <a class="btn btn-outline btn-sm desktop-only" href="<?= e(url('account')) ?>"><?= lucide('user') ?> <?= e(explode(' ', $mem['name'])[0]) ?></a>
             <?php else: ?>
-                <a class="nav-link desktop-only" href="<?= e(url('login')) ?>">Login</a>
+                <?php require_once __DIR__ . '/portal-sidebar.php'; echo portal_sidebar_trigger(); ?>
             <?php endif; ?>
             <?php $hcText = get_setting('header_cta_text', 'Donate'); $hcUrl = get_setting('header_cta_url', 'donate'); ?>
             <a class="btn btn-glow btn-sm desktop-only" href="<?= e(preg_match('#^https?://#i', $hcUrl) ? $hcUrl : url($hcUrl)) ?>" aria-label="<?= e($hcText) ?>" title="<?= e($hcText) ?>"><?= lucide('heart') ?> <?= e($hcText) ?></a>
-            <button class="nav-toggle" data-drawer-toggle aria-label="Open menu" aria-expanded="false"><?= lucide('menu') ?></button>
         </div>
     </div>
 </header>
 
-<!-- Mobile drawer -->
-<div class="drawer-overlay" data-drawer-overlay></div>
-<aside class="nav-drawer" data-drawer aria-label="Mobile menu">
-    <div class="drawer-head">
-        <a class="drawer-brand" href="<?= e(url('/')) ?>">
-            <img src="<?= e(!empty($logo) ? upload_url($logo) : asset('images/logo-128.webp')) ?>" alt="" width="40" height="40">
-            <span class="drawer-brand-name"><?= e($siteName ?? SITE_NAME) ?><small>Rise With Compassion</small></span>
-        </a>
-        <button class="drawer-close" data-drawer-close aria-label="Close menu"><?= lucide('x') ?></button>
-    </div>
-    <nav class="drawer-nav" aria-label="Mobile">
-        <?php foreach ($headerMenus as $m):
-            $kids = $m['children'] ?? [];
-            $topActive = active_menu(ltrim($m['url'] === '/' ? 'index' : $m['url'], '/'), 'is-active'); ?>
-            <a class="drawer-link <?= $topActive ?>" href="<?= e(nav_href($m['url'])) ?>">
-                <span class="di"><?= lucide($menuIcon($m['title'])) ?></span>
-                <span class="dl"><?= e(nav_label($m)) ?></span>
-                <?php if ($kids): ?><span class="dc"><?= lucide('chevron-down') ?></span><?php endif; ?>
-            </a>
-            <?php if ($kids): ?>
-                <div class="drawer-sub">
-                    <?php foreach ($kids as $c): ?>
-                        <a class="drawer-sublink" href="<?= e(nav_href($c['url'])) ?>">
-                            <span class="dtile"><?= lucide($menuIcon($c['title'])) ?></span>
-                            <span><?= e(nav_label($c)) ?></span>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        <?php endforeach; ?>
-    </nav>
-    <a class="btn btn-glow drawer-cta" href="<?= e(url('donate')) ?>"><?= lucide('heart') ?> Donate Now</a>
-</aside>
+<?php /* The off-canvas drawer was removed: navigation is now one
+         icon-led panel (includes/megamenu.php) at every breakpoint,
+         so there is no sidebar to maintain or trap focus in. */ ?>

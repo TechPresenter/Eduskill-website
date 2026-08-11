@@ -12,7 +12,9 @@ $code      = strtoupper(trim((string) request('code', '')));
 $emp       = null;
 $throttled = false;
 if ($code !== '') {
-    if (!pwf_throttle('verify-lookup', 10, 300)) {
+    /* Own bucket — see the note in verify-award.php. The five public verifiers
+       shared one 'verify-lookup' key, so they spent each other's budget. */
+    if (!pwf_throttle('verify-employee', 10, 300)) {
         $throttled = true;
     } else {
         $emp = db_row("SELECT * FROM employees WHERE employee_code = :c", [':c' => $code]);
@@ -43,13 +45,13 @@ seo_set(['title' => 'Verify Employee', 'page_key' => 'verify-employee', 'robots'
             <h2 style="margin:0 0 .5rem;">Too many attempts</h2>
             <p class="text-muted">Too many verification attempts from your connection. Please wait a few minutes and try again.</p>
         <?php elseif ($emp): ?>
-            <span class="icon-badge <?= $valid ? '' : 'accent' ?>" style="width:64px;height:64px;margin:0 auto 1rem;background:<?= $valid ? 'linear-gradient(135deg,#063566,#084881)' : '#dc2626' ?>;color:#fff;">
+            <span class="icon-badge <?= $valid ? '' : 'accent' ?>" style="width:64px;height:64px;margin:0 auto 1rem;background:<?= $valid ? 'linear-gradient(135deg,#0B4E3D,#174D3D)' : '#dc2626' ?>;color:#fff;">
                 <?= $valid ? lucide('badge-check') : lucide('alert-triangle') ?>
             </span>
             <h2 style="margin:0 0 .25rem;"><?= e($emp['name']) ?></h2>
             <p class="text-muted" style="margin:0 0 1rem;font-weight:700;letter-spacing:.04em;"><?= e($emp['employee_code']) ?></p>
-            <img src="<?= e(image_url($emp['photo'] ?? null, 'avatar')) ?>" alt="" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #063566;margin-bottom:1rem;">
-            <div style="display:inline-block;background:<?= $valid ? 'rgba(88,164,47,.14)' : 'rgba(220,38,38,.12)' ?>;color:<?= $valid ? '#308629' : '#b91c1c' ?>;font-weight:800;padding:.4rem 1rem;border-radius:999px;font-size:.8rem;margin-bottom:1.2rem;">
+            <img src="<?= e(image_url($emp['photo'] ?? null, 'avatar')) ?>" alt="" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #0B4E3D;margin-bottom:1rem;">
+            <div style="display:inline-block;background:<?= $valid ? 'rgba(47,128,101,.14)' : 'rgba(220,38,38,.12)' ?>;color:<?= $valid ? '#1F5C48' : '#b91c1c' ?>;font-weight:800;padding:.4rem 1rem;border-radius:999px;font-size:.8rem;margin-bottom:1.2rem;">
                 <?= $valid ? 'VERIFIED EMPLOYEE' : strtoupper(e(employee_status_labels()[$emp['status']] ?? 'INACTIVE')) ?>
             </div>
             <div style="text-align:left;border-top:1px solid var(--border);padding-top:1rem;font-size:.9rem;">

@@ -60,11 +60,18 @@ $page_title = 'Tracking & Integrations';
 include __DIR__ . '/partials/head.php';
 ?>
 <div class="admin-page-head">
-    <div><h1>Tracking &amp; Integrations</h1><span class="muted">Marketing / Analytics, Tag Manager, Pixel &amp; Heatmaps</span></div>
-    <span class="pill <?= $activeCount ? 'pill-green' : 'pill-gray' ?>"><?= (int) $activeCount ?> active</span>
+    <div><h1><?= lucide('radar') ?> Tracking &amp; Integrations</h1><span class="muted">Marketing / Analytics, Tag Manager, Pixel &amp; Heatmaps</span></div>
+    <div class="flex flex-wrap items-center gap-1">
+        <span class="pill <?= $activeCount ? 'pill-green' : 'pill-gray' ?>"><?= (int) $activeCount ?> of <?= count($fields) ?> active</span>
+        <a class="btn btn-secondary" href="<?= e(admin_url('custom-code')) ?>"><?= lucide('code-xml') ?> Custom Code</a>
+    </div>
 </div>
 
 <div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title"><?= lucide('key-round') ?> Provider IDs</h2>
+        <span class="pill <?= $activeCount ? 'pill-green' : 'pill-gray' ?>"><?= $activeCount ? (int) $activeCount . ' enabled' : 'None enabled' ?></span>
+    </div>
     <form class="admin-form panel-body" method="post" action="<?= e(admin_url('tracking')) ?>">
         <?= csrf_field() ?>
         <input type="hidden" name="_do" value="save">
@@ -79,10 +86,11 @@ include __DIR__ . '/partials/head.php';
         </div>
 
         <?php foreach ($fields as $key => $meta): ?>
+            <?php $isOn = trim($current[$key]) !== ''; ?>
             <div class="form-group">
                 <label class="form-label" for="fld-<?= e($key) ?>">
                     <?= e($meta['label']) ?>
-                    <?php if (trim($current[$key]) !== ''): ?><span class="pill pill-green" style="margin-left:.4rem;">on</span><?php endif; ?>
+                    <span class="pill <?= $isOn ? 'pill-green' : 'pill-gray' ?>"><?= $isOn ? 'On' : 'Off' ?></span>
                 </label>
                 <input class="form-control" id="fld-<?= e($key) ?>" name="<?= e($key) ?>" value="<?= e($current[$key]) ?>"
                        placeholder="<?= e($meta['placeholder']) ?>" pattern="<?= e($meta['pattern']) ?>" spellcheck="false" autocomplete="off">

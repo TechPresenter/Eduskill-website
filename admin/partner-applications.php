@@ -220,10 +220,10 @@ foreach ($STATUSES as $s) {
 }
 
 $statCards = [
-    ['key' => '',          'label' => 'All Requests', 'icon' => 'handshake',    'color' => '#063566', 'count' => $counts['all']],
-    ['key' => 'new',       'label' => 'New',          'icon' => 'inbox',        'color' => '#E67B1D', 'count' => $counts['new']],
-    ['key' => 'contacted', 'label' => 'Contacted',    'icon' => 'phone',        'color' => '#084881', 'count' => $counts['contacted']],
-    ['key' => 'partnered', 'label' => 'Partnered',    'icon' => 'circle-check', 'color' => '#58A42F', 'count' => $counts['partnered']],
+    ['key' => '',          'label' => 'All Requests', 'icon' => 'handshake',    'color' => '#0B4E3D', 'count' => $counts['all']],
+    ['key' => 'new',       'label' => 'New',          'icon' => 'inbox',        'color' => '#F15A24', 'count' => $counts['new']],
+    ['key' => 'contacted', 'label' => 'Contacted',    'icon' => 'phone',        'color' => '#174D3D', 'count' => $counts['contacted']],
+    ['key' => 'partnered', 'label' => 'Partnered',    'icon' => 'circle-check', 'color' => '#2F8065', 'count' => $counts['partnered']],
     ['key' => 'declined',  'label' => 'Declined',     'icon' => 'ban',          'color' => '#dc2626', 'count' => $counts['declined']],
 ];
 

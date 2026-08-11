@@ -132,8 +132,8 @@ echo json_ld_course($course);
             </div>
         </div>
 
-        <aside class="glass-card reveal" style="position:sticky;top:100px;text-align:center;">
-            <div style="font-size:2rem;font-weight:800;color:var(--brand-600,#063566);"><?= (float) $course['price'] > 0 ? e(money($course['price'], '₹', 0)) : 'Free' ?></div>
+        <aside class="glass-card reveal sticky-aside" style="position:sticky;top:100px;text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:var(--brand-600,#0B4E3D);"><?= (float) $course['price'] > 0 ? e(money($course['price'], '₹', 0)) : 'Free' ?></div>
             <ul class="list-check" style="text-align:left;margin:1rem 0;">
                 <li><?= lucide('signal') ?> <?= e(ucfirst($course['level'])) ?></li>
                 <?php if (!empty($course['duration'])): ?><li><?= lucide('clock') ?> <?= e($course['duration']) ?></li><?php endif; ?>

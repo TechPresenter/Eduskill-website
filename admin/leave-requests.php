@@ -182,7 +182,7 @@ include __DIR__ . '/partials/head.php';
                     <?php if ($r['status'] === 'pending'): ?>
                         <form method="post" action="<?= e(admin_url('leave-requests')) ?>" style="display:inline;">
                             <?= csrf_field() ?><input type="hidden" name="_do" value="review"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="decision" value="approved">
-                            <button class="icon-btn" type="submit" title="Approve" style="color:#308629;"><?= lucide('check') ?></button>
+                            <button class="icon-btn" type="submit" title="Approve" style="color:#1F5C48;"><?= lucide('check') ?></button>
                         </form>
                         <form method="post" action="<?= e(admin_url('leave-requests')) ?>" data-confirm="Reject this leave request?" style="display:inline;">
                             <?= csrf_field() ?><input type="hidden" name="_do" value="review"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="decision" value="rejected">

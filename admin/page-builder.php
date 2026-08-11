@@ -134,7 +134,7 @@ if ($action === 'edit') {
 
         <!-- ---- Page meta ---- -->
         <div class="panel mb-3">
-            <div class="panel-head"><h3><?= lucide('file-text') ?> Page Details</h3></div>
+            <div class="panel-head"><h2 class="panel-title"><?= lucide('file-text') ?> Page Details</h2></div>
             <div class="panel-body admin-form">
                 <div class="grid-2">
                     <div class="form-group">
@@ -147,7 +147,7 @@ if ($action === 'edit') {
                         <small class="form-hint">Frontend URL: <code><?= e(url('page?slug=' . $row['slug'])) ?></code></small>
                     </div>
                 </div>
-                <div class="form-group" style="max-width:280px;">
+                <div class="form-group pb-w-280">
                     <label class="form-label">Status</label>
                     <select class="form-select" name="status">
                         <option value="draft"     <?= $row['status'] === 'draft' ? 'selected' : '' ?>>Draft</option>
@@ -160,7 +160,7 @@ if ($action === 'edit') {
         <!-- ---- Blocks editor ---- -->
         <div class="panel">
             <div class="panel-head">
-                <h3><?= lucide('layout-list') ?> Content Blocks</h3>
+                <h2 class="panel-title"><?= lucide('layout-list') ?> Content Blocks</h2>
                 <span class="muted">Add, reorder and edit the blocks that make up this page.</span>
             </div>
             <div class="panel-body">
@@ -190,37 +190,40 @@ if ($action === 'edit') {
             </div>
         </div>
 
-        <div class="form-actions" style="margin-top:1.25rem;display:flex;gap:.75rem;">
+        <div class="form-actions">
             <button class="btn btn-primary" type="submit"><?= lucide('save') ?> Save Page</button>
             <a class="btn btn-ghost" href="<?= e(admin_url('page-builder')) ?>">Cancel</a>
         </div>
     </form>
 
     <style>
-        .pb-blocks { display: flex; flex-direction: column; gap: 1rem; }
-        .pb-block { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); overflow: hidden; }
-        .pb-block-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem .9rem; background: var(--surface); border-bottom: 1px solid var(--border); }
-        .pb-type { display: inline-flex; align-items: center; gap: .45rem; font-weight: 700; font-size: .9rem; text-transform: capitalize; }
+        /* Block-editor layout only. Buttons, icon buttons, panels, form controls
+           and the empty state all come from the shared admin layers. */
+        .pb-blocks { display: flex; flex-direction: column; gap: var(--sp-4); }
+        .pb-block { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface-2); overflow: hidden;
+            transition: box-shadow var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease); }
+        .pb-block-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+            padding: var(--sp-2) var(--sp-3); background: var(--surface); border-bottom: 1px solid var(--border); }
+        .pb-type { display: inline-flex; align-items: center; gap: var(--sp-1); font-weight: 700; font-size: .9rem; text-transform: capitalize; }
         .pb-type i { width: 16px; height: 16px; }
-        .pb-tools { display: flex; gap: .35rem; }
-        .pb-block-body { padding: 1rem; display: grid; gap: .85rem; }
-        .pb-block-body .form-label { font-size: .82rem; margin-bottom: .25rem; }
-        .pb-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
-        .pb-item { border: 1px dashed var(--border); border-radius: 10px; padding: .75rem; display: grid; gap: .6rem; background: var(--surface); position: relative; }
+        .pb-tools { display: flex; gap: var(--sp-1); }
+        .pb-block-body { padding: var(--sp-4); display: grid; gap: var(--sp-3); }
+        .pb-item { border: 1px dashed var(--border); border-radius: var(--r-md); padding: var(--sp-3);
+            display: grid; gap: var(--sp-2); background: var(--surface); position: relative; }
         .pb-item-head { display: flex; align-items: center; justify-content: space-between; }
         .pb-item-head strong { font-size: .8rem; color: var(--muted); }
         .pb-sub-add { justify-self: start; }
-        .pb-add { display: flex; gap: .6rem; align-items: center; margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px dashed var(--border); flex-wrap: wrap; }
+        .pb-add { display: flex; gap: var(--sp-2); align-items: center; margin-top: var(--sp-4);
+            padding-top: var(--sp-4); border-top: 1px dashed var(--border); flex-wrap: wrap; }
         .pb-add .form-select { max-width: 200px; }
-        .pb-empty { text-align: center; color: var(--muted); padding: 1.5rem; border: 1px dashed var(--border); border-radius: 12px; }
+        .pb-w-280 { max-width: 280px; }
 
-        /* ---- drag to reorder ---- */
-        .pb-grip { cursor: grab; color: var(--muted); display: inline-flex; padding: .2rem; margin-right: -.2rem; }
+        /* ---- drag to reorder: the grip and the drop indicator ---- */
+        .pb-grip { cursor: grab; color: var(--muted); display: inline-flex; padding: var(--sp-1); margin-right: calc(var(--sp-1) * -1); }
         .pb-grip:active { cursor: grabbing; }
         .pb-grip i { width: 16px; height: 16px; }
-        .pb-block { transition: box-shadow .18s ease, opacity .18s ease, transform .18s ease; }
         .pb-block.is-dragging { opacity: .45; }
-        .pb-block.is-over { box-shadow: 0 -3px 0 0 var(--primary, #063566); }
+        .pb-block.is-over { box-shadow: 0 -3px 0 0 var(--brand-600, #0B4E3D); }
 
         /* ---- collapse ---- */
         .pb-block.is-collapsed .pb-block-body { display: none; }
@@ -228,24 +231,24 @@ if ($action === 'edit') {
 
         /* ---- generic field wrapper (registry-driven) ---- */
         .pb-f { min-width: 0; }
-        .pb-f .form-label { font-size: .8rem; margin-bottom: .25rem; display: block; }
-        .pb-color { width: 100%; height: 38px; padding: 2px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); cursor: pointer; }
-        .pb-items { display: grid; gap: .7rem; }
+        .pb-block-body .form-label, .pb-f .form-label { display: block; font-size: .82rem; margin-bottom: var(--sp-1); }
+        .pb-items { display: grid; gap: var(--sp-2); }
+        /* a colour input previews the value it holds, so it keeps its own chrome */
+        .pb-color { width: 100%; height: 38px; padding: 2px; border: 1px solid var(--border);
+            border-radius: var(--r-sm); background: var(--surface); cursor: pointer; }
 
         /* ---- style drawer ---- */
-        .pb-style { margin-top: .35rem; border: 1px dashed var(--border); border-radius: 10px; background: var(--surface); }
-        .pb-style > summary { cursor: pointer; padding: .55rem .8rem; font-size: .84rem; font-weight: 650; display: flex; align-items: center; gap: .45rem; list-style: none; }
+        .pb-style { margin-top: var(--sp-1); border: 1px dashed var(--border); border-radius: var(--r-md); background: var(--surface); }
+        .pb-style > summary { cursor: pointer; padding: var(--sp-2) var(--sp-3); font-size: .84rem; font-weight: 650;
+            display: flex; align-items: center; gap: var(--sp-1); list-style: none; }
         .pb-style > summary::-webkit-details-marker { display: none; }
         .pb-style > summary i { width: 15px; height: 15px; }
         .pb-style[open] > summary { border-bottom: 1px dashed var(--border); }
-        .pb-style-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .7rem; padding: .8rem; }
+        .pb-style-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-2); padding: var(--sp-3); }
 
         /* ---- autosave note ---- */
-        .pb-autosave { margin-left: auto; font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: .4rem; }
+        .pb-autosave { margin-left: auto; font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: var(--sp-1); }
         @media (max-width: 640px) { .pb-autosave { margin-left: 0; width: 100%; } }
-        .pb-color-row { display: flex; align-items: center; gap: .6rem; }
-        .pb-color-row input[type="color"] { width: 46px; height: 38px; padding: 2px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); cursor: pointer; }
-        @media (max-width: 640px) { .pb-grid-2 { grid-template-columns: 1fr; } }
     </style>
 
     <?php
@@ -330,7 +333,7 @@ if ($action === 'edit') {
                 return '<div class="pb-f">' + lbl + '<select class="form-select" ' + attr + '>' + opts + '</select></div>';
             }
             if (spec.type === 'color') {
-                var v = /^#[0-9a-fA-F]{6}$/.test(value || '') ? value : '#063566';
+                var v = /^#[0-9a-fA-F]{6}$/.test(value || '') ? value : '#0B4E3D';
                 return '<div class="pb-f">' + lbl + '<input type="color" class="pb-color" ' + attr + ' value="' + esc(v) + '"></div>';
             }
             if (spec.type === 'number') {
@@ -443,7 +446,9 @@ if ($action === 'edit') {
 
         function render() {
             if (!blocks.length) {
-                container.innerHTML = '<div class="pb-empty">No blocks yet. Choose a widget below and click &ldquo;Add block&rdquo; to begin.</div>';
+                container.innerHTML = '<div class="empty-state"><div class="icon"><i data-lucide="layout-list"></i></div>' +
+                    'No blocks yet. Choose a widget below and click &ldquo;Add block&rdquo; to begin.</div>';
+                drawIcons();
                 return;
             }
             container.innerHTML = blocks.map(function (b, i) { return buildBlock(b, i, blocks.length); }).join('');
@@ -608,20 +613,25 @@ $p = paginate("SELECT * FROM $table WHERE $where ORDER BY id DESC", $params, 12)
 
 include __DIR__ . '/partials/head.php';
 ?>
+<style>
+    /* Two layout-only helpers for the list view. */
+    .pb-w-360 { max-width: 360px; }
+</style>
+
 <div class="admin-page-head">
     <div><h1>Page Builder</h1><span class="muted"><?= (int) $p['total'] ?> total</span></div>
 </div>
 
 <div class="panel mb-3">
-    <div class="panel-head"><h3><?= lucide('plus') ?> Create a New Page</h3></div>
+    <div class="panel-head"><h2 class="panel-title"><?= lucide('plus') ?> Create a New Page</h2></div>
     <div class="panel-body">
         <form class="flex gap-2 flex-wrap items-center" method="post" action="<?= e(admin_url('page-builder')) ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="_do" value="new">
-            <input class="form-control" name="title" required maxlength="191" placeholder="New page title…" style="max-width:360px;">
+            <input class="form-control pb-w-360" name="title" required maxlength="191" placeholder="New page title…">
             <button class="btn btn-primary" type="submit"><?= lucide('file-plus') ?> New Page</button>
         </form>
-        <small class="form-hint" style="display:block;margin-top:.6rem;">Creates a draft with a unique slug, then opens the block editor.</small>
+        <small class="form-hint">Creates a draft with a unique slug, then opens the block editor.</small>
     </div>
 </div>
 
@@ -636,7 +646,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>#</th><th>Title</th><th>Slug</th><th>Blocks</th><th>Status</th><th>Updated</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>#</th><th>Title</th><th>Slug</th><th>Blocks</th><th>Status</th><th>Updated</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r):
                     $decoded = json_decode((string) ($r['blocks'] ?? ''), true);
@@ -645,7 +655,7 @@ include __DIR__ . '/partials/head.php';
                         <td><?= (int) $r['id'] ?></td>
                         <td><strong><?= e($r['title']) ?></strong></td>
                         <td><code><?= e($r['slug']) ?></code></td>
-                        <td><span class="pill pill-blue"><?= (int) $blockCount ?> block<?= $blockCount === 1 ? '' : 's' ?></span></td>
+                        <td><span class="pill pill-tag"><?= (int) $blockCount ?> block<?= $blockCount === 1 ? '' : 's' ?></span></td>
                         <td><span class="pill <?= $r['status'] === 'published' ? 'pill-green' : 'pill-amber' ?>"><?= e(ucfirst($r['status'])) ?></span></td>
                         <td><small class="text-muted"><?= e(format_date($r['updated_at'] ?? $r['created_at'], 'd M Y')) ?></small></td>
                         <td>
@@ -654,7 +664,7 @@ include __DIR__ . '/partials/head.php';
                                     <a class="icon-btn" href="<?= e(url('page?slug=' . rawurlencode($r['slug']))) ?>" target="_blank" title="View"><?= lucide('external-link') ?></a>
                                 <?php endif; ?>
                                 <a class="icon-btn" href="<?= e(admin_url('page-builder?action=edit&id=' . $r['id'])) ?>" title="Edit blocks"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('page-builder')) ?>" data-confirm="Delete this page permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('page-builder')) ?>" data-confirm="Delete this page permanently?">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -669,7 +679,22 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('layout-template') ?></div>No pages yet. Create your first page above.</div>
+            <?php /* Branched on $search. Creation is the inline form in the panel above,
+                     not an ?action=create route, so the empty arm points there. */ ?>
+            <div class="empty-state">
+                <div class="icon"><?= lucide('layout-template') ?></div>
+                <?php if ($search !== ''): ?>
+                    <p class="es-title">No pages match &ldquo;<?= e($search) ?>&rdquo;</p>
+                    <p class="es-text">No page has that title or slug. Clear the search to see every page.</p>
+                    <div class="es-actions">
+                        <a class="btn btn-secondary" href="<?= e(admin_url('page-builder')) ?>">Clear search</a>
+                    </div>
+                <?php else: ?>
+                    <p class="es-title">No pages yet</p>
+                    <p class="es-text">A builder page is assembled from content blocks rather than one body field.
+                        Name one in the panel above and you will land straight in the block editor.</p>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
     </div>
 </div>

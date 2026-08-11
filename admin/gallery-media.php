@@ -199,7 +199,7 @@ include __DIR__ . '/partials/head.php';
         <?php if ($p['items']): ?>
         <div class="table-wrap">
             <table class="admin-table">
-                <thead><tr><th>Media</th><th>Title</th><th>Album</th><th>Type</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
+                <thead><tr><th>Media</th><th>Title</th><th>Album</th><th>Type</th><th>Order</th><th class="num">Actions</th></tr></thead>
                 <tbody>
                 <?php foreach ($p['items'] as $r): ?>
                     <tr>
@@ -209,12 +209,12 @@ include __DIR__ . '/partials/head.php';
                             <small class="text-muted"><?= e(excerpt($r['caption'] ?? '', 12)) ?></small>
                         </td>
                         <td><?= e($albumNames[(int) ($r['album_id'] ?? 0)] ?? '—') ?></td>
-                        <td><span class="pill <?= $r['type'] === 'video' ? 'pill-amber' : 'pill-blue' ?>"><?= e(ucfirst($r['type'])) ?></span></td>
+                        <td><span class="pill <?= 'pill-tag' ?>"><?= e(ucfirst($r['type'])) ?></span></td>
                         <td><?= (int) $r['sort_order'] ?></td>
                         <td>
                             <div class="actions">
                                 <a class="icon-btn" href="<?= e(admin_url('gallery-media?action=edit&id=' . $r['id'])) ?>" title="Edit"><?= lucide('pencil') ?></a>
-                                <form method="post" action="<?= e(admin_url('gallery-media')) ?>" data-confirm="Delete this media permanently?" style="display:inline;">
+                                <form method="post" action="<?= e(admin_url('gallery-media')) ?>" data-confirm="Delete this media permanently?" class="inline-form">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="_do" value="delete">
                                     <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -229,7 +229,23 @@ include __DIR__ . '/partials/head.php';
         </div>
         <?= $p['links'] ?>
         <?php else: ?>
-            <div class="empty-state"><div class="icon"><?= lucide('image') ?></div>No media yet. <a href="<?= e(admin_url('gallery-media?action=create')) ?>">Add your first media</a>.</div>
+            <div class="empty-state">
+                            <div class="icon"><?= lucide('image') ?></div>
+                            <?php if ($search !== ''): ?>
+                                <p class="es-title">No media match &ldquo;<?= e($search) ?>&rdquo;</p>
+                                <p class="es-text">No image or video has that title or caption. Clear the search to see every one.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-secondary" href="<?= e(admin_url('gallery-media')) ?>">Clear search</a>
+                                    <a class="btn btn-primary" href="<?= e(admin_url('gallery-media?action=create')) ?>"><?= lucide('plus') ?> Add your first media</a>
+                                </div>
+                            <?php else: ?>
+                                <p class="es-title">No media yet</p>
+                                <p class="es-text">Photos and videos live inside gallery albums. Add an album first if you have not already, then upload media into it.</p>
+                                <div class="es-actions">
+                                    <a class="btn btn-primary" href="<?= e(admin_url('gallery-media?action=create')) ?>"><?= lucide('plus') ?> Add your first media</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
         <?php endif; ?>
     </div>
 </div>

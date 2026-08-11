@@ -142,7 +142,7 @@ include __DIR__ . '/includes/header.php';
         <div style="max-width:820px;margin-inline:auto;position:relative;">
             <?php foreach ($milestones as $i => $m): $isLast = ($i === count($milestones) - 1); ?>
                 <div class="reveal <?= 'delay-' . (($i % 3) + 1) ?>" style="position:relative;padding:0 0 <?= $isLast ? '0' : '1.75rem' ?> 2.25rem;border-left:2px solid <?= $isLast ? 'transparent' : 'var(--border,#e5e7eb)' ?>;">
-                    <span aria-hidden="true" style="position:absolute;left:-9px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--brand-600,#063566);box-shadow:0 0 0 4px rgba(6,53,102,.15);"></span>
+                    <span aria-hidden="true" style="position:absolute;left:-9px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--brand-600,#0B4E3D);box-shadow:0 0 0 4px rgba(11,78,61,.15);"></span>
                     <div class="card">
                         <div class="card-body">
                             <div class="flex items-center gap-2 flex-wrap mb-1">
