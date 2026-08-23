@@ -202,6 +202,16 @@ if (empty($headerMenus)) {
             <?php else: ?>
                 <?php require_once __DIR__ . '/portal-sidebar.php'; echo portal_sidebar_trigger(); ?>
             <?php endif; ?>
+            <?php /* Secondary CTA — recruitment. Settings-driven like the primary
+                     one so the Header Designer can retarget or switch it off, but
+                     it defaults on and points at the coordinator application. */ ?>
+            <?php if ((int) get_setting('header_apply_enabled', 1) === 1):
+                $haText = get_setting('header_apply_text', 'Apply Now');
+                $haUrl  = get_setting('header_apply_url', 'coordinator-apply'); ?>
+                <a class="btn btn-outline btn-sm desktop-only"
+                   href="<?= e(preg_match('#^https?://#i', $haUrl) ? $haUrl : url($haUrl)) ?>"
+                   aria-label="<?= e($haText) ?>" title="<?= e($haText) ?>"><?= lucide('clipboard-pen') ?> <?= e($haText) ?></a>
+            <?php endif; ?>
             <?php $hcText = get_setting('header_cta_text', 'Donate'); $hcUrl = get_setting('header_cta_url', 'donate'); ?>
             <a class="btn btn-glow btn-sm desktop-only" href="<?= e(preg_match('#^https?://#i', $hcUrl) ? $hcUrl : url($hcUrl)) ?>" aria-label="<?= e($hcText) ?>" title="<?= e($hcText) ?>"><?= lucide('heart') ?> <?= e($hcText) ?></a>
         </div>

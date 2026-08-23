@@ -1,0 +1,575 @@
+/* =============================================================================
+ *  Community Coordinator application — additions to the shared .cap-* kit
+ * -----------------------------------------------------------------------------
+ *  This page reuses assets/css/career-apply.css for the section shell, the
+ *  glass card, the floating-label fields and the buttons. Only what that kit
+ *  does not have lives here:
+ *
+ *    .coa (on the section)  brand palette
+ *    .coa-role              the three role cards above the form
+ *    .coa-formwrap / .coa-fs  the single long form and its numbered sections
+ *    .coa-pick              large radio cards for choosing a position
+ *    .coa-chips             checkbox groups (skills, focus areas, languages)
+ *    .coa-yn                yes / no pairs
+ *    .coa-grid              the education qualification rows
+ *    .coa-doc               the ten-slot document checklist
+ *    .coa-declare           the declaration block
+ *    .coa-next              the "what happens next" strip below the form
+ *
+ *  Motion budget matches the parent kit: transform and opacity only, and every
+ *  transition is dropped under prefers-reduced-motion.
+ * ========================================================================== */
+
+/* ------------------------------------------------------------------ palette */
+/* The .cap kit ships a generic blue. Repaint it in a vibrant tomato/red scale
+   rather than forking the stylesheet — every child rule reads these vars, so
+   the gradients, focus rings, chips, buttons and section numbers all follow.
+   --cap-shadow-rgb is the one addition: the kit hardcodes a navy rgba in
+   several box-shadows, which would have left blue glows under red buttons. */
+.cap.coa {
+    --cap-primary:   #A81B0B;   /* deep tomato, for gradient ends and headings */
+    --cap-secondary: #E23A1E;   /* the working red: borders, focus, links      */
+    --cap-tomato:    #FF6347;   /* true tomato, the bright mid-tone            */
+    --cap-accent:    #F59300;   /* warm amber for "done / attached" states     */
+    --cap-warm:      #FFB020;
+    --cap-grad:      linear-gradient(135deg, #A81B0B 0%, #E23A1E 52%, #FF6347 100%);
+    --cap-bg:        #FFF6F3;
+    --cap-shadow-rgb: 168, 27, 11;        /* tomato, for every glow below      */
+}
+:root[data-theme="dark"] .cap.coa { --cap-bg: #150907; }
+.cap.coa .cap-blob.b1 { background: radial-gradient(circle, var(--cap-tomato), transparent 68%); }
+.cap.coa .cap-blob.b2 { background: radial-gradient(circle, var(--cap-accent), transparent 68%); }
+.cap.coa .cap-blob.b3 { background: radial-gradient(circle, var(--cap-primary), transparent 72%); opacity: .26; }
+.cap.coa .cap-mesh {
+    background-image:
+        radial-gradient(at 18% 22%, rgba(226, 58, 30, .18) 0, transparent 52%),
+        radial-gradient(at 82% 14%, rgba(255, 99, 71, .16) 0, transparent 48%),
+        radial-gradient(at 68% 88%, rgba(245, 147, 0, .14) 0, transparent 50%);
+}
+
+/* The kit's own shadows and the badge gradient are hardcoded blue — restate the
+   handful that are actually visible on this page in the tomato scale. */
+.cap.coa .cap-badge { box-shadow: 0 8px 22px -8px rgba(var(--cap-shadow-rgb), .55); }
+.cap.coa .cap-btn   { box-shadow: 0 12px 26px -12px rgba(var(--cap-shadow-rgb), .70); }
+.cap.coa .cap-btn:hover { box-shadow: 0 18px 34px -14px rgba(var(--cap-shadow-rgb), .80); }
+.cap.coa .cap-why-card:hover { box-shadow: 0 18px 38px -18px rgba(var(--cap-shadow-rgb), .42); }
+
+/* ------------------------------------------------------- reveal, made safe */
+/* career-apply.css hides .cap-rv at opacity:0 until a script adds .is-in, and
+   it does that whether or not the script ever runs. On a page whose main
+   content is a form, one JS failure means a blank page — so on this page the
+   hidden state applies ONLY when scripting is known to be live (the header puts
+   `js` on <html>). Without it, everything is visible from the first paint. */
+html:not(.js) .coa .cap-rv { opacity: 1; transform: none; transition: none; }
+
+/* =============================================================================
+ *  Readability of the long form  — why this section exists
+ * -----------------------------------------------------------------------------
+ *  The .cap kit was built for a SMALL glass card floating over a compact hero:
+ *  74%-transparent card, backdrop-filter blur+saturate(160%), 60%-transparent
+ *  fields, and three blurred colour blobs behind it all. At that size it looks
+ *  expensive.
+ *
+ *  This form is 6,450px tall. Stretched over that, the decorative blobs and the
+ *  mesh gradient sat directly behind the fields, saturate(160%) pushed the green
+ *  through the translucent card, and every label ended up pale grey on pale
+ *  green. The page read as "the form isn't showing" — it was there, at roughly
+ *  the contrast of a watermark.
+ *
+ *  So on this page the card is an opaque reading surface, the fields are solid,
+ *  and the decoration is confined to the top of the section where the intro is.
+ * ========================================================================== */
+
+/* Decoration belongs to the intro, not to 6,000px of form. */
+.cap.coa .cap-bg { inset: 0 0 auto; height: min(1200px, 100%); }
+.cap.coa .cap-bg::after {
+    content: ''; position: absolute; inset: auto 0 0; height: 260px;
+    background: linear-gradient(180deg, transparent, var(--cap-bg));
+}
+
+/* ---------------------------------------------------- page-level structure */
+.coa-intro { max-width: 62ch; margin: 0 auto 2.2rem; text-align: center; }
+.coa-intro .cap-lead { max-width: none; margin-left: auto; margin-right: auto; }
+
+/* One long form, centred and capped so the lines never run too wide to read. */
+.coa-formwrap { max-width: 960px; margin: 0 auto; scroll-margin-top: 90px; }
+
+/* Opaque card: no transparency, no backdrop-filter, no colour bleeding through. */
+.coa-formwrap .cap-card {
+    background: #fff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: 0 24px 60px -32px rgba(var(--cap-shadow-rgb), .26);
+}
+:root[data-theme="dark"] .coa-formwrap .cap-card { background: #1a100e; }
+/* The animated gradient border reads as noise at this size — keep a quiet one. */
+.coa-formwrap .cap-card::before { opacity: .22; animation: none; }
+
+/* Solid fields with a real border, so a label is always legible against them. */
+.coa .cap-f > input,
+.coa .cap-f > select,
+.coa .cap-f > textarea,
+.coa .coa-grid input,
+.coa .coa-grid textarea {
+    background: #fffaf8;
+    border-color: rgba(120, 40, 25, .18);
+}
+.coa .cap-f > input:focus,
+.coa .cap-f > select:focus,
+.coa .cap-f > textarea:focus,
+.coa .coa-grid input:focus,
+.coa .coa-grid textarea:focus { background: #fff; }
+:root[data-theme="dark"] .coa .cap-f > input,
+:root[data-theme="dark"] .coa .cap-f > select,
+:root[data-theme="dark"] .coa .cap-f > textarea,
+:root[data-theme="dark"] .coa .coa-grid input,
+:root[data-theme="dark"] .coa .coa-grid textarea {
+    background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .16);
+}
+
+/* Same for the pickable surfaces, which were translucent for the same reason. */
+.coa .coa-pick label,
+.coa .coa-chips label,
+.coa .coa-doc,
+.coa .coa-yn-stack .coa-yn { background: #fffaf8; }
+.coa .coa-chips input:checked + label { background: var(--cap-grad); }
+.coa .coa-doc.is-set { background: color-mix(in srgb, var(--cap-accent) 8%, #fff); }
+.coa .coa-pick input:checked + label { background: color-mix(in srgb, var(--cap-secondary) 7%, #fff); }
+:root[data-theme="dark"] .coa .coa-pick label,
+:root[data-theme="dark"] .coa .coa-chips label,
+:root[data-theme="dark"] .coa .coa-doc,
+:root[data-theme="dark"] .coa .coa-yn-stack .coa-yn { background: rgba(255, 255, 255, .05); }
+
+/* Labels sit on white now, so they can carry proper weight. */
+.coa .cap-f > label { color: #6b5a56; }
+.coa .coa-fs-head p, .coa .coa-note-line { color: #6b5a56; }
+:root[data-theme="dark"] .coa .cap-f > label,
+:root[data-theme="dark"] .coa .coa-fs-head p,
+:root[data-theme="dark"] .coa .coa-note-line { color: #94a3b8; }
+
+/* A <select> always shows its current option, so a resting label lands on top
+   of that text. Float select labels permanently, as the date fields do. */
+.coa .cap-f > select { padding-top: 1.25rem; }
+.coa .cap-f > select + label { transform: translateY(-.62rem) scale(.76); }
+
+/* A numbered section of the form. The rule between sections is what tells the
+   reader the form has parts at all, now that there are no steps. */
+.coa-fs { border: 0; margin: 0; padding: 0; }
+.coa-fs + .coa-fs {
+    margin-top: clamp(1.8rem, 3.4vw, 2.6rem);
+    padding-top: clamp(1.6rem, 3vw, 2.2rem);
+    border-top: 1px solid var(--cap-line);
+}
+.coa-fs-head { display: flex; align-items: flex-start; gap: .8rem; margin-bottom: 1.1rem; }
+.coa-fs-no {
+    flex: 0 0 auto; width: 32px; height: 32px; border-radius: 10px;
+    display: grid; place-items: center; font-size: .85rem; font-weight: 800;
+    color: #fff; background: var(--cap-grad);
+    box-shadow: 0 8px 18px -10px rgba(var(--cap-shadow-rgb), .75);
+}
+.coa-fs-head h3 { margin: 0 0 .15rem; font-size: 1.06rem; font-weight: 800; }
+.coa-fs-head p  { margin: 0; font-size: .84rem; color: var(--cap-muted); line-height: 1.55; }
+
+/* A one-line instruction above a checkbox group. */
+.coa-note-line { margin: 1rem 0 .6rem; font-size: .84rem; color: var(--cap-muted); }
+
+.coa-sub {
+    display: flex; align-items: center; gap: .5rem;
+    margin: 1.4rem 0 .8rem; font-size: .78rem; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--cap-muted);
+}
+.coa-sub::after { content: ''; flex: 1 1 auto; height: 1px; background: var(--cap-line); }
+.coa-sub svg { width: 15px; height: 15px; color: var(--cap-secondary); }
+
+/* A field with no leading icon needs the padding the kit reserves for one. */
+.cap-f.no-ico > input,
+.cap-f.no-ico > select,
+.cap-f.no-ico > textarea { padding-left: .85rem; }
+.cap-f.no-ico > label { left: .85rem; }
+
+/* Native date inputs never match :placeholder-shown, so the floating label
+   would sit on top of the value. Park these labels above the field instead. */
+.cap-f.is-date > label,
+.cap-f.is-date > input:focus + label,
+.cap-f.is-date > input:not(:placeholder-shown) + label {
+    transform: translateY(-.62rem) scale(.76);
+}
+.cap-f.is-date > input { padding-top: 1.2rem; }
+
+/* =============================================================================
+ *  Role cards — three compact boxes, one per coordinator level
+ * -----------------------------------------------------------------------------
+ *  Each box carries its own accent (--role-a / --role-b, set inline by the page)
+ *  so the three levels are told apart at a glance rather than by reading:
+ *  green for Panchayat, brand blue for Block, orange for District. Everything
+ *  tinted — the top bar, the icon chip, the bullet dots, the link — reads from
+ *  those two variables, so recolouring a level is a one-line change in the page.
+ *
+ *  auto-fit rather than a fixed repeat(3): three across on a desktop, two on a
+ *  tablet and one on a phone, without a breakpoint for each step.
+ * ========================================================================== */
+.coa-roles { display: grid; gap: .75rem; margin: 1.4rem 0; }
+.coa-roles-3 {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: .9rem; margin-bottom: 1.6rem; align-items: stretch;
+}
+.coa-why-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: clamp(2rem, 4vw, 3rem); }
+@media (max-width: 1100px) { .coa-why-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px)  { .coa-why-4 { grid-template-columns: 1fr; } }
+
+.coa-role {
+    --role-a: var(--cap-secondary);
+    --role-b: var(--cap-primary);
+
+    position: relative; overflow: hidden; isolation: isolate;
+    display: flex; flex-direction: column;
+    padding: 1.05rem 1rem .95rem; border-radius: 18px;
+    border: 1px solid var(--cap-line);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--role-a) 7%, transparent), transparent 55%),
+        var(--cap-card);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    transition: transform .25s cubic-bezier(.34, 1.3, .64, 1), box-shadow .25s ease, border-color .25s ease;
+}
+/* Accent bar across the top — the fastest signal that these are three things. */
+.coa-role::before {
+    content: ''; position: absolute; inset: 0 0 auto; height: 4px;
+    background: linear-gradient(90deg, var(--role-a), var(--role-b));
+}
+.coa-role:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--role-a) 45%, transparent);
+    box-shadow: 0 20px 38px -22px color-mix(in srgb, var(--role-b) 60%, transparent);
+}
+
+.coa-role-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .7rem; }
+.coa-role-ico {
+    width: 34px; height: 34px; flex: 0 0 auto; border-radius: 10px; display: grid; place-items: center;
+    color: #fff; background: linear-gradient(135deg, var(--role-a), var(--role-b));
+    box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--role-b) 75%, transparent);
+}
+.coa-role-ico svg { width: 16px; height: 16px; }
+.coa-role h3 { margin: 0; font-size: .92rem; font-weight: 800; line-height: 1.25; }
+.coa-role-scope {
+    font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    color: color-mix(in srgb, var(--role-b) 78%, var(--cap-muted));
+}
+:root[data-theme="dark"] .coa-role-scope { color: color-mix(in srgb, var(--role-a) 70%, var(--cap-muted)); }
+
+/* Duties: custom dots in the role colour, tighter than a default list. */
+.coa-role ul { margin: 0; padding: 0; list-style: none; display: grid; gap: .32rem; }
+.coa-role li {
+    position: relative; padding-left: .95rem;
+    font-size: .775rem; line-height: 1.45; color: var(--cap-muted);
+}
+.coa-role li::before {
+    content: ''; position: absolute; left: 0; top: .5em;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--role-a);
+}
+
+.coa-role-link {
+    display: inline-flex; align-items: center; gap: .35rem;
+    margin-top: auto; padding-top: .85rem;
+    font-size: .78rem; font-weight: 800; color: var(--role-b); text-decoration: none;
+}
+:root[data-theme="dark"] .coa-role-link { color: var(--role-a); }
+.coa-role-link svg { width: 14px; height: 14px; transition: transform .2s ease; }
+.coa-role-link:hover svg { transform: translateX(3px); }
+
+/* ------------------------------------------------------- position picker */
+.coa-pick { display: grid; gap: .7rem; }
+.coa-pick input[type="radio"] {
+    position: absolute; opacity: 0; width: 0; height: 0;
+}
+.coa-pick label {
+    display: flex; align-items: flex-start; gap: .8rem; cursor: pointer;
+    padding: .95rem 1rem; border-radius: 15px;
+    border: 1.5px solid var(--cap-line); background: rgba(255, 255, 255, .55);
+    transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+:root[data-theme="dark"] .coa-pick label { background: rgba(255, 255, 255, .05); }
+.coa-pick label:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--cap-secondary) 50%, transparent); }
+.coa-pick input:focus-visible + label { outline: 2px solid var(--cap-secondary); outline-offset: 2px; }
+.coa-pick input:checked + label {
+    border-color: var(--cap-secondary);
+    background: color-mix(in srgb, var(--cap-secondary) 8%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--cap-secondary) 13%, transparent);
+}
+.coa-pick-dot {
+    width: 20px; height: 20px; flex: 0 0 auto; margin-top: .12rem; border-radius: 50%;
+    border: 2px solid var(--cap-line); display: grid; place-items: center; transition: .2s ease;
+}
+.coa-pick-dot::after { content: ''; width: 9px; height: 9px; border-radius: 50%; background: transparent; transition: .2s ease; }
+.coa-pick input:checked + label .coa-pick-dot { border-color: var(--cap-secondary); }
+.coa-pick input:checked + label .coa-pick-dot::after { background: var(--cap-secondary); }
+.coa-pick b { display: block; font-size: .95rem; }
+.coa-pick small { font-size: .79rem; color: var(--cap-muted); }
+.coa-pick.has-error label { border-color: #dc2626; }
+
+/* Area fieldset that swaps with the chosen position. */
+.coa-area { display: none; }
+.coa-area.is-on { display: block; animation: capIn .3s ease both; }
+
+/* -------------------------------------------------------------- checkboxes */
+.coa-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+.coa-chips input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.coa-chips label {
+    display: inline-flex; align-items: center; gap: .4rem; cursor: pointer;
+    padding: .48rem .85rem; border-radius: 999px; font-size: .83rem; font-weight: 600;
+    border: 1.5px solid var(--cap-line); background: rgba(255, 255, 255, .55); color: var(--cap-muted);
+    transition: border-color .18s ease, background .18s ease, color .18s ease, transform .18s ease;
+}
+:root[data-theme="dark"] .coa-chips label { background: rgba(255, 255, 255, .05); }
+.coa-chips label:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--cap-secondary) 45%, transparent); }
+.coa-chips input:focus-visible + label { outline: 2px solid var(--cap-secondary); outline-offset: 2px; }
+.coa-chips input:checked + label {
+    border-color: transparent; color: #fff; background: var(--cap-grad);
+    box-shadow: 0 8px 18px -10px rgba(var(--cap-shadow-rgb), .65);
+}
+.coa-chips-tick { width: 14px; height: 14px; opacity: .0; transition: opacity .18s ease; }
+.coa-chips input:checked + label .coa-chips-tick { opacity: 1; }
+
+/* ------------------------------------------------------------- yes/no pair */
+.coa-yn { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.coa-yn-q { font-size: .89rem; font-weight: 600; flex: 1 1 240px; }
+.coa-yn-opts { display: inline-flex; padding: 3px; gap: 3px; border-radius: 999px; border: 1.5px solid var(--cap-line); }
+.coa-yn input { position: absolute; opacity: 0; width: 0; height: 0; }
+.coa-yn-opts label {
+    cursor: pointer; padding: .35rem 1rem; border-radius: 999px;
+    font-size: .82rem; font-weight: 700; color: var(--cap-muted); transition: .2s ease;
+}
+.coa-yn input:checked + label { background: var(--cap-grad); color: #fff; }
+.coa-yn input:focus-visible + label { outline: 2px solid var(--cap-secondary); outline-offset: 2px; }
+
+.coa-yn-q svg { width: 15px; height: 15px; vertical-align: -2px; margin-right: .3rem; color: var(--cap-secondary); }
+
+/* Section 8 asks four of these in a row — box them so they read as one set. */
+.coa-yn-stack { display: grid; gap: .5rem; }
+.coa-yn-stack .coa-yn {
+    padding: .7rem .9rem; border-radius: 13px;
+    border: 1px solid var(--cap-line); background: rgba(255, 255, 255, .5);
+}
+:root[data-theme="dark"] .coa-yn-stack .coa-yn { background: rgba(255, 255, 255, .04); }
+
+/* Panel that only matters when the answer above is "Yes". */
+.coa-if { display: none; margin-top: .85rem; }
+.coa-if.is-on { display: block; animation: capIn .3s ease both; }
+
+/* --------------------------------------------- repeating qualification rows */
+.coa-grid { display: grid; gap: .55rem; }
+.coa-grid-head,
+.coa-grid-row { display: grid; gap: .55rem; align-items: center; }
+.coa-grid.edu .coa-grid-head,
+.coa-grid.edu .coa-grid-row { grid-template-columns: 8.5rem repeat(3, minmax(0, 1fr)); }
+.coa-grid-head span { font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--cap-muted); }
+.coa-grid-lbl { font-size: .86rem; font-weight: 700; }
+.coa-grid input, .coa-grid textarea {
+    width: 100%; font: inherit; font-size: .88rem; padding: .6rem .7rem;
+    border: 1.5px solid var(--cap-line); border-radius: 11px;
+    background: rgba(255, 255, 255, .6); color: var(--cap-ink);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+:root[data-theme="dark"] .coa-grid input,
+:root[data-theme="dark"] .coa-grid textarea { background: rgba(255, 255, 255, .05); }
+.coa-grid input:focus, .coa-grid textarea:focus {
+    outline: none; border-color: var(--cap-secondary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--cap-secondary) 15%, transparent);
+}
+.coa-grid textarea { min-height: 62px; resize: vertical; grid-column: 1 / -1; }
+@media (max-width: 620px) {
+    .coa-grid.edu .coa-grid-head { display: none; }
+    .coa-grid.edu .coa-grid-row  { grid-template-columns: 1fr; padding: .7rem; border: 1px dashed var(--cap-line); border-radius: 12px; }
+}
+/* -------------------------------------------------------- document checklist */
+.coa-docs { display: grid; gap: .55rem; }
+.coa-doc {
+    display: flex; align-items: center; gap: .75rem; padding: .7rem .85rem;
+    border-radius: 14px; border: 1.5px solid var(--cap-line); background: rgba(255, 255, 255, .55);
+    transition: border-color .2s ease, background .2s ease;
+}
+:root[data-theme="dark"] .coa-doc { background: rgba(255, 255, 255, .04); }
+.coa-doc.is-set { border-color: color-mix(in srgb, var(--cap-accent) 60%, transparent); background: color-mix(in srgb, var(--cap-accent) 7%, transparent); }
+.coa-doc.has-error { border-color: #dc2626; }
+.coa-doc-ico {
+    width: 34px; height: 34px; flex: 0 0 auto; border-radius: 10px; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--cap-secondary) 12%, transparent); color: var(--cap-secondary);
+}
+.coa-doc.is-set .coa-doc-ico { background: color-mix(in srgb, var(--cap-accent) 18%, transparent); color: var(--cap-accent); }
+.coa-doc-ico svg { width: 17px; height: 17px; }
+.coa-doc-meta { flex: 1 1 auto; min-width: 0; }
+.coa-doc-meta b { display: block; font-size: .87rem; font-weight: 700; }
+.coa-doc-meta small { font-size: .75rem; color: var(--cap-muted); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.coa-doc-meta .coa-doc-err { color: #dc2626; }
+.coa-doc-req { font-size: .64rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--cap-warm); }
+.coa-doc-btn {
+    position: relative; flex: 0 0 auto; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .45rem .8rem; border-radius: 10px; font-size: .8rem; font-weight: 700;
+    border: 1.5px solid var(--cap-line); color: var(--cap-secondary); background: transparent;
+    transition: .2s ease;
+}
+.coa-doc-btn:hover { border-color: var(--cap-secondary); background: color-mix(in srgb, var(--cap-secondary) 8%, transparent); }
+.coa-doc-btn input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.coa-doc-btn svg { width: 14px; height: 14px; }
+.coa-doc-x {
+    flex: 0 0 auto; border: 0; background: transparent; cursor: pointer; padding: .3rem;
+    border-radius: 8px; color: var(--cap-muted); display: none;
+}
+.coa-doc.is-set .coa-doc-x { display: inline-flex; }
+.coa-doc-x:hover { color: #dc2626; background: rgba(220, 38, 38, .1); }
+.coa-doc-x svg { width: 15px; height: 15px; }
+
+/* ------------------------------------------------------------- declaration */
+.coa-declare {
+    padding: 1rem 1.1rem; border-radius: 16px; margin-bottom: 1rem;
+    border: 1px solid var(--cap-line);
+    background: color-mix(in srgb, var(--cap-secondary) 5%, transparent);
+    font-size: .84rem; line-height: 1.65; color: var(--cap-muted);
+}
+.coa-consent { display: flex; align-items: flex-start; gap: .65rem; cursor: pointer; }
+.coa-consent input { width: 18px; height: 18px; flex: 0 0 auto; margin-top: .12rem; accent-color: var(--cap-accent); }
+.coa-consent span { font-size: .86rem; }
+/* The wrapper carries data-coa-group, so the error class lands there. */
+[data-coa-group="consent"].has-error .coa-consent span { color: #dc2626; }
+[data-coa-group="consent"].has-error .coa-consent input { outline: 2px solid #dc2626; outline-offset: 2px; }
+
+/* --------------------------------------------------- what happens next strip */
+.coa-next { margin-top: clamp(2.4rem, 5vw, 3.6rem); }
+.coa-next-title { text-align: center; font-size: 1.15rem; font-weight: 800; margin: 0 0 1.3rem; }
+.coa-next-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .8rem; }
+@media (max-width: 1000px) { .coa-next-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px)  { .coa-next-grid { grid-template-columns: 1fr; } }
+.coa-next-step {
+    display: grid; gap: .35rem; justify-items: center; text-align: center;
+    padding: 1rem .9rem; border-radius: 16px;
+    border: 1px solid var(--cap-line); background: var(--cap-card);
+}
+.coa-next-ico {
+    width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
+    background: var(--cap-grad); color: #fff; margin-bottom: .25rem;
+}
+.coa-next-ico svg { width: 18px; height: 18px; }
+.coa-next-step strong { font-size: .9rem; }
+.coa-next-step span { font-size: .8rem; color: var(--cap-muted); line-height: 1.5; }
+.coa-disclaimer {
+    display: flex; align-items: flex-start; gap: .5rem;
+    max-width: 78ch; margin: 1.4rem auto 0; text-align: left;
+    font-size: .8rem; line-height: 1.6; color: var(--cap-muted);
+}
+.coa-disclaimer svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: .15rem; }
+
+/* Reference number shown on the success panel. */
+.coa-ref {
+    display: inline-block; margin-top: .3rem; padding: .45rem 1rem; border-radius: 999px;
+    font-weight: 800; letter-spacing: .06em;
+    background: color-mix(in srgb, var(--cap-accent) 14%, transparent); color: var(--cap-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .coa-role, .coa-pick label, .coa-chips label, .coa-doc, .coa-doc-btn { transition: none; }
+    .coa-role:hover, .coa-pick label:hover, .coa-chips label:hover { transform: none; }
+    .coa-area.is-on, .coa-if.is-on { animation: none; }
+}
+
+/* =============================================================================
+ *  Mobile
+ * -----------------------------------------------------------------------------
+ *  The fix that matters most is the first one. Every section of this form is a
+ *  <fieldset>, and the UA stylesheet gives fieldsets `min-inline-size:
+ *  min-content` — they refuse to shrink below their widest child. The document
+ *  checklist rows (icon + long label + Attach button) have a min-content of
+ *  ~364px, so at 390px every section was pushed 18px wider than the card and
+ *  clipped by the section's `overflow: hidden`. There was no horizontal
+ *  scrollbar to hint at it; the right edge simply vanished.
+ *
+ *  `min-width: 0` is the whole remedy. Everything below is comfort: bigger tap
+ *  targets, 16px inputs so iOS does not zoom on focus, and rows that stack.
+ * ========================================================================== */
+
+/* -------------------------------------------------------------- headings */
+/* Headings inherit the site theme's green, which fights a tomato page. Pin the
+   ones inside this section to the local scale. .cap-h1's .hl already paints
+   itself from --cap-grad, so it follows the palette on its own. */
+.coa .cap-h1,
+.coa .cap-card-head h2,
+.coa .coa-fs-head h3,
+.coa .coa-role h3,
+.coa .coa-next-title,
+.coa .cap-done h3 { color: var(--cap-primary); }
+:root[data-theme="dark"] .coa .cap-h1,
+:root[data-theme="dark"] .coa .cap-card-head h2,
+:root[data-theme="dark"] .coa .coa-fs-head h3,
+:root[data-theme="dark"] .coa .coa-role h3,
+:root[data-theme="dark"] .coa .coa-next-title,
+:root[data-theme="dark"] .coa .cap-done h3 { color: #FF8A6B; }
+/* The four expectation cards keep neutral headings — an all-red page is noise. */
+.coa .cap-why-card h3 { color: var(--cap-ink); }
+
+/* Applies at every width — a fieldset must never dictate its own minimum. */
+.coa-fs { min-width: 0; }
+.coa-doc-meta { min-width: 0; }
+/* The label may wrap; only the filename line is ellipsised. */
+.coa-doc-meta b { white-space: normal; }
+
+@media (max-width: 760px) {
+    /* Reclaim the padding the desktop card can afford and a phone cannot. */
+    .coa-formwrap .cap-card { padding: 1.15rem 1rem 1.4rem; border-radius: 18px; }
+    .coa-formwrap { scroll-margin-top: 70px; }
+
+    .coa-fs + .coa-fs { margin-top: 1.5rem; padding-top: 1.4rem; }
+    .coa-fs-head { gap: .6rem; margin-bottom: .9rem; }
+    .coa-fs-no { width: 28px; height: 28px; border-radius: 9px; font-size: .8rem; }
+    .coa-fs-head h3 { font-size: 1rem; }
+
+    /* 16px minimum: anything smaller makes iOS Safari zoom the page on focus,
+       and the visitor then has to pinch back out for every single field. */
+    .coa .cap-f > input,
+    .coa .cap-f > select,
+    .coa .cap-f > textarea,
+    .coa .coa-grid input,
+    .coa .coa-grid textarea,
+    .coa .cs-phone { font-size: 16px; }
+    .coa .cap-f > textarea { min-height: 92px; }
+
+    /* Comfortable thumb targets. */
+    .coa-chips label { padding: .55rem .9rem; font-size: .85rem; }
+    .coa-yn-opts label { padding: .45rem 1.1rem; }
+    .coa-pick label { padding: .85rem .9rem; }
+
+    /* The document row: label above, action below, both full width. */
+    .coa-doc { flex-wrap: wrap; row-gap: .6rem; padding: .75rem .8rem; }
+    .coa-doc-meta { flex: 1 1 calc(100% - 3rem); }
+    .coa-doc-btn { flex: 1 1 auto; justify-content: center; padding: .6rem .9rem; }
+    .coa-doc-x { order: 3; }
+
+    /* One question per line reads better than a squeezed two-column row. */
+    .coa-yn { flex-direction: column; align-items: stretch; gap: .55rem; }
+    .coa-yn-q { flex: 0 0 auto; }
+    .coa-yn-opts { align-self: flex-start; }
+
+    .coa-intro { margin-bottom: 1.6rem; }
+    .coa-next-title { font-size: 1.05rem; }
+    .coa-disclaimer { font-size: .78rem; }
+}
+
+@media (max-width: 480px) {
+    .coa-formwrap .cap-card { padding: 1rem .8rem 1.2rem; }
+    .cap.coa { padding: 2.2rem 0 3rem; }
+
+    /* The education table is already one block per qualification below 620px;
+       give the row a little more room now the card padding is smaller. */
+    .coa-grid.edu .coa-grid-row { padding: .65rem; gap: .45rem; }
+    .coa-grid-lbl { font-size: .88rem; }
+
+    /* Full-width submit, and a hit area a thumb can actually land on. */
+    .coa .cap-actions .cap-btn { width: 100%; padding: 1rem 1.2rem; }
+    .coa-declare { padding: .85rem .9rem; font-size: .82rem; }
+}
+
+/* Very small phones (360px and under) — keep the chips from getting cramped. */
+@media (max-width: 380px) {
+    .coa-chips { gap: .4rem; }
+    .coa-chips label { padding: .5rem .75rem; font-size: .8rem; }
+    .coa-doc-ico { width: 30px; height: 30px; }
+    .coa-fs-head p { font-size: .8rem; }
+}

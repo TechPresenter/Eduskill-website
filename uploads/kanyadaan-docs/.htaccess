@@ -1,0 +1,20 @@
+# =============================================================================
+#  Kanya Daan Project application documents — never served directly.
+# =============================================================================
+#  Identity, age, income, bank and family documents submitted by applicant
+#  families for beneficiary assessment. A random filename is not access
+#  control: URLs leak through referrers, proxy logs, browser history and
+#  forwarded links.
+#
+#  These files are streamed by admin/secure-file.php, which enforces
+#  require_admin() first and pins Content-Disposition to "attachment".
+#  Link them with secure_upload_url() (includes/helper.php), never upload_url().
+# =============================================================================
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
+Options -Indexes

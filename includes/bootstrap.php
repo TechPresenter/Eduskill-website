@@ -98,6 +98,9 @@ require_once __DIR__ . '/theme.php';
 require_once __DIR__ . '/i18n.php';
 require_once __DIR__ . '/faq-section.php';
 require_once __DIR__ . '/blocks.php';
+require_once __DIR__ . '/coordinator.php';
+require_once __DIR__ . '/scheme.php';
+require_once __DIR__ . '/kanyadaan.php';
 
 // Start the hardened session (defined in auth.php).
 pwf_session_start();

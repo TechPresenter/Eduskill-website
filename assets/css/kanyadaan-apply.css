@@ -1,0 +1,182 @@
+/* =============================================================================
+ *  Kanya Daan application — palette + the two widgets this form adds
+ * -----------------------------------------------------------------------------
+ *  The page reuses career-apply.css (.cap-*) and coordinator-apply.css (.coa-*)
+ *  wholesale — same card, same fields, same document checklist, same behaviour
+ *  script. Only three things are specific to it:
+ *
+ *    .kd (on the section)  a warm rose/gold palette, distinct from the
+ *                          coordinator form's tomato so the two applications
+ *                          are not mistaken for each other
+ *    .kd-policy            the compliance statement above the form
+ *    .kd-legal             the legal-age confirmation in section D
+ *    .kd-fam               the five-column family table
+ * ========================================================================== */
+
+.cap.coa.kd {
+    --cap-primary:   #9D174D;   /* deep rose — headings and gradient ends      */
+    --cap-secondary: #BE185D;   /* the working colour: borders, focus, links   */
+    --cap-tomato:    #EC4899;   /* bright rose, the mid-tone                   */
+    --cap-accent:    #B45309;   /* warm gold for "done / attached" states      */
+    --cap-warm:      #D97706;
+    --cap-grad:      linear-gradient(135deg, #9D174D 0%, #BE185D 55%, #EC4899 100%);
+    --cap-bg:        #FFF5F8;
+    --cap-shadow-rgb: 157, 23, 77;
+}
+:root[data-theme="dark"] .cap.coa.kd { --cap-bg: #16070E; }
+:root[data-theme="dark"] .kd .coa-formwrap .cap-card { background: #1A0D14; }
+
+/* Field surfaces pick up the faintest warmth so they sit on the rose page. */
+.kd .cap-f > input,
+.kd .cap-f > select,
+.kd .cap-f > textarea,
+.kd .coa-grid input,
+.kd .coa-grid textarea { background: #FFFAFC; border-color: rgba(120, 25, 60, .16); }
+.kd .cap-f > input:focus,
+.kd .cap-f > select:focus,
+.kd .cap-f > textarea:focus,
+.kd .coa-grid input:focus,
+.kd .coa-grid textarea:focus { background: #fff; }
+.kd .coa-pick label,
+.kd .coa-chips label,
+.kd .coa-doc,
+.kd .coa-yn-stack .coa-yn { background: #FFFAFC; }
+.kd .coa-doc.is-set { background: color-mix(in srgb, var(--cap-accent) 8%, #fff); }
+:root[data-theme="dark"] .kd .cap-f > input,
+:root[data-theme="dark"] .kd .cap-f > select,
+:root[data-theme="dark"] .kd .cap-f > textarea,
+:root[data-theme="dark"] .kd .coa-grid input,
+:root[data-theme="dark"] .kd .coa-grid textarea,
+:root[data-theme="dark"] .kd .coa-chips label,
+:root[data-theme="dark"] .kd .coa-doc,
+:root[data-theme="dark"] .kd .coa-yn-stack .coa-yn {
+    background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .16);
+}
+
+/* ------------------------------------------------------- policy statement */
+/* Deliberately above the form and deliberately loud. Someone who should not be
+   applying is entitled to learn that before filling in forty fields. */
+.kd-policy {
+    display: flex; align-items: flex-start; gap: .8rem;
+    max-width: 960px; margin: 0 auto clamp(1.4rem, 3vw, 2rem);
+    padding: 1rem 1.15rem; border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--cap-warm) 45%, transparent);
+    border-left: 5px solid var(--cap-warm);
+    background: color-mix(in srgb, var(--cap-warm) 9%, #fff);
+}
+:root[data-theme="dark"] .kd-policy { background: color-mix(in srgb, var(--cap-warm) 14%, #1A0D14); }
+.kd-policy svg { flex: 0 0 auto; width: 20px; height: 20px; margin-top: .15rem; color: var(--cap-warm); }
+.kd-policy p { margin: 0; font-size: .87rem; line-height: 1.65; color: var(--cap-ink); }
+
+/* --------------------------------------------------- legal-age confirmation */
+.kd-legal {
+    margin-top: 1.1rem; padding: .9rem 1rem; border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--cap-secondary) 30%, transparent);
+    background: color-mix(in srgb, var(--cap-secondary) 6%, transparent);
+}
+.kd-legal .coa-consent span { font-size: .85rem; line-height: 1.6; }
+.kd-legal.has-error {
+    border-color: #dc2626;
+    background: color-mix(in srgb, #dc2626 6%, transparent);
+}
+.kd-legal.has-error .coa-consent span { color: #b91c1c; }
+
+/* -------------------------------------------------------- family table */
+/* Five columns is one more than the education grid, and the last two are the
+   widest, so this gets its own template rather than reusing .coa-grid.edu. */
+.coa-grid.kd-fam .coa-grid-head,
+.coa-grid.kd-fam .coa-grid-row {
+    grid-template-columns: minmax(0, 1.4fr) 4.5rem minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, .9fr);
+}
+@media (max-width: 860px) {
+    .coa-grid.kd-fam .coa-grid-head { display: none; }
+    .coa-grid.kd-fam .coa-grid-row {
+        grid-template-columns: 1fr 1fr;
+        padding: .7rem; border: 1px dashed var(--cap-line); border-radius: 12px;
+    }
+    /* Name spans the row; the rest pair up. */
+    .coa-grid.kd-fam .coa-grid-row input:first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) {
+    .coa-grid.kd-fam .coa-grid-row { grid-template-columns: 1fr; }
+    .kd-policy { padding: .85rem .9rem; gap: .6rem; }
+    .kd-policy p { font-size: .82rem; }
+}
+
+/* -----------------------------------------------------------------------------
+   Bilingual field labels (English + हिन्दी) — STATIC, not floating
+   -----------------------------------------------------------------------------
+   career-apply.css gives .cap-f a floating label: position:absolute, sitting
+   inside the field box and animating up on focus. That works for a short English
+   label and cannot work for a bilingual one — measured with both readings on one
+   line, 7 of 36 labels wrapped to two lines at 390px (50px tall inside a ~50px
+   field), which puts the label straight on top of the value being typed.
+   Widening the field is not available: the constraint is the phone, not the CSS.
+
+   So on THIS form the label moves out of the field and sits above it, which is
+   what long bilingual government forms do anyway: English on the first line,
+   Hindi on the second, both fully readable at any width and with no transform to
+   collide with. Scoped to .kd, so the career and coordinator forms keep the
+   floating treatment they were designed around.
+   -------------------------------------------------------------------------- */
+.kd .cap-f > label {
+    position: static;
+    display: block;
+    max-width: none;
+    margin: 0 0 .3rem;
+    transform: none;                 /* kill the float transform entirely */
+    transition: color .18s ease;
+    font-size: .88rem; font-weight: 650;
+    color: var(--cap-ink, #2f2320);
+    line-height: 1.3;
+    pointer-events: auto;            /* a real label again: clicking focuses the field */
+}
+.kd .lbl-hi {
+    display: block;
+    font-size: .82rem;
+    font-weight: 500;
+    opacity: .72;
+    line-height: 1.35;
+}
+
+/* The field no longer reserves head-room for a floated label, and no longer
+   needs the left gutter that made space for the icon overlay. */
+.kd .cap-f > input,
+.kd .cap-f > select,
+.kd .cap-f > textarea { padding: .7rem .85rem; }
+.kd .cap-f > textarea { min-height: 104px; padding-top: .7rem; }
+
+/* The float rules must not fire now that the label is in normal flow. */
+.kd .cap-f > input:focus + label,  .kd .cap-f > input:not(:placeholder-shown) + label,
+.kd .cap-f > textarea:focus + label, .kd .cap-f > textarea:not(:placeholder-shown) + label,
+.kd .cap-f > select:focus + label, .kd .cap-f > select.has-value + label {
+    transform: none;
+    font-size: .88rem;
+    color: var(--cap-secondary, #0B4E3D);
+}
+
+/* The decorative field icon was positioned against the old inner padding; with
+   the label outside, it has nothing to sit beside. */
+.kd .cap-f .cap-f-ico { display: none; }
+
+/* The character counter sat over the old bottom padding. */
+.kd .cap-count { bottom: .4rem; right: .6rem; }
+
+/* Radio and checkbox labels are already in normal flow — leave them alone. */
+.kd .coa-pick label, .kd .coa-chips label { display: inline-flex; margin: 0; font-size: inherit; }
+.kd .coa-pick .lbl-hi, .kd .coa-chips .lbl-hi { display: inline; margin-inline-start: .3em; }
+
+/* The markup is <input> THEN <label>, because the floating pattern needs the
+   `input + label` sibling selector. Once the label is static that source order
+   renders it BELOW its own field — which is how the Relationship select ended up
+   overlapping its label by 10px, and why every other label was sitting under its
+   input rather than over it.
+   Reordering visually with flex keeps the DOM (and therefore the sibling
+   selectors, and the reading order for assistive tech, which follows the label's
+   `for` attribute) exactly as it was. */
+.kd .cap-f { display: flex; flex-direction: column; }
+.kd .cap-f > label { order: -1; }
+.kd .cap-f > input,
+.kd .cap-f > select,
+.kd .cap-f > textarea { order: 0; }
+.kd .cap-f > .cap-err { order: 1; }

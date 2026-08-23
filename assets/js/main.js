@@ -78,12 +78,30 @@ function pwfReady(fn) {
             items.forEach((el) => el.classList.add('is-visible'));
             return;
         }
+        /* threshold 0, not 0.12.
+           intersectionRatio is measured against the ELEMENT, not the viewport,
+           so "12% visible" is unreachable for anything taller than ~8 screens:
+           a 7,000px article in an 844px phone viewport tops out at ~0.12 and
+           then loses to the negative rootMargin. Such an element never received
+           .is-visible and stayed at opacity:0 for the whole visit — a blank
+           page where the content was. Long scheme and project pages hit this.
+
+           The -40px rootMargin already supplies the "wait until it is properly
+           on screen" feel that the threshold was there for, and it works on any
+           height, so the reveal now triggers on first intersection instead. */
         const io = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) { entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
             });
-        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });
         items.forEach((el) => io.observe(el));
+
+        /* Failsafe: no element may stay invisible because a callback never
+           arrived (bfcache restore, deep link into a long page, a background
+           tab that throttled the observer). */
+        window.addEventListener('load', () => {
+            setTimeout(() => items.forEach((el) => el.classList.add('is-visible')), 1500);
+        });
     }
 
     /* ------------------------------------------------ COUNTER ANIMATION */

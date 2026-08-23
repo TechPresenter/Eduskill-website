@@ -1,0 +1,19 @@
+# =============================================================================
+#  Deny direct web access.
+#
+#  This directory holds issued certificate files, which identify individuals.
+#  Nothing links to it publicly; anything that needs to serve a file from here
+#  must go through admin/secure-file.php (authenticated) or stream it
+#  server-side with readfile(), the way forms/download.php does.
+#
+#  Do NOT store public artwork here — a denied directory cannot be rendered by
+#  <img> on a public page.
+# =============================================================================
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
+Options -Indexes

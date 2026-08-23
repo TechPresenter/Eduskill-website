@@ -113,6 +113,8 @@ function admin_nav_groups(): array
             ['scholarship-applications', 'clipboard-list', 'Scholarship Apps'],
             ['careers',                  'briefcase',      'Careers'],
             ['job-applications',         'inbox',          'Job Applications'],
+            ['coordinator-applications', 'users-round',    'Coordinator Apps'],
+            ['kanyadaan-applications',   'heart-handshake', 'Kanya Daan Apps'],
             ['membership-plans',         'badge-dollar-sign', 'Membership Plans'],
             ['membership-applications',  'clipboard-pen',  'Membership Apps'],
             ['membership-renewals',      'receipt',        'Renewals'],

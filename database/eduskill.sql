@@ -524,6 +524,113 @@ CREATE TABLE `contacts` (
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `coordinator_applications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `coordinator_applications` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `application_no` varchar(32) DEFAULT NULL,
+
+  -- ---- 2. Position applied for -------------------------------------------
+  `position` enum('panchayat','block','district') NOT NULL DEFAULT 'panchayat',
+  `preferred_panchayat` varchar(128) DEFAULT NULL,
+  `village_coverage` varchar(255) DEFAULT NULL,
+  `preferred_block` varchar(128) DEFAULT NULL,
+  `block_district` varchar(128) DEFAULT NULL,
+  `preferred_district` varchar(128) DEFAULT NULL,
+  `district_state` varchar(128) DEFAULT NULL,
+
+  -- ---- 1. Applicant details ----------------------------------------------
+  `name` varchar(128) NOT NULL,
+  `guardian_name` varchar(128) DEFAULT NULL,
+  `dob` date DEFAULT NULL,
+  `gender` enum('male','female','other') DEFAULT NULL,
+  `phone` varchar(32) NOT NULL,
+  `country_name` varchar(64) DEFAULT NULL,
+  `country_iso` char(2) DEFAULT NULL,
+  `country_dial` varchar(6) DEFAULT NULL,
+  `whatsapp` varchar(32) DEFAULT NULL,
+  `email` varchar(191) NOT NULL,
+  `id_proof_no` varchar(255) DEFAULT NULL,
+  `id_proof_last4` varchar(8) DEFAULT NULL,
+  `current_address` varchar(500) DEFAULT NULL,
+  `permanent_address` varchar(500) DEFAULT NULL,
+  `state` varchar(96) DEFAULT NULL,
+  `district` varchar(96) DEFAULT NULL,
+  `block` varchar(96) DEFAULT NULL,
+  `panchayat` varchar(96) DEFAULT NULL,
+  `village` varchar(128) DEFAULT NULL,
+
+  -- ---- 3. Educational qualification ---------------------------------------
+  `education` text DEFAULT NULL COMMENT 'JSON [{level,board,year,grade}]',
+  `computer_skills` varchar(255) DEFAULT NULL,
+
+  -- ---- 4. Work experience --------------------------------------------------
+  `experience_years` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `experience_months` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `ngo_experience` tinyint(1) NOT NULL DEFAULT 0,
+  `ngo_details` text DEFAULT NULL,
+
+  -- ---- 5. Community & field experience -------------------------------------
+  `community_experience` tinyint(1) NOT NULL DEFAULT 0,
+  `focus_areas` varchar(500) DEFAULT NULL,
+  `community_note` text DEFAULT NULL,
+  `languages` varchar(191) DEFAULT NULL,
+
+  -- ---- 8. Availability & field mobility --------------------------------------
+  `field_visits` tinyint(1) NOT NULL DEFAULT 0,
+  `can_travel` tinyint(1) NOT NULL DEFAULT 0,
+  `two_wheeler` tinyint(1) NOT NULL DEFAULT 0,
+  `has_licence` tinyint(1) NOT NULL DEFAULT 0,
+  `work_mode` varchar(32) DEFAULT NULL,
+  `expected_honorarium` decimal(10,2) DEFAULT NULL,
+  `available_from` date DEFAULT NULL,
+
+  -- ---- 9. Document checklist ------------------------------------------------
+  `documents` text DEFAULT NULL COMMENT 'JSON {slot: uploads-relative path}',
+
+  -- ---- 10. Reference details ---------------------------------------------------
+  -- A single reference with fixed fields, so these are real columns rather than
+  -- JSON: the office rings this person, and a phone number you cannot query is
+  -- no use to them.
+  `ref_name` varchar(128) DEFAULT NULL,
+  `ref_designation` varchar(128) DEFAULT NULL,
+  `ref_organization` varchar(191) DEFAULT NULL,
+  `ref_mobile` varchar(32) DEFAULT NULL,
+  `ref_relationship` varchar(96) DEFAULT NULL,
+
+  -- ---- 11. Applicant declaration --------------------------------------------
+  `declared_place` varchar(128) DEFAULT NULL,
+  `declared_on` date DEFAULT NULL,
+  `consent` tinyint(1) NOT NULL DEFAULT 0,
+
+  -- ---- For office use only ---------------------------------------------------
+  `status` enum('new','under_review','shortlisted','interview','approved','rejected') NOT NULL DEFAULT 'new',
+  `docs_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `field_verification` enum('pending','completed') NOT NULL DEFAULT 'pending',
+  `interview_outcome` enum('','recommended','not_recommended') NOT NULL DEFAULT '',
+  `approved_position` varchar(128) DEFAULT NULL,
+  `assigned_area` varchar(191) DEFAULT NULL,
+  `joining_date` date DEFAULT NULL,
+  `coordinator_level` enum('','panchayat','block','district') NOT NULL DEFAULT '',
+  `honorarium` decimal(10,2) DEFAULT NULL,
+  `approved_by` varchar(128) DEFAULT NULL,
+  `approver_designation` varchar(128) DEFAULT NULL,
+  `office_notes` text DEFAULT NULL,
+  `reviewed_by` int(10) unsigned DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+
+  `ip_address` varchar(45) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_coordapp_no` (`application_no`),
+  KEY `idx_coordapp_status` (`status`),
+  KEY `idx_coordapp_position` (`position`),
+  KEY `idx_coordapp_place` (`state`,`district`),
+  KEY `idx_coordapp_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `coupon_redemptions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -1523,6 +1630,94 @@ CREATE TABLE `job_applications` (
   CONSTRAINT `fk_jobapp_career` FOREIGN KEY (`career_id`) REFERENCES `careers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `kanyadaan_applications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `kanyadaan_applications` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `application_no` varchar(32) DEFAULT NULL,
+  `applicant_name` varchar(128) NOT NULL,
+  `relationship` enum('bride','father','mother','guardian','other') NOT NULL DEFAULT 'bride',
+  `relationship_other` varchar(96) DEFAULT NULL,
+  `phone` varchar(32) NOT NULL,
+  `country_name` varchar(64) DEFAULT NULL,
+  `country_iso` char(2) DEFAULT NULL,
+  `country_dial` varchar(6) DEFAULT NULL,
+  `whatsapp` varchar(32) DEFAULT NULL,
+  `email` varchar(191) DEFAULT NULL,
+  `state` varchar(96) DEFAULT NULL,
+  `district` varchar(96) DEFAULT NULL,
+  `block` varchar(96) DEFAULT NULL,
+  `panchayat` varchar(96) DEFAULT NULL,
+  `village` varchar(128) DEFAULT NULL,
+  `bride_name` varchar(128) NOT NULL,
+  `bride_dob` date DEFAULT NULL,
+  `bride_age` tinyint(3) unsigned DEFAULT NULL,
+  `bride_education` varchar(128) DEFAULT NULL,
+  `bride_occupation` varchar(128) DEFAULT NULL,
+  `bride_id_no` varchar(255) DEFAULT NULL,
+  `bride_id_last4` varchar(8) DEFAULT NULL,
+  `bank_account` varchar(255) DEFAULT NULL,
+  `bank_last4` varchar(8) DEFAULT NULL,
+  `bank_name` varchar(128) DEFAULT NULL,
+  `bank_ifsc` varchar(16) DEFAULT NULL,
+  `marital_status` varchar(48) DEFAULT NULL,
+  `groom_name` varchar(128) DEFAULT NULL,
+  `groom_dob` date DEFAULT NULL,
+  `groom_age` tinyint(3) unsigned DEFAULT NULL,
+  `groom_occupation` varchar(128) DEFAULT NULL,
+  `groom_address` varchar(500) DEFAULT NULL,
+  `marriage_date` date DEFAULT NULL,
+  `marriage_location` varchar(191) DEFAULT NULL,
+  `marriage_type` varchar(128) DEFAULT NULL,
+  `legally_permissible` tinyint(1) NOT NULL DEFAULT 0,
+  `family_members` text DEFAULT NULL COMMENT 'JSON [{name,age,relationship,occupation,income}]',
+  `monthly_income` decimal(12,2) DEFAULT NULL,
+  `annual_income` decimal(12,2) DEFAULT NULL,
+  `house_type` enum('','kutcha','semi_pucca','pucca') NOT NULL DEFAULT '',
+  `family_size` tinyint(3) unsigned DEFAULT NULL,
+  `earning_members` tinyint(3) unsigned DEFAULT NULL,
+  `financial_hardship` tinyint(1) NOT NULL DEFAULT 0,
+  `hardship_reason` text DEFAULT NULL,
+  `existing_debts` text DEFAULT NULL,
+  `govt_assistance` tinyint(1) NOT NULL DEFAULT 0,
+  `govt_assistance_details` varchar(500) DEFAULT NULL,
+  `support_items` varchar(500) DEFAULT NULL COMMENT 'CSV of whitelisted labels',
+  `support_justification` text DEFAULT NULL,
+  `documents` text DEFAULT NULL COMMENT 'JSON {slot: uploads-relative path}',
+  `declared_place` varchar(128) DEFAULT NULL,
+  `declared_on` date DEFAULT NULL,
+  `consent` tinyint(1) NOT NULL DEFAULT 0,
+  `dowry_declaration` tinyint(1) NOT NULL DEFAULT 0,
+  `status` enum('new','verifying','verified','approved','rejected','distributed','waitlisted') NOT NULL DEFAULT 'new',
+  `docs_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `field_verification` enum('pending','scheduled','completed') NOT NULL DEFAULT 'pending',
+  `field_verified_by` varchar(128) DEFAULT NULL,
+  `field_verified_on` date DEFAULT NULL,
+  `verification_notes` text DEFAULT NULL,
+  `need_assessment` text DEFAULT NULL,
+  `sanctioned_amount` decimal(12,2) DEFAULT NULL,
+  `approved_by` varchar(128) DEFAULT NULL,
+  `approval_date` date DEFAULT NULL,
+  `assigned_coordinator` varchar(128) DEFAULT NULL,
+  `distributed_on` date DEFAULT NULL,
+  `distribution_notes` text DEFAULT NULL,
+  `acknowledged` tinyint(1) NOT NULL DEFAULT 0,
+  `rejection_reason` varchar(500) DEFAULT NULL,
+  `office_notes` text DEFAULT NULL,
+  `reviewed_by` int(10) unsigned DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_kd_no` (`application_no`),
+  KEY `idx_kd_status` (`status`),
+  KEY `idx_kd_place` (`district`,`block`),
+  KEY `idx_kd_marriage` (`marriage_date`),
+  KEY `idx_kd_phone` (`phone`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leave_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -2333,6 +2528,7 @@ DROP TABLE IF EXISTS `schemes`;
 CREATE TABLE `schemes` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(191) NOT NULL,
+  `subtitle` varchar(255) DEFAULT NULL COMMENT 'Tagline under the title, e.g. the Hindi strapline',
   `slug` varchar(191) NOT NULL,
   `category` varchar(96) DEFAULT NULL,
   `department` varchar(191) DEFAULT NULL,
@@ -2342,13 +2538,24 @@ CREATE TABLE `schemes` (
   `benefits` text DEFAULT NULL,
   `documents_required` text DEFAULT NULL,
   `apply_url` varchar(255) DEFAULT NULL,
+  `donate_url` varchar(255) DEFAULT NULL COMMENT 'Support/Donate CTA, beside Apply',
   `image` varchar(255) DEFAULT NULL,
+  `brochure` varchar(255) DEFAULT NULL COMMENT 'Primary brochure, uploads-relative',
+  `brochures` text DEFAULT NULL COMMENT 'JSON [{label,path,size}] of extra downloads',
   `deadline` date DEFAULT NULL,
   `is_featured` tinyint(1) NOT NULL DEFAULT 0,
   `sort_order` int(11) NOT NULL DEFAULT 0,
   `status` enum('active','closed') NOT NULL DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `objectives` text DEFAULT NULL COMMENT 'One per line',
+  `support_items` text DEFAULT NULL COMMENT 'One per line, "Label | Amount"',
+  `budget_note` text DEFAULT NULL,
+  `process_steps` text DEFAULT NULL COMMENT 'One step per line, in order',
+  `partnership` text DEFAULT NULL COMMENT 'CSR / donor partnership, one per line',
+  `transparency` text DEFAULT NULL COMMENT 'One per line',
+  `guidelines` text DEFAULT NULL COMMENT 'Rich text ÔÇö positioning, safeguards, disclaimers',
+  `faq` text DEFAULT NULL COMMENT 'One per line, "Question :: Answer"',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_schemes_slug` (`slug`),
   KEY `idx_schemes_status` (`status`)

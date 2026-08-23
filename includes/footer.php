@@ -145,7 +145,9 @@ try {
                    primary navigation now groups these under "Support our work". */
                 'Support Our Work' => [
                     'Volunteer' => 'volunteer', 'Internship' => 'internship', 'Membership' => 'membership',
-                    'Careers' => 'career', 'Become a Partner' => 'become-partner', 'Donate' => 'donate',
+                    'Careers' => 'career', 'Community Coordinator' => 'coordinator-apply',
+                    'Kanya Daan Support' => 'kanyadaan-apply',
+                    'Become a Partner' => 'become-partner', 'Donate' => 'donate',
                     'Feedback' => 'feedback',
                 ],
                 'Media & News' => [

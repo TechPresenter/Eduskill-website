@@ -34,10 +34,22 @@ if (is_post() && post('_do') === 'save') {
         'department'         => clean(post('department', '')),
         'short_description'  => clean(post('short_description', '')),
         'description'        => post('description', ''), // rich text allowed
+        'subtitle'           => clean(post('subtitle', '')),
         'eligibility'        => clean(post('eligibility', '')),
         'benefits'           => clean(post('benefits', '')),
         'documents_required' => clean(post('documents_required', '')),
+        /* Line-based list fields, same convention as eligibility/benefits —
+           schemes.php splits them on newlines. */
+        'objectives'         => clean(post('objectives', '')),
+        'support_items'      => clean(post('support_items', '')),
+        'budget_note'        => clean(post('budget_note', '')),
+        'process_steps'      => clean(post('process_steps', '')),
+        'partnership'        => clean(post('partnership', '')),
+        'transparency'       => clean(post('transparency', '')),
+        'faq'                => clean(post('faq', '')),
+        'guidelines'         => post('guidelines', ''),   // rich text allowed
         'apply_url'          => clean(post('apply_url', '')),
+        'donate_url'         => clean(post('donate_url', '')),
         'deadline'           => $deadline !== '' ? $deadline : null,
         'is_featured'        => post('is_featured') ? 1 : 0,
         'sort_order'         => (int) post('sort_order', 0),
@@ -58,6 +70,54 @@ if (is_post() && post('_do') === 'save') {
         }
     }
 
+    /* Primary brochure. Brochures are meant to be downloaded by the public, so
+       they go in uploads/brochures — a normally-served folder — NOT in
+       uploads/documents, which carries a "Require all denied" .htaccess for
+       applicant PII and would 403 every visitor. */
+    if (!empty($_FILES['brochure']['name'])) {
+        $up = upload_file($_FILES['brochure'], SCHEME_BROCHURE_DIR, ['allowed' => 'pdf,doc,docx,jpg,jpeg,png']);
+        if (!$up['success']) {
+            set_flash('error', 'Brochure: ' . $up['error']);
+            redirect('/admin/schemes?action=' . ($editId ? 'edit&id=' . $editId : 'create'));
+        }
+        $data['brochure'] = $up['path'];
+        if ($editId) {
+            $old = find($table, $editId);
+            if ($old && !empty($old['brochure'])) delete_upload($old['brochure']);
+        }
+    }
+
+    /* Additional downloads. The file input is multiple, so $_FILES arrives
+       column-wise (name[], tmp_name[], …) and has to be transposed back into
+       one array per file before upload_file() can read it. */
+    $extra = $editId ? scheme_brochures(find($table, $editId)) : [];
+    if (!empty($_FILES['brochures']['name'][0])) {
+        $labels = $_POST['brochure_labels'] ?? [];
+        foreach ($_FILES['brochures']['name'] as $i => $name) {
+            if ($name === '' || count($extra) >= 12) {
+                continue;
+            }
+            $one = [
+                'name'     => $name,
+                'type'     => $_FILES['brochures']['type'][$i] ?? '',
+                'tmp_name' => $_FILES['brochures']['tmp_name'][$i] ?? '',
+                'error'    => $_FILES['brochures']['error'][$i] ?? UPLOAD_ERR_NO_FILE,
+                'size'     => $_FILES['brochures']['size'][$i] ?? 0,
+            ];
+            $up = upload_file($one, SCHEME_BROCHURE_DIR, ['allowed' => 'pdf,doc,docx,xls,xlsx,jpg,jpeg,png']);
+            if (!$up['success']) {
+                set_flash('error', $name . ': ' . $up['error']);
+                redirect('/admin/schemes?action=' . ($editId ? 'edit&id=' . $editId : 'create'));
+            }
+            $extra[] = [
+                'label' => clean($labels[$i] ?? '') ?: pathinfo($name, PATHINFO_FILENAME),
+                'path'  => $up['path'],
+                'size'  => (int) ($up['size'] ?? 0),
+            ];
+        }
+    }
+    $data['brochures'] = $extra ? json_encode(array_values($extra), JSON_UNESCAPED_UNICODE) : null;
+
     if ($editId) {
         db_update($table, $data, 'id = :id', [':id' => $editId]);
         log_activity('update', 'schemes', 'Updated scheme #' . $editId);
@@ -70,6 +130,37 @@ if (is_post() && post('_do') === 'save') {
     redirect('/admin/schemes');
 }
 
+/* -------------------------------------------------------------- REMOVE ONE FILE */
+if (is_post() && post('_do') === 'drop_file') {
+    require_csrf();
+    $fid  = (int) post('id', 0);
+    $what = (string) post('what', '');
+    $row  = find($table, $fid);
+    if ($row) {
+        if ($what === 'brochure' && !empty($row['brochure'])) {
+            delete_upload($row['brochure']);
+            db_update($table, ['brochure' => null], 'id = :id', [':id' => $fid]);
+            set_flash('success', 'Brochure removed.');
+        } elseif ($what === 'extra') {
+            $idx  = (int) post('index', -1);
+            $list = scheme_brochures($row);
+            if (isset($list[$idx])) {
+                delete_upload($list[$idx]['path'] ?? null);
+                array_splice($list, $idx, 1);
+                db_update($table, ['brochures' => $list ? json_encode(array_values($list), JSON_UNESCAPED_UNICODE) : null],
+                    'id = :id', [':id' => $fid]);
+                set_flash('success', 'Download removed.');
+            }
+        } elseif ($what === 'image' && !empty($row['image'])) {
+            delete_upload($row['image']);
+            db_update($table, ['image' => null], 'id = :id', [':id' => $fid]);
+            set_flash('success', 'Image removed.');
+        }
+        log_activity('update', 'schemes', 'Removed ' . $what . ' from scheme #' . $fid);
+    }
+    redirect('/admin/schemes?action=edit&id=' . $fid);
+}
+
 /* -------------------------------------------------------------- DELETE */
 if (is_post() && post('_do') === 'delete') {
     require_csrf();
@@ -77,6 +168,11 @@ if (is_post() && post('_do') === 'delete') {
     $row = find($table, $delId);
     if ($row) {
         if (!empty($row['image'])) delete_upload($row['image']);
+        // Uploaded files outlive the row unless they are removed with it.
+        if (!empty($row['brochure'])) delete_upload($row['brochure']);
+        foreach (scheme_brochures($row) as $b) {
+            delete_upload($b['path'] ?? null);
+        }
         db_delete($table, 'id = :id', [':id' => $delId]);
         log_activity('delete', 'schemes', 'Deleted scheme #' . $delId);
         set_flash('success', 'Scheme deleted.');
@@ -116,6 +212,13 @@ if ($action === 'create' || $action === 'edit') {
                 </div>
             </div>
 
+            <div class="form-group">
+                <label class="form-label">Subtitle / Tagline</label>
+                <input class="form-control" name="subtitle" maxlength="255" value="<?= e($row['subtitle'] ?? '') ?>"
+                       placeholder="e.g. बेटी के विवाह में सम्मानपूर्वक सहयोग">
+                <small class="form-hint">Shown under the title on the scheme page. Hindi is fine.</small>
+            </div>
+
             <div class="grid-2">
                 <div class="form-group">
                     <label class="form-label">Category</label>
@@ -153,15 +256,81 @@ if ($action === 'create' || $action === 'edit') {
                 <textarea class="form-textarea" name="documents_required" style="min-height:100px;" placeholder="One document per line…"><?= e($row['documents_required'] ?? '') ?></textarea>
             </div>
 
+            <?php /* ---------------- Project page sections ---------------- */ ?>
+            <h3 class="settings-sub" style="margin-top:1.5rem;"><?= lucide('layout-list') ?> Project page sections</h3>
+            <p class="form-hint" style="margin-bottom:1rem;">
+                Every box below is optional — a section you leave empty simply does not appear on the page.
+                Unless noted otherwise, put <strong>one item per line</strong>.
+            </p>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Objectives</label>
+                    <textarea class="form-textarea" name="objectives" style="min-height:120px;" placeholder="One objective per line…"><?= e($row['objectives'] ?? '') ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Selection Process</label>
+                    <textarea class="form-textarea" name="process_steps" style="min-height:120px;" placeholder="One step per line, in order…"><?= e($row['process_steps'] ?? '') ?></textarea>
+                    <small class="form-hint">Numbered automatically — Step 1, Step 2, …</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Indicative Support Budget</label>
+                <textarea class="form-textarea" name="support_items" style="min-height:110px;" placeholder="Household goods | ₹15,000"><?= e($row['support_items'] ?? '') ?></textarea>
+                <small class="form-hint">
+                    One row per line as <code>Label | Amount</code>. A last row whose label starts with
+                    &ldquo;Total&rdquo; or &ldquo;कुल&rdquo; is highlighted as the total.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Budget Note</label>
+                <textarea class="form-textarea" name="budget_note" style="min-height:70px;" placeholder="Amounts may vary according to funding…"><?= e($row['budget_note'] ?? '') ?></textarea>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">CSR &amp; Donor Partnership</label>
+                    <textarea class="form-textarea" name="partnership" style="min-height:110px;" placeholder="CSR Companies&#10;Individual Donors…"><?= e($row['partnership'] ?? '') ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Transparency &amp; Accountability</label>
+                    <textarea class="form-textarea" name="transparency" style="min-height:110px;" placeholder="Beneficiary Verification&#10;Utilization Reporting…"><?= e($row['transparency'] ?? '') ?></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Frequently Asked Questions</label>
+                <textarea class="form-textarea" name="faq" style="min-height:130px;" placeholder="Who can apply? :: Families found eligible after verification."><?= e($row['faq'] ?? '') ?></textarea>
+                <small class="form-hint">One per line as <code>Question :: Answer</code> (two colons).</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Important Guidelines &amp; Safeguards</label>
+                <textarea class="form-textarea" name="guidelines" style="min-height:130px;" placeholder="Positioning, disclaimers, legal safeguards… HTML allowed."><?= e($row['guidelines'] ?? '') ?></textarea>
+                <small class="form-hint">Rich text (HTML) allowed. Shown in a highlighted panel near the bottom of the page.</small>
+            </div>
+
+            <?php /* ---------------- Links + dates ---------------- */ ?>
+            <h3 class="settings-sub" style="margin-top:1.5rem;"><?= lucide('link') ?> Links &amp; dates</h3>
             <div class="grid-2">
                 <div class="form-group">
                     <label class="form-label">Apply URL</label>
-                    <input class="form-control" type="url" name="apply_url" value="<?= e($row['apply_url'] ?? '') ?>" placeholder="https://…">
+                    <input class="form-control" name="apply_url" value="<?= e($row['apply_url'] ?? '') ?>" placeholder="contact  or  https://…">
+                    <small class="form-hint">A page slug like <code>contact</code>, or a full URL. Blank sends people to the contact page.</small>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Deadline</label>
-                    <input class="form-control" type="date" name="deadline" value="<?= e($row['deadline'] ?? '') ?>">
+                    <label class="form-label">Donate / Support URL</label>
+                    <input class="form-control" name="donate_url" value="<?= e($row['donate_url'] ?? '') ?>" placeholder="donate  or  https://…">
+                    <small class="form-hint">Adds a second CTA for donors and CSR partners.</small>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Deadline</label>
+                <input class="form-control" type="date" name="deadline" value="<?= e($row['deadline'] ?? '') ?>">
+                <small class="form-hint">Leave blank for a rolling, always-open scheme.</small>
             </div>
 
             <div class="grid-2">
@@ -184,6 +353,52 @@ if ($action === 'create' || $action === 'edit') {
                 <img id="imgPreview" class="img-preview" src="<?= e(!empty($row['image']) ? upload_url($row['image']) : asset('images/placeholder.svg')) ?>" alt="preview" style="<?= empty($row['image']) ? 'display:none;' : '' ?>">
             </div>
 
+            <?php /* ---------------- Brochures & downloads ----------------
+                     Uploads happen through the main Save, so this block only
+                     collects files; removal is a separate POST (_do=drop_file)
+                     because a form cannot both save and delete in one submit
+                     without turning every checkbox into a destructive action. */ ?>
+            <h3 class="settings-sub" style="margin-top:1.5rem;"><?= lucide('file-down') ?> Brochures &amp; downloads</h3>
+
+            <div class="form-group">
+                <label class="form-label">Primary Brochure</label>
+                <?php if (!empty($row['brochure'])): ?>
+                    <div class="sch-file">
+                        <?= lucide('file-text') ?>
+                        <a href="<?= e(upload_url($row['brochure'])) ?>" target="_blank" rel="noopener"><?= e(basename($row['brochure'])) ?></a>
+                        <button class="btn btn-ghost btn-sm sch-file-x" type="submit" form="dropBrochure"
+                                data-confirm="Remove the primary brochure?"><?= lucide('trash-2') ?> Remove</button>
+                    </div>
+                <?php endif; ?>
+                <input class="form-control" type="file" name="brochure" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <small class="form-hint">PDF, DOC/DOCX or an image, up to 5&nbsp;MB. Uploading a new file replaces the current one.</small>
+            </div>
+
+            <?php $extras = scheme_brochures($row ?: null); ?>
+            <div class="form-group">
+                <label class="form-label">Additional Downloads</label>
+                <?php if ($extras): ?>
+                    <div class="sch-files">
+                        <?php foreach ($extras as $i => $b): ?>
+                            <div class="sch-file">
+                                <?= lucide('paperclip') ?>
+                                <a href="<?= e(upload_url($b['path'])) ?>" target="_blank" rel="noopener"><?= e($b['label']) ?></a>
+                                <?php if ($b['size'] > 0): ?><span class="muted"><?= e(human_filesize($b['size'])) ?></span><?php endif; ?>
+                                <button class="btn btn-ghost btn-sm sch-file-x" type="submit" form="dropExtra<?= (int) $i ?>"
+                                        data-confirm="Remove this download?"><?= lucide('trash-2') ?></button>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                <input class="form-control" type="file" name="brochures[]" multiple
+                       accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" data-sch-multi>
+                <small class="form-hint">
+                    Select one or more files — application form, guidelines, reports. Up to 12 in total.
+                    Names are taken from the filenames; edit them below after choosing.
+                </small>
+                <div class="sch-labels" data-sch-labels hidden></div>
+            </div>
+
             <label class="checkbox"><input type="checkbox" name="is_featured" value="1" <?= !empty($row['is_featured']) ? 'checked' : '' ?>> Feature this scheme</label>
 
             <div class="form-actions">
@@ -192,6 +407,71 @@ if ($action === 'create' || $action === 'edit') {
             </div>
         </form>
     </div>
+
+    <?php /* Removal posts, kept OUTSIDE the editor form — HTML forbids nesting
+             forms, so the buttons above reference these by id instead. Each is
+             its own CSRF-guarded action, so a delete can never ride along on a
+             normal save. Only rendered when editing an existing row. */ ?>
+    <?php if ($action === 'edit'): ?>
+        <?php if (!empty($row['brochure'])): ?>
+            <form id="dropBrochure" method="post" action="<?= e(admin_url('schemes')) ?>" class="hidden-form">
+                <?= csrf_field() ?>
+                <input type="hidden" name="_do" value="drop_file">
+                <input type="hidden" name="what" value="brochure">
+                <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">
+            </form>
+        <?php endif; ?>
+        <?php foreach ($extras as $i => $b): ?>
+            <form id="dropExtra<?= (int) $i ?>" method="post" action="<?= e(admin_url('schemes')) ?>" class="hidden-form">
+                <?= csrf_field() ?>
+                <input type="hidden" name="_do" value="drop_file">
+                <input type="hidden" name="what" value="extra">
+                <input type="hidden" name="index" value="<?= (int) $i ?>">
+                <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">
+            </form>
+        <?php endforeach; ?>
+    <?php endif; ?>
+
+    <style>
+        .hidden-form { display: none; }
+        .sch-files { display: grid; gap: .4rem; margin-bottom: .6rem; }
+        .sch-file {
+            display: flex; align-items: center; gap: .5rem;
+            padding: .5rem .7rem; border: 1px solid var(--line, #e5e7eb); border-radius: 9px;
+            font-size: .88rem; margin-bottom: .5rem;
+        }
+        .sch-file a { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sch-file-x { flex: 0 0 auto; }
+        .sch-labels { display: grid; gap: .4rem; margin-top: .5rem; }
+        .sch-labels input { font-size: .88rem; }
+    </style>
+
+    <script>
+    /* When files are chosen for "Additional Downloads", offer a label box per
+       file, pre-filled with the filename. The inputs are created in the same
+       order as the file list, so brochure_labels[i] lines up with brochures[i]
+       in the handler. */
+    (function () {
+        var input = document.querySelector('[data-sch-multi]');
+        var wrap  = document.querySelector('[data-sch-labels]');
+        if (!input || !wrap) { return; }
+        input.addEventListener('change', function () {
+            wrap.innerHTML = '';
+            var files = Array.prototype.slice.call(input.files || []);
+            wrap.hidden = files.length === 0;
+            files.forEach(function (f, i) {
+                var box = document.createElement('input');
+                box.type = 'text';
+                box.className = 'form-control';
+                box.name = 'brochure_labels[]';
+                box.maxLength = 120;
+                box.value = f.name.replace(/\.[^.]+$/, '');
+                box.setAttribute('aria-label', 'Label for ' + f.name);
+                wrap.appendChild(box);
+            });
+        });
+    })();
+    </script>
     <?php
     include __DIR__ . '/partials/foot.php';
     exit;

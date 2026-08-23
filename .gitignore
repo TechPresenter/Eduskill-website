@@ -18,6 +18,15 @@
 /uploads/**
 !/uploads/**/
 !/uploads/.htaccess
+# The per-directory guards matter as much as the root one: uploads/resumes,
+# uploads/documents, uploads/admissions, uploads/student-documents and
+# uploads/coordinator-docs each carry a "Require all denied" .htaccess, because
+# they hold applicant PII that only admin/secure-file.php may hand out. Those
+# files were covered by the /uploads/** rule above, so a Git-based deploy
+# delivered the directories WITHOUT their guards and Apache served the contents
+# to anyone with the URL. They are text, contain no user data, and have to
+# travel with the tree.
+!/uploads/**/.htaccess
 !/uploads/**/.gitkeep
 
 # ── Runtime storage: backups, caches, pre-rebrand file snapshots ─────────────

@@ -1,0 +1,105 @@
+/* =============================================================================
+ *  Scheme detail — the extended project-page blocks
+ * -----------------------------------------------------------------------------
+ *  Loaded only by the single-scheme branch of schemes.php, and only styling the
+ *  blocks that branch added: the indicative budget table, the numbered
+ *  selection process, the FAQ, the guidelines panel and the sidebar downloads.
+ *  Everything else on the page is the site's shared card/list vocabulary.
+ *
+ *  All colours come from the global theme tokens, so a scheme page follows
+ *  Theme Settings like the rest of the site.
+ * ========================================================================== */
+
+/* Wide content must scroll inside its own box rather than pushing the page. */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ------------------------------------------------- indicative budget table */
+.sch-budget { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.sch-budget th,
+.sch-budget td {
+    padding: .7rem .85rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+}
+.sch-budget th { font-weight: 600; color: var(--text); }
+.sch-budget td { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+.sch-budget tr:last-child th,
+.sch-budget tr:last-child td { border-bottom: 0; }
+.sch-budget tr.is-total th,
+.sch-budget tr.is-total td {
+    background: color-mix(in srgb, var(--brand) 8%, transparent);
+    font-weight: 800; color: var(--brand-600);
+    border-top: 2px solid color-mix(in srgb, var(--brand) 35%, transparent);
+}
+
+/* ------------------------------------------------------- selection process */
+.sch-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; counter-reset: none; }
+.sch-steps li { display: flex; align-items: flex-start; gap: .7rem; line-height: 1.6; }
+.sch-step-no {
+    flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: .82rem; font-weight: 800; color: #fff;
+    background: var(--grad-brand, var(--brand));
+}
+
+/* --------------------------------------------------------------------- FAQ */
+.sch-faq { display: grid; gap: .5rem; }
+.sch-faq details {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); overflow: hidden;
+}
+.sch-faq summary {
+    cursor: pointer; padding: .8rem 1rem; font-weight: 600; list-style: none;
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.sch-faq summary::-webkit-details-marker { display: none; }
+.sch-faq summary::after {
+    content: '+'; flex: 0 0 auto; font-size: 1.25rem; line-height: 1;
+    color: var(--brand-600); transition: transform .2s ease;
+}
+.sch-faq details[open] summary::after { content: '−'; }
+.sch-faq summary:hover { color: var(--brand-600); }
+.sch-faq details p { margin: 0; padding: 0 1rem 1rem; color: var(--muted); line-height: 1.7; }
+
+/* ------------------------------------------------------- guidelines panel */
+/* A safeguards notice has to look like one — this is where the anti-dowry and
+   child-marriage statements live, so it must not read as body copy. */
+.sch-guidelines {
+    border-left: 4px solid var(--warning, var(--accent));
+    background: color-mix(in srgb, var(--warning, var(--accent)) 7%, var(--surface));
+}
+.sch-guidelines p { line-height: 1.75; }
+.sch-guidelines p + p { margin-top: .7rem; }
+
+/* --------------------------------------------------------- sidebar downloads */
+.sch-dl { display: grid; gap: .45rem; }
+.sch-dl-item {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .6rem .75rem; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); text-decoration: none;
+    transition: border-color var(--transition), transform var(--transition), background var(--transition);
+}
+.sch-dl-item:hover {
+    border-color: var(--brand); transform: translateY(-1px);
+    background: color-mix(in srgb, var(--brand) 5%, var(--surface));
+}
+.sch-dl-item svg { flex: 0 0 auto; width: 18px; height: 18px; color: var(--brand-600); }
+.sch-dl-item span { display: flex; flex-direction: column; min-width: 0; }
+.sch-dl-item strong { font-size: .9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sch-dl-item small { font-size: .75rem; color: var(--muted); }
+.sch-dl-item.is-primary {
+    border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+    background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+}
+
+@media (max-width: 640px) {
+    .sch-budget { font-size: .88rem; }
+    .sch-budget th, .sch-budget td { padding: .6rem .5rem; }
+    .sch-steps li { gap: .55rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sch-dl-item { transition: none; }
+    .sch-dl-item:hover { transform: none; }
+}

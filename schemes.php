@@ -169,6 +169,22 @@ if ($slug !== '') {
     $benItems  = $toList($scheme['benefits'] ?? '');
     $docItems  = $toList($scheme['documents_required'] ?? '');
 
+    /* Extended project sections — parsed by includes/scheme.php so the admin
+       form and this page agree on the stored format. Each is empty for a scheme
+       that has not filled it in, and its block is skipped entirely. */
+    $objectives   = scheme_list($scheme['objectives'] ?? '');
+    $steps        = scheme_list($scheme['process_steps'] ?? '');
+    $partners     = scheme_list($scheme['partnership'] ?? '');
+    $transparency = scheme_list($scheme['transparency'] ?? '');
+    $budgetRows   = scheme_budget_rows($scheme['support_items'] ?? '');
+    $faqs         = scheme_faq($scheme['faq'] ?? '');
+    $downloads    = scheme_brochures($scheme);
+
+    /* Optional second CTA for donors / CSR partners. */
+    $donateRaw = trim((string) ($scheme['donate_url'] ?? ''));
+    $donateExt = (bool) preg_match('#^https?://#i', $donateRaw);
+    $donate    = $donateRaw === '' ? '' : ($donateExt ? $donateRaw : url($donateRaw));
+
     /* ---- Related schemes (same category first, then any active) ---- */
     $related = db_all(
         "SELECT * FROM schemes
@@ -186,9 +202,15 @@ if ($slug !== '') {
         'type'        => 'article',
     ]);
 
+    /* The tagline leads when there is one — for a project page it carries the
+       identity (often in Hindi) far better than the summary paragraph does. */
+    $heroSub = trim((string) ($scheme['subtitle'] ?? ''));
+    if ($heroSub !== '' && !empty($scheme['short_description'])) {
+        $heroSub .= ' · ' . $scheme['short_description'];
+    }
     $page_hero = [
         'title'      => $scheme['title'],
-        'subtitle'   => $scheme['short_description'] ?: 'Everything you need to know to check your eligibility and apply.',
+        'subtitle'   => $heroSub ?: ($scheme['short_description'] ?: 'Everything you need to know to check your eligibility and apply.'),
         'breadcrumb' => [
             ['label' => 'Schemes', 'url' => url('schemes')],
             ['label' => $scheme['title']],
@@ -197,6 +219,10 @@ if ($slug !== '') {
 
     include __DIR__ . '/includes/header.php';
     ?>
+
+<?php /* Styles for the extended project blocks (budget table, process,
+         FAQ, guidelines, downloads). Only the detail view needs them. */ ?>
+<link rel="stylesheet" href="<?= e(asset('css/scheme-detail.css')) ?>">
 
     <!-- ============================== SCHEME DETAIL ============================== -->
     <section class="section">
@@ -277,12 +303,131 @@ if ($slug !== '') {
                     </div>
                 <?php endif; ?>
 
+                <?php /* ================= Extended project sections =================
+                         Everything below is optional and driven entirely from the
+                         admin form: a scheme that has not filled a field simply
+                         does not render that block, so the simple schemes on this
+                         site look exactly as they did before these were added. */ ?>
+
+                <!-- Objectives -->
+                <?php if ($objectives): ?>
+                    <div class="card-3d mt-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="icon-badge" style="flex:0 0 auto;"><?= lucide('target') ?></div>
+                            <h3 class="card-title mb-0">Project Objectives</h3>
+                        </div>
+                        <ul class="list-check mt-2">
+                            <?php foreach ($objectives as $it): ?><li><?= e($it) ?></li><?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Indicative support budget -->
+                <?php if ($budgetRows): ?>
+                    <div class="card-3d mt-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="icon-badge" style="flex:0 0 auto;"><?= lucide('indian-rupee') ?></div>
+                            <h3 class="card-title mb-0">Indicative Support Package</h3>
+                        </div>
+                        <div class="table-scroll mt-2">
+                            <table class="sch-budget">
+                                <tbody>
+                                    <?php foreach ($budgetRows as $b): ?>
+                                        <tr<?= $b['total'] ? ' class="is-total"' : '' ?>>
+                                            <th scope="row"><?= e($b['label']) ?></th>
+                                            <td><?= e($b['amount']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php if (!empty($scheme['budget_note'])): ?>
+                            <p class="text-muted mt-2" style="font-size:.9rem;white-space:pre-line;"><?= e($scheme['budget_note']) ?></p>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Selection process -->
+                <?php if ($steps): ?>
+                    <div class="card-3d mt-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="icon-badge" style="flex:0 0 auto;"><?= lucide('list-ordered') ?></div>
+                            <h3 class="card-title mb-0">How the Selection Works</h3>
+                        </div>
+                        <ol class="sch-steps mt-2">
+                            <?php foreach ($steps as $i => $it): ?>
+                                <li><span class="sch-step-no"><?= $i + 1 ?></span><span><?= e($it) ?></span></li>
+                            <?php endforeach; ?>
+                        </ol>
+                    </div>
+                <?php endif; ?>
+
+                <!-- CSR / donor partnership + transparency -->
+                <?php if ($partners || $transparency): ?>
+                    <div class="grid grid-2 gap-3 mt-4">
+                        <?php if ($partners): ?>
+                            <div class="card-3d">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="icon-badge" style="flex:0 0 auto;"><?= lucide('handshake') ?></div>
+                                    <h3 class="card-title mb-0">CSR &amp; Donor Partnership</h3>
+                                </div>
+                                <ul class="list-check mt-2">
+                                    <?php foreach ($partners as $it): ?><li><?= e($it) ?></li><?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($transparency): ?>
+                            <div class="card-3d">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="icon-badge" style="flex:0 0 auto;"><?= lucide('shield-check') ?></div>
+                                    <h3 class="card-title mb-0">Transparency &amp; Accountability</h3>
+                                </div>
+                                <ul class="list-check mt-2">
+                                    <?php foreach ($transparency as $it): ?><li><?= e($it) ?></li><?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- FAQ -->
+                <?php if ($faqs): ?>
+                    <div class="card-3d mt-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="icon-badge" style="flex:0 0 auto;"><?= lucide('circle-help') ?></div>
+                            <h3 class="card-title mb-0">Frequently Asked Questions</h3>
+                        </div>
+                        <div class="sch-faq mt-2">
+                            <?php foreach ($faqs as $i => $f): ?>
+                                <details<?= $i === 0 ? ' open' : '' ?>>
+                                    <summary><?= e($f['q']) ?></summary>
+                                    <p><?= e($f['a']) ?></p>
+                                </details>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Important guidelines / safeguards -->
+                <?php if (!empty($scheme['guidelines'])): ?>
+                    <div class="card-3d mt-4 sch-guidelines">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="icon-badge" style="flex:0 0 auto;"><?= lucide('info') ?></div>
+                            <h3 class="card-title mb-0">Important Guidelines</h3>
+                        </div>
+                        <div class="mt-1"><?= rich_text($scheme['guidelines']) ?></div>
+                    </div>
+                <?php endif; ?>
+
                 <div class="flex flex-wrap gap-2 mt-4">
                     <?php if ($isClosed): ?>
                         <a class="btn btn-outline btn-lg" href="<?= e(url('schemes')) ?>"><?= lucide('arrow-left') ?> Browse Open Schemes</a>
                         <a class="btn btn-primary btn-lg" href="<?= e(url('contact')) ?>">Ask About This Scheme</a>
                     <?php else: ?>
                         <a class="btn btn-3d btn-lg" href="<?= e($apply) ?>" <?= $applyExt ? 'target="_blank" rel="noopener"' : '' ?>><?= lucide('clipboard-pen') ?> Apply Now</a>
+                        <?php if ($donate !== ''): ?>
+                            <a class="btn btn-primary btn-lg" href="<?= e($donate) ?>" <?= $donateExt ? 'target="_blank" rel="noopener"' : '' ?>><?= lucide('heart') ?> Support This Project</a>
+                        <?php endif; ?>
                         <a class="btn btn-outline btn-lg" href="<?= e(url('schemes')) ?>"><?= lucide('arrow-left') ?> All Schemes</a>
                     <?php endif; ?>
                 </div>
@@ -302,6 +447,31 @@ if ($slug !== '') {
                         <li><strong>Status:</strong> <?= $isClosed ? 'Closed' : 'Accepting applications' ?></li>
                         <li><strong>Deadline:</strong> <?= e($dl['text']) ?></li>
                     </ul>
+
+                    <?php /* Brochure downloads. upload_url(), not
+                             secure_upload_url(): these are published documents in
+                             uploads/brochures, meant to be handed to anyone. */ ?>
+                    <?php if (!empty($scheme['brochure']) || $downloads): ?>
+                        <div class="divider"></div>
+                        <p class="text-muted mb-1" style="font-size:.85rem;">Download</p>
+                        <div class="sch-dl">
+                            <?php if (!empty($scheme['brochure'])): ?>
+                                <a class="sch-dl-item is-primary" href="<?= e(upload_url($scheme['brochure'])) ?>"
+                                   target="_blank" rel="noopener" download>
+                                    <?= lucide('file-down') ?>
+                                    <span><strong>Project Brochure</strong>
+                                        <small><?= e(strtoupper(pathinfo($scheme['brochure'], PATHINFO_EXTENSION))) ?></small></span>
+                                </a>
+                            <?php endif; ?>
+                            <?php foreach ($downloads as $d): ?>
+                                <a class="sch-dl-item" href="<?= e(upload_url($d['path'])) ?>" target="_blank" rel="noopener" download>
+                                    <?= lucide('paperclip') ?>
+                                    <span><strong><?= e($d['label']) ?></strong>
+                                        <?php if ($d['size'] > 0): ?><small><?= e(human_filesize($d['size'])) ?></small><?php endif; ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
 
                     <?php
                     /* Live countdown when a real future deadline exists. */

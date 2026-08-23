@@ -77,6 +77,8 @@ function mega_nav_tree(): array
                 ['icon' => 'hand-heart', 'label' => 'Volunteer',     'url' => 'volunteer',      'desc' => 'Give your time and skills'],
                 ['icon' => 'handshake',  'label' => 'Partner With Us','url' => 'become-partner', 'desc' => 'Corporate and CSR partnerships'],
                 ['icon' => 'briefcase',  'label' => 'Careers',       'url' => 'career',         'desc' => 'Work with us'],
+                ['icon' => 'clipboard-pen', 'label' => 'Community Coordinator', 'url' => 'coordinator-apply', 'desc' => 'Lead our work in your panchayat, block or district'],
+                ['icon' => 'heart-handshake', 'label' => 'Kanya Daan Support', 'url' => 'kanyadaan-apply', 'desc' => 'Apply for marriage support for a daughter'],
             ],
         ],
         [

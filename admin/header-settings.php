@@ -36,6 +36,9 @@ if (is_post() && post('_do') === 'save') {
     set_setting('topbar_show_lang', post('topbar_show_lang') ? '1' : '0', 'header', 'boolean');
     set_setting('header_cta_text',  clean(post('header_cta_text', 'Donate')), 'header', 'text');
     set_setting('header_cta_url',   clean(post('header_cta_url', 'donate')), 'header', 'text');
+    set_setting('header_apply_enabled', post('header_apply_enabled') ? '1' : '0', 'header', 'boolean');
+    set_setting('header_apply_text', clean(post('header_apply_text', 'Apply Now')), 'header', 'text');
+    set_setting('header_apply_url',  clean(post('header_apply_url', 'coordinator-apply')), 'header', 'text');
     set_setting('header_sticky',    post('header_sticky') ? '1' : '0', 'header', 'boolean');
 
     log_activity('update', 'settings', 'Updated header settings');
@@ -49,6 +52,9 @@ $topbar       = get_setting('topbar_enabled', '1') === '1';
 $showLang     = get_setting('topbar_show_lang', '1') === '1';
 $ctaText      = get_setting('header_cta_text', 'Donate');
 $ctaUrl       = get_setting('header_cta_url', 'donate');
+$applyOn      = get_setting('header_apply_enabled', '1') === '1';
+$applyText    = get_setting('header_apply_text', 'Apply Now');
+$applyUrl     = get_setting('header_apply_url', 'coordinator-apply');
 $sticky       = get_setting('header_sticky', '1') === '1';
 
 include __DIR__ . '/partials/head.php';
@@ -109,6 +115,29 @@ include __DIR__ . '/partials/head.php';
                         <label class="ff-label" for="f_cta_url">Button Link</label>
                     </div>
                     <small class="settings-hint"><?= lucide('info') ?> A page slug like <code>donate</code> or a full URL. Colours come from <a href="<?= e(admin_url('theme')) ?>">Theme Settings</a>.</small>
+                </div>
+            </div>
+
+            <h3 class="settings-sub"><?= lucide('clipboard-pen') ?> Secondary button (recruitment)</h3>
+            <label class="switch">
+                <input type="checkbox" name="header_apply_enabled" value="1" <?= $applyOn ? 'checked' : '' ?>>
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+                <span class="switch-text"><strong>Show the second button</strong><small>An outline button beside the main call to action, for applications and recruitment.</small></span>
+            </label>
+            <div class="settings-grid">
+                <div class="settings-field">
+                    <div class="ff">
+                        <input class="ff-input" id="f_apply_text" name="header_apply_text" value="<?= e($applyText) ?>" maxlength="32" placeholder=" ">
+                        <label class="ff-label" for="f_apply_text">Button Label</label>
+                    </div>
+                    <small class="settings-hint"><?= lucide('info') ?> e.g. <code>Apply Now</code>.</small>
+                </div>
+                <div class="settings-field">
+                    <div class="ff">
+                        <input class="ff-input" id="f_apply_url" name="header_apply_url" value="<?= e($applyUrl) ?>" maxlength="191" placeholder=" ">
+                        <label class="ff-label" for="f_apply_url">Button Link</label>
+                    </div>
+                    <small class="settings-hint"><?= lucide('info') ?> Defaults to <code>coordinator-apply</code>, the Community Coordinator application form.</small>
                 </div>
             </div>
 

@@ -35,14 +35,18 @@ require_admin();
  *   documents         — scholarship applicants' documents, employee records,
  *                       issued certificate files
  *   student-documents — students' personal documents
+ *   coordinator-docs  — community coordinator applicants' checklist documents
+ *                       (photograph, ID, address proof, bank details, PAN)
+ *   kanyadaan-docs    — Kanya Daan applicant families' identity, age, income
+ *                       and bank documents
  *
- * All four are denied to Apache by a .htaccess in each directory, so this is
+ * All six are denied to Apache by a .htaccess in each directory, so this is
  * the only route to them. Public artwork must NOT be stored in these folders —
  * a denied directory cannot be rendered by <img> on a public page. That is why
  * uploads/students (the student photograph shown by verify-student.php) and
  * the Document Hub's ID photo stay in normal, publicly-served folders.
  */
-const ALLOWED_DIRS = ['resumes', 'admissions', 'documents', 'student-documents'];
+const ALLOWED_DIRS = ['resumes', 'admissions', 'documents', 'student-documents', 'coordinator-docs', 'kanyadaan-docs'];
 
 $rel = (string) get('f', '');
 if ($rel === '') {

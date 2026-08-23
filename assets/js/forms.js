@@ -76,11 +76,24 @@
                         window.pwfTrack(ev, { form: (ep.split('/forms/')[1] || ep) });
                     }
                 } catch (e) {}
+                /* Let a page-specific script take over the "thank you" moment —
+                   swapping the form for a success panel, showing a reference
+                   number, firing confetti. career-apply.js and
+                   coordinator-apply.js both listen for this; until now nothing
+                   dispatched it, so their success panels never appeared and the
+                   only feedback was the toast above. Dispatched BEFORE reset()
+                   so a listener can still read the submitted values. */
+                form.dispatchEvent(new CustomEvent('pwf:submitted', { detail: data, bubbles: true }));
                 form.reset();
                 if (data.redirect) setTimeout(() => { window.location.href = data.redirect; }, 1200);
             } else {
                 if (data.errors) showErrors(form, data.errors);
                 notify('error', data.message || 'Please check the form and try again.');
+                /* Counterpart to pwf:submitted. On a multi-step form the field
+                   the server rejected can be on a panel that is not on screen,
+                   so the toast above would be the only clue. The page script
+                   uses this to bring the offending panel back into view. */
+                form.dispatchEvent(new CustomEvent('pwf:failed', { detail: data, bubbles: true }));
             }
         } catch (err) {
             notify('error', err.message || 'Network error. Please try again.');
