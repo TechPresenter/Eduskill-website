@@ -28,6 +28,7 @@ filename. Originals are not committed.
 
 | File | Section | Source | Original URL | Photographer | Licence | Downloaded |
 |---|---|---|---|---|---|---|
+| `uploads/schemes/wedding-garland-kanya-daan.webp` | Schemes -> Kanya Daan Project | Unsplash | https://unsplash.com/photos/3lUv0ZynLLE | Vidit Goswami | Unsplash Licence | 2026-08-24 |
 | `uploads/programs/students-classroom-learning.webp` | Programmes → Education for All | Unsplash | https://images.unsplash.com/photo-1572847748080-bac263fae977 | Raj Rana | Unsplash Licence | 2026-08-08 |
 | `uploads/programs/women-farmers-livelihood.webp` | Programmes → Women Empowerment | Unsplash | https://images.unsplash.com/photo-1708592190055-b9a311e4fcd0 | EqualStock | Unsplash Licence | 2026-08-08 |
 | `uploads/programs/women-handloom-skills.webp` | Programmes → Skill Development | Unsplash | https://images.unsplash.com/photo-1759738098462-90ffac98c554 | Rohit Dey | Unsplash Licence | 2026-08-08 |
