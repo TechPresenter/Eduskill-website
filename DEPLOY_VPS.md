@@ -33,37 +33,18 @@ and never change it on a live site — a changed key makes existing records unre
 
 ---
 
-## Step 1 — Push your code to GitHub (run locally, on Windows)
+## Step 1 — Code on GitHub  ✅ already done
 
-Your work is committed but the branch has never been pushed.
+The site lives at **https://github.com/TechPresenter/Eduskill-website**, branch `main`,
+currently at commit `d32f29f`. The repository is **public**, so the server can clone it
+over plain HTTPS with no deploy key.
+
+To ship a change later: commit locally, then
 
 ```bash
 cd /c/xampp/htdocs/pwf
-git status                 # must be clean
-git branch --show-current  # session/fixes-and-responsive-audit
+git push website HEAD:main
 ```
-
-This repo has two remotes — pick the one you actually deploy from:
-
-```bash
-git remote -v
-# origin   https://github.com/TechPresenter/Eduskill-india-Foundation.git
-# website  https://github.com/TechPresenter/Eduskill-website.git
-```
-
-Push the branch, then merge it into `main` (via a GitHub pull request, or directly):
-
-```bash
-git push -u origin session/fixes-and-responsive-audit
-
-# merging directly, if you do not want a PR:
-git checkout main
-git pull origin main
-git merge session/fixes-and-responsive-audit
-git push origin main
-```
-
-The server will clone `main`, so nothing deploys until this is done.
 
 ---
 
@@ -108,9 +89,9 @@ nano /etc/apache2/sites-available/eduskillindia.conf
 <VirtualHost *:80>
     ServerName eduskillindia.org
     ServerAlias www.eduskillindia.org
-    DocumentRoot /var/www/eduskillindia
+    DocumentRoot /var/www/eduskillindia.org
 
-    <Directory /var/www/eduskillindia>
+    <Directory /var/www/eduskillindia.org>
         # REQUIRED. Without this Apache ignores every .htaccess in the tree:
         # the pretty URLs break AND the uploads PII guards stop working.
         AllowOverride All
@@ -170,17 +151,17 @@ Copy that key into GitHub → your repo → **Settings → Deploy keys → Add d
 
 ```bash
 rm -rf /var/www/html
-git clone git@github.com:TechPresenter/Eduskill-india-Foundation.git /var/www/eduskillindia
+git clone git@github.com:TechPresenter/Eduskill-website.git /var/www/eduskillindia.org
 ```
 
 For a **public** repo, HTTPS is fine and needs no key:
 
 ```bash
-git clone https://github.com/TechPresenter/Eduskill-india-Foundation.git /var/www/eduskillindia
+git clone https://github.com/TechPresenter/Eduskill-website.git /var/www/eduskillindia.org
 ```
 
 ```bash
-cd /var/www/eduskillindia
+cd /var/www/eduskillindia.org
 git branch --show-current   # main
 ```
 
@@ -189,7 +170,7 @@ git branch --show-current   # main
 ## Step 6 — Create `config.php` (the step people skip)
 
 ```bash
-cd /var/www/eduskillindia
+cd /var/www/eduskillindia.org
 cp config.example.php config.php
 
 # generate a fresh 32-byte key and keep a copy somewhere safe
@@ -251,7 +232,7 @@ rm /root/eduskill-live.sql
 demo seed content:
 
 ```bash
-cd /var/www/eduskillindia
+cd /var/www/eduskillindia.org
 mysql -u eduskill -p eduskill < database/eduskill.sql
 
 # then every migration, in date order
@@ -268,11 +249,11 @@ and the bank details through the admin panel.
 ## Step 8 — Ownership and writable folders
 
 ```bash
-cd /var/www/eduskillindia
+cd /var/www/eduskillindia.org
 
-chown -R www-data:www-data /var/www/eduskillindia
-find /var/www/eduskillindia -type d -exec chmod 755 {} \;
-find /var/www/eduskillindia -type f -exec chmod 644 {} \;
+chown -R www-data:www-data /var/www/eduskillindia.org
+find /var/www/eduskillindia.org -type d -exec chmod 755 {} \;
+find /var/www/eduskillindia.org -type f -exec chmod 644 {} \;
 
 # the three trees the app writes to
 chmod -R 775 uploads logs storage
@@ -341,7 +322,7 @@ tail -f /var/log/apache2/eduskillindia-error.log
 Locally: commit, push to `main`. On the server:
 
 ```bash
-cd /var/www/eduskillindia
+cd /var/www/eduskillindia.org
 git pull origin main
 
 # apply any migration added since the last deploy
