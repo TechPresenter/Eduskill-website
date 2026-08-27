@@ -15,15 +15,55 @@
 declare(strict_types=1);
 
 /**
+ * Resolve who a message is from and who a reply should go to.
+ *
+ * Split out of send_mail() so the rule is stated once and can be tested without
+ * sending anything. Precedence, highest first:
+ *
+ *   1. what the caller passed in $opts
+ *   2. the matching setting (editable in Settings -> Mail & Delivery)
+ *   3. the constant in config.php
+ *
+ * The Reply-To default is the part that did not exist before: without one, any
+ * message that did not name a reply address arrived with none, so a reply went
+ * to whatever the mail host had rewritten From to.
+ *
+ * The per-message override is what makes an enquiry answerable — the contact
+ * form and the application handlers deliberately set reply_to to the SENDER'S
+ * address so staff can hit Reply and reach them. That must keep winning over
+ * the organisational default, which is why this returns $opts rather than
+ * overwriting a value the caller chose.
+ */
+function mail_envelope(array $opts = []): array
+{
+    $fromEmail = $opts['from_email'] ?? get_setting('mail_from_email', MAIL_FROM_EMAIL);
+    $fromName  = $opts['from_name']  ?? get_setting('mail_from_name', MAIL_FROM_NAME);
+
+    $replyTo = trim((string) ($opts['reply_to'] ?? ''));
+    if ($replyTo === '' || !is_email($replyTo)) {
+        $replyTo = (string) get_setting('mail_reply_to', $fromEmail);
+    }
+    if (is_email($replyTo)) {
+        $opts['reply_to'] = $replyTo;
+    } else {
+        unset($opts['reply_to']);
+    }
+
+    return ['from_email' => $fromEmail, 'from_name' => $fromName, 'opts' => $opts];
+}
+
+/**
  * Send an HTML email. Returns true on success.
  *
  * @param array $opts ['from_email','from_name','reply_to','cc','bcc','is_html'=>bool]
  */
 function send_mail(string $to, string $subject, string $body, array $opts = []): bool
 {
-    $fromEmail = $opts['from_email'] ?? get_setting('mail_from_email', MAIL_FROM_EMAIL);
-    $fromName  = $opts['from_name']  ?? get_setting('mail_from_name', MAIL_FROM_NAME);
-    $isHtml    = $opts['is_html']    ?? true;
+    $env       = mail_envelope($opts);
+    $fromEmail = $env['from_email'];
+    $fromName  = $env['from_name'];
+    $opts      = $env['opts'];
+    $isHtml    = $opts['is_html'] ?? true;
     $html      = $isHtml ? mail_layout($body, $subject) : $body;
 
     $useSmtp = (bool) (get_setting('use_smtp', USE_SMTP ? '1' : '0'));

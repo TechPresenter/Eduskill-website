@@ -57,6 +57,33 @@ $panels = [
             'google_map'      => ['type' => 'textarea', 'default' => '', 'raw' => true, 'label' => 'Google Map Embed', 'hint' => 'Paste the full Google Maps <iframe> embed code or a map URL.'],
         ],
     ],
+    /* Mail delivery had no screen at all: send_mail() reads these keys through
+       get_setting(), but nothing wrote them, so the only way to point the site
+       at a mailbox was to edit config.php on the server. Everything the sender
+       needs now lives here. */
+    'Mail & Delivery' => [
+        'group'  => 'mail',
+        'fields' => [
+            'mail_from_name'  => ['type' => 'text',  'input' => 'text',  'default' => 'EDUSKILL INDIA FOUNDATION', 'label' => 'From Name',
+                                  'hint' => 'The name recipients see in their inbox.'],
+            'mail_from_email' => ['type' => 'email', 'input' => 'email', 'default' => 'info@eduskillindia.org', 'label' => 'From Address',
+                                  'hint' => 'Every outgoing email is sent from this address.'],
+            'mail_reply_to'   => ['type' => 'email', 'input' => 'email', 'default' => 'info@eduskillindia.org', 'label' => 'Reply-To Address',
+                                  'hint' => 'Used unless a message sets its own — enquiry and application alerts still reply to the person who wrote in.'],
+            'use_smtp'        => ['type' => 'text',  'input' => 'text',  'default' => '0', 'label' => 'Use SMTP',
+                                  'hint' => '1 to send through the mailbox below, 0 to use the server\'s own mail command. On a plain VPS with no mail server installed, 0 means nothing is delivered.'],
+            'smtp_host'       => ['type' => 'text',  'input' => 'text',  'default' => '', 'label' => 'SMTP Host',
+                                  'hint' => 'e.g. smtp.hostinger.com, smtp.gmail.com, smtp.zoho.in'],
+            'smtp_port'       => ['type' => 'text',  'input' => 'number','default' => '587', 'label' => 'SMTP Port',
+                                  'hint' => '587 for TLS, 465 for SSL.'],
+            'smtp_secure'     => ['type' => 'text',  'input' => 'text',  'default' => 'tls', 'label' => 'Encryption',
+                                  'hint' => 'tls or ssl.'],
+            'smtp_user'       => ['type' => 'text',  'input' => 'text',  'default' => '', 'label' => 'SMTP Username',
+                                  'hint' => 'Usually the full mailbox address.'],
+            'smtp_pass'       => ['type' => 'text',  'input' => 'text',  'default' => '', 'label' => 'SMTP Password',
+                                  'hint' => 'Stored in the database. Use a mailbox-specific app password where the provider offers one.'],
+        ],
+    ],
     'Homepage' => [
         'group'  => 'homepage',
         'fields' => [
