@@ -282,18 +282,26 @@ AcceptPathInfo Off
 # -----------------------------------------------------------------------------
 # Custom error pages
 #
-# Still worth setting: these cover the errors Apache raises BEFORE mod_rewrite
-# runs (a 403 from an authz deny, a 500 from a PHP fatal), which the rewrite
-# above cannot reach. Adjust the prefix to match where the app is installed —
-# but if you forget, the rewrite above still renders the styled 404.
+# These cover the errors Apache raises BEFORE mod_rewrite runs (a 403 from an
+# authz deny, a 500 from a PHP fatal), which the relative rewrite above cannot
+# reach.
+#
+# The paths are written for a DOMAIN-ROOT install, because that is where the
+# live site runs and where getting this wrong actually costs something: with a
+# broken ErrorDocument, a 500 falls back to Apache's own page, which names
+# postmaster@localhost and leaks the server signature.
+#
+# On a subfolder install (XAMPP at /pwf) these point at files that are not
+# there, so 403 and 500 show the plain server page locally. Normal 404s are
+# unaffected in both — the relative rewrite above handles those.
 # -----------------------------------------------------------------------------
-ErrorDocument 404 /pwf/404.php
-ErrorDocument 403 /pwf/404.php
+ErrorDocument 404 /404.php
+ErrorDocument 403 /404.php
 # 500.php renders in two tiers and falls back to a fully self-contained page if
 # bootstrap itself throws, so it is safe as an error document for a 500 — without
 # this line a server error served Apache's default page, which names
 # "postmaster@localhost" and leaks the server signature.
-ErrorDocument 500 /pwf/500.php
+ErrorDocument 500 /500.php
 
 # -----------------------------------------------------------------------------
 # Block dotfiles (.env, .git, .htaccess, etc.)
