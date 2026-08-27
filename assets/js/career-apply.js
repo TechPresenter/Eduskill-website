@@ -220,7 +220,7 @@
     }
 
     /* ------------------------------------------------------------- autosave */
-    var SKIP = ['csrf_token', 'website_hp', 'resume'];
+    var SKIP = ['csrf_token', 'pwf_zq', 'resume'];
     function save() {
         try {
             var data = {};

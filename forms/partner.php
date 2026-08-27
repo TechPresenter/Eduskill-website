@@ -5,8 +5,18 @@ require_once __DIR__ . '/../includes/bootstrap.php';
 if (!is_post()) json_error('Method not allowed.', [], 405);
 require_csrf();
 
-// Honeypot — hidden field humans never fill; pretend success, store nothing.
-if (trim((string) post('website_hp')) !== '') {
+/* Honeypot — a hidden field humans never fill. A filled one means a bot, so the
+   submission is dropped while the sender is told it worked.
+
+   It is LOGGED, because that trade is only safe while the field is genuinely
+   untouchable by humans. This field used to be called 'website_hp', and
+   Chrome and password managers autofill anything whose name starts with
+   'website' — so real applications were being destroyed silently, and the
+   only visible symptom was a success message with no reference number.
+   If these lines ever start appearing for real people, the name is wrong
+   again. */
+if (trim((string) post('pwf_zq')) !== '') {
+    error_log('[honeypot] ' . basename(__FILE__) . ' dropped a submission from ' . client_ip());
     json_success('Thank you for your interest in partnering with us! Our team will reach out soon.');
 }
 if (!pwf_throttle('partner-form', 5, 300)) {

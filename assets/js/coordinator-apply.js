@@ -238,7 +238,7 @@
     });
 
     /* ------------------------------------------------------------- autosave */
-    var SKIP = ['csrf_token', 'website_hp'];
+    var SKIP = ['csrf_token', 'pwf_zq'];
     function fieldKey(el) { return el.name + (el.type === 'checkbox' || el.type === 'radio' ? '::' + el.value : ''); }
 
     function save() {

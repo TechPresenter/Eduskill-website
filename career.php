@@ -568,7 +568,7 @@ include __DIR__ . '/includes/footer.php';
                             <div class="card-body">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="career_id" value="<?= (int) $job['id'] ?>">
-                                <input type="text" name="website_hp" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;overflow:hidden">
+                                <input type="text" name="pwf_zq" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;overflow:hidden">
 
                                 <div class="car-form-grid">
                                     <div class="car-fl">
@@ -1178,7 +1178,7 @@ $capTeamCount = max((int) db_count('team_members'), 120);
                 <form data-ajax-form data-cap-form data-endpoint="<?= e(url('forms/career-apply')) ?>"
                       enctype="multipart/form-data" novalidate>
                     <?= csrf_field() ?>
-                    <input type="text" name="website_hp" value="" tabindex="-1" autocomplete="off"
+                    <input type="text" name="pwf_zq" value="" tabindex="-1" autocomplete="off"
                            aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;overflow:hidden">
 
                     <!-- Step 1 — personal -->
@@ -1354,7 +1354,7 @@ $capTeamCount = max((int) db_count('team_members'), 120);
             <form data-ajax-form data-endpoint="<?= e(url('forms/newsletter')) ?>" class="mt-3" style="margin-top:auto;">
                 <?= csrf_field() ?>
                 <input type="hidden" name="source" value="careers">
-                <input type="text" name="website_hp" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;overflow:hidden">
+                <input type="text" name="pwf_zq" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;overflow:hidden">
                 <div class="form-row">
                     <div class="form-group" style="flex:1;">
                         <label class="form-label text-white" for="ja-name">Name</label>
