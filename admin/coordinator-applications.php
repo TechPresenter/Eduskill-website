@@ -621,6 +621,7 @@ include __DIR__ . '/partials/head.php';
     .ca-w-status { width: 170px; }
     .admin-content .ca-status-select { padding: var(--sp-1) var(--sp-2); }
     .ca-docs-count { white-space: nowrap; }
+    .ca-when { display: block; font-size: .86rem; font-weight: 500; white-space: nowrap; }
 </style>
 
 <div class="admin-page-head">
@@ -711,7 +712,16 @@ include __DIR__ . '/partials/head.php';
                                 <span class="pill pill-cyan"><?= lucide('paperclip') ?> <?= (int) $docCount ?></span>
                             <?php else: ?><span class="text-muted">—</span><?php endif; ?>
                         </td>
-                        <td><small class="text-muted"><?= e(time_ago($r['created_at'])) ?></small></td>
+                        <?php /* The actual date and time leads; "3 hours ago" is the
+                                 supporting detail. A reviewer working a queue needs to
+                                 know WHEN an application arrived, not only how long
+                                 ago — and a relative label alone hid the timezone bug
+                                 that made every row read 5h30m early. */ ?>
+                        <td>
+                            <span class="ca-when"><?= e(format_date($r['created_at'], 'd M Y')) ?></span>
+                            <small class="text-muted"><?= e(format_date($r['created_at'], 'g:i a')) ?>
+                                · <?= e(time_ago($r['created_at'])) ?></small>
+                        </td>
                         <td>
                             <form method="post" action="<?= e(admin_url('coordinator-applications')) ?>">
                                 <?= csrf_field() ?>

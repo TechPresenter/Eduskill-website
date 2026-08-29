@@ -314,20 +314,23 @@ notify('New ' . $level . ' application', [
     'type' => 'info',
 ]);
 
+/* The notification carries the WHOLE application, not a summary, so the office
+   can read and act on it without opening the panel. It is rendered from the
+   stored row rather than from $_POST, which means what gets mailed is exactly
+   what got saved — if a value were dropped on the way into the database, the
+   email would show that too instead of masking it. */
+$saved = find('coordinator_applications', $id) ?: [];
+
 // Best-effort mail — neither failure may block the applicant's response.
 try {
     send_mail(
         get_setting('contact_email', SITE_EMAIL),
-        'New ' . $level . ' application — ' . $applicationNo,
+        'New ' . $level . ' application — ' . $applicationNo . ' — ' . $who,
         '<p><strong>' . e($who) . '</strong> has applied for the <strong>' . e($level) . '</strong> position.</p>'
-        . '<p>Reference: <strong>' . e($applicationNo) . '</strong><br>'
-        . 'Email: ' . e(clean(post('email'))) . '<br>'
-        . 'Phone: ' . e($pwfCountry['phone']) . '<br>'
-        . 'Area: ' . e(implode(', ', array_filter([
-            clean(post('village', '')), clean(post('panchayat', '')),
-            clean(post('block', '')), clean(post('district', '')), clean(post('state', '')),
-        ]))) . '</p>'
-        . '<p><a href="' . e(admin_url('coordinator-applications?action=view&id=' . $id)) . '">Open the application in the admin panel</a></p>',
+        . '<p><a href="' . e(admin_url('coordinator-applications?action=view&id=' . $id)) . '">'
+        . 'Open the application in the admin panel</a> — the uploaded documents are there, '
+        . 'behind the admin login.</p>'
+        . coord_application_html($saved),
         ['reply_to' => clean(post('email'))]
     );
 } catch (Throwable $e) { /* ignore mail failures on local/dev */ }

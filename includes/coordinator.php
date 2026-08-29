@@ -211,3 +211,128 @@ function coord_reveal_id(?string $stored): ?string
     }
     return sec_decrypt($stored);
 }
+
+/**
+ * Render a whole application as an HTML table, for the notification email.
+ *
+ * Built from the same option lists the form and the admin view use, so a field
+ * added to coord_documents() or coord_availability() appears here too rather
+ * than being quietly left out of the email.
+ *
+ * ONE FIELD IS DELIBERATELY NOT SENT IN FULL: the Aadhaar / government ID
+ * number. Only its last four digits go out. Email is stored unencrypted in a
+ * mailbox more or less forever and is forwarded without thought; the whole
+ * point of encrypting that column at rest is defeated if every application
+ * mails the number in clear text. The admin panel decrypts it on demand for
+ * anyone who actually needs it, and the link to that record is in the email.
+ */
+function coord_application_html(array $r): string
+{
+    $esc  = static fn($v): string => e((string) $v);
+    $rows = [];
+
+    /** Add a row when there is something to show. */
+    $add = static function (string $label, $value, bool $pre = false) use (&$rows, $esc): void {
+        $v = is_string($value) ? trim($value) : $value;
+        if ($v === null || $v === '' || $v === []) {
+            return;
+        }
+        $rows[] = '<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;'
+                . 'font-weight:600;width:38%;vertical-align:top;">' . $esc($label) . '</td>'
+                . '<td style="padding:6px 10px;border:1px solid #e2e8f0;'
+                . ($pre ? 'white-space:pre-line;' : '') . '">' . $esc($v) . '</td></tr>';
+    };
+    /** A full-width section heading inside the table. */
+    $head = static function (string $title) use (&$rows, $esc): void {
+        $rows[] = '<tr><td colspan="2" style="padding:10px;border:1px solid #e2e8f0;'
+                . 'background:#0f766e;color:#fff;font-weight:700;">' . $esc($title) . '</td></tr>';
+    };
+    $yn = static fn($v): string => ((int) $v === 1) ? 'Yes' : 'No';
+
+    $head('Application');
+    $add('Application number', $r['application_no']);
+    $add('Submitted', !empty($r['created_at']) ? format_date($r['created_at'], 'd M Y, g:i a') : null);
+    $add('Position applied for', coord_position_label($r['position'] ?? null));
+    $add('Preferred work mode', $r['work_mode'] ?? null);
+
+    $head('Applicant');
+    $add('Full name', $r['name'] ?? null);
+    $add("Father's / Mother's / Spouse's name", $r['guardian_name'] ?? null);
+    $add('Date of birth', !empty($r['dob']) ? format_date($r['dob'], 'd M Y') : null);
+    $add('Gender', !empty($r['gender']) ? ucfirst((string) $r['gender']) : null);
+    $add('Mobile', trim((($r['country_dial'] ?? '') ? '+' . $r['country_dial'] . ' ' : '') . ($r['phone'] ?? '')));
+    $add('WhatsApp', $r['whatsapp'] ?? null);
+    $add('Email', $r['email'] ?? null);
+    // Last four digits only — see the note above.
+    $add('Aadhaar / ID number', !empty($r['id_proof_last4'])
+        ? 'XXXX XXXX ' . $r['id_proof_last4'] . '  (full number in the admin panel)' : null);
+    $add('Current address', $r['current_address'] ?? null, true);
+    $add('Permanent address', $r['permanent_address'] ?? null, true);
+    $add('Location', implode(', ', array_filter([
+        $r['village'] ?? null, $r['panchayat'] ?? null, $r['block'] ?? null,
+        $r['district'] ?? null, $r['state'] ?? null,
+    ])));
+
+    $head('Preferred area');
+    $add('Preferred Panchayat', $r['preferred_panchayat'] ?? null);
+    $add('Village / ward coverage', $r['village_coverage'] ?? null);
+    $add('Preferred Block', $r['preferred_block'] ?? null);
+    $add('Block district', $r['block_district'] ?? null);
+    $add('Preferred District', $r['preferred_district'] ?? null);
+    $add('District state', $r['district_state'] ?? null);
+
+    $edu = coord_json($r['education'] ?? null);
+    if ($edu) {
+        $head('Education');
+        foreach ($edu as $row) {
+            $add((string) ($row['level'] ?? 'Qualification'), trim(implode(' · ', array_filter([
+                $row['board'] ?? null, $row['year'] ?? null, $row['grade'] ?? null,
+            ]))));
+        }
+    }
+    $add('Computer knowledge', $r['computer_skills'] ?? null);
+
+    $head('Experience');
+    $add('Total experience', (int) ($r['experience_years'] ?? 0) . ' years '
+        . (int) ($r['experience_months'] ?? 0) . ' months');
+    $add('NGO / social work', $yn($r['ngo_experience'] ?? 0));
+    $add('NGO details', $r['ngo_details'] ?? null, true);
+    $add('Worked with rural / community groups', $yn($r['community_experience'] ?? 0));
+    $add('Experience areas', $r['focus_areas'] ?? null);
+    $add('Community work', $r['community_note'] ?? null, true);
+    $add('Languages', $r['languages'] ?? null);
+
+    $head('Availability & mobility');
+    foreach (coord_availability() as $key => $q) {
+        $add($q['label'], $yn($r[$key] ?? 0));
+    }
+    $add('Expected monthly honorarium', isset($r['expected_honorarium']) && $r['expected_honorarium'] !== null
+        ? '₹' . number_format((float) $r['expected_honorarium'], 2) : null);
+    $add('Earliest joining date', !empty($r['available_from'])
+        ? format_date($r['available_from'], 'd M Y') : null);
+
+    $refFilled = false;
+    foreach (array_keys(coord_reference_fields()) as $k) {
+        if (trim((string) ($r[$k] ?? '')) !== '') { $refFilled = true; break; }
+    }
+    if ($refFilled) {
+        $head('Reference');
+        foreach (coord_reference_fields() as $key => $meta) {
+            $add($meta['label'], $r[$key] ?? null);
+        }
+    }
+
+    $head('Documents attached');
+    $files = coord_json($r['documents'] ?? null);
+    foreach (coord_documents() as $slot => $doc) {
+        $add($doc['label'], isset($files[$slot]) ? 'Attached' : 'Not attached');
+    }
+
+    $head('Declaration');
+    $add('Place', $r['declared_place'] ?? null);
+    $add('Dated', !empty($r['declared_on']) ? format_date($r['declared_on'], 'd M Y') : null);
+    $add('Declaration accepted', $yn($r['consent'] ?? 0));
+
+    return '<table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;'
+         . 'font-size:14px;line-height:1.55;">' . implode('', $rows) . '</table>';
+}
