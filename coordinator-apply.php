@@ -186,7 +186,23 @@ include __DIR__ . '/includes/header.php';
                     </p>
                 </div>
 
+                <?php
+                /* The browser has to be told what this server will actually
+                   accept, because the two numbers that matter are set in php.ini
+                   and neither is 5 MB. Production was running the stock defaults
+                   — upload_max_filesize 2M, post_max_size 8M — while this page
+                   invited ten documents of 5 MB each, so ordinary phone photos
+                   were rejected and a few documents together pushed the request
+                   over post_max_size, where PHP discards the body and the
+                   applicant is told every field is empty. Reading the live
+                   values here means the form can shrink what it can, refuse what
+                   it cannot, and never promise more than the server honours. */
+                $maxFile  = upload_limit_bytes();
+                $maxTotal = post_attachment_budget();
+                ?>
                 <form data-ajax-form data-coa-form data-endpoint="<?= e(url('forms/coordinator-apply')) ?>"
+                      data-max-file="<?= (int) $maxFile ?>"
+                      data-max-total="<?= (int) $maxTotal ?>"
                       enctype="multipart/form-data" novalidate>
                     <?= csrf_field() ?>
                     <input type="text" name="pwf_zq" value="" tabindex="-1" autocomplete="off"
@@ -591,7 +607,9 @@ include __DIR__ . '/includes/header.php';
                             <div>
                                 <h3>Document checklist</h3>
                                 <p>
-                                    Clear photos or scans, up to 5&nbsp;MB each. Only the photograph and ID proof are required now —
+                                    Clear photos or scans, up to <?= e(human_filesize($maxFile)) ?> each and
+                                    <?= e(human_filesize($maxTotal)) ?> in total. Large photographs are resized
+                                    automatically before they are sent. Only the photograph and ID proof are required now —
                                     the rest can follow at verification, but attaching them here speeds your application up.
                                 </p>
                             </div>
@@ -626,6 +644,8 @@ include __DIR__ . '/includes/header.php';
                                 </div>
                             <?php endforeach; ?>
                         </div>
+
+                        <p class="coa-doc-total" data-coa-doc-total hidden></p>
                     </fieldset>
 
                     <!-- ====================================== 10. REFERENCE DETAILS -->

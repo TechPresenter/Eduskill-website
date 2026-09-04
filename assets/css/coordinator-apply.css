@@ -419,6 +419,26 @@ html:not(.js) .coa .cap-rv { opacity: 1; transform: none; transition: none; }
 .coa-doc-x:hover { color: #dc2626; background: rgba(220, 38, 38, .1); }
 .coa-doc-x svg { width: 15px; height: 15px; }
 
+/* Running attachment total. The submission as a whole is bounded by the
+   server's post_max_size, so the applicant needs to watch a budget, not just
+   individual files — this is the only place that ceiling is visible. */
+.coa-doc-total {
+    margin: .7rem 0 0; padding: .5rem .75rem; border-radius: 10px;
+    font-size: .78rem; font-weight: 600; color: var(--cap-muted);
+    background: color-mix(in srgb, var(--cap-secondary) 7%, transparent);
+    border: 1px solid var(--cap-line);
+}
+.coa-doc-total.is-over {
+    color: #b91c1c; border-color: #dc2626;
+    background: rgba(220, 38, 38, .08);
+}
+:root[data-theme="dark"] .coa-doc-total.is-over { color: #fca5a5; }
+
+/* A photograph too big for the server is re-encoded in the browser before it
+   is sent; that takes a moment on a phone, so the slot says so. */
+.coa-doc.is-busy { opacity: .75; }
+.coa-doc.is-busy .coa-doc-btn { pointer-events: none; opacity: .5; }
+
 /* ------------------------------------------------------------- declaration */
 .coa-declare {
     padding: 1rem 1.1rem; border-radius: 16px; margin-bottom: 1rem;

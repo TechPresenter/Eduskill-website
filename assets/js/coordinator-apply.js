@@ -124,6 +124,17 @@
             if (!has && !firstBad) { firstBad = row; }
         });
 
+        /* Last, because it is about the submission rather than any one field:
+           every attachment can be individually legal and the request still be
+           refused for its total size. Sending it anyway is the worst outcome —
+           PHP would discard the body and the applicant would be told their
+           whole form was blank — so it is stopped here instead. */
+        if (typeof paintTotal === 'function' && paintTotal() > MAX_TOTAL) {
+            var over = form.querySelector('[data-coa-doc-total]')
+                    || form.querySelector('[data-coa-doc]');
+            if (over && !firstBad) { firstBad = over; }
+        }
+
         return firstBad;
     }
 
@@ -183,12 +194,167 @@
     });
 
     /* ------------------------------------------------------ document slots */
-    var MAX_BYTES = 5 * 1024 * 1024;
+    /* Two ceilings, both read from the form rather than assumed. They are
+       php.ini's upload_max_filesize and post_max_size, rendered into
+       data-max-file / data-max-total by coordinator-apply.php.
+
+       This block used to hardcode 5 MB per file and check nothing else, which
+       was wrong twice over. Production runs the stock PHP defaults - 2 MB per
+       file, 8 MB per request - so a normal phone photograph was waved through
+       here and rejected by the server, and two or three documents together
+       exceeded post_max_size, at which point PHP discards the entire body and
+       the applicant is told that every field they filled in is empty.
+
+       So: shrink what can be shrunk, refuse the rest before it is sent, and
+       never let the running total pass the server's budget. */
+    var MAX_FILE  = parseInt(form.getAttribute('data-max-file'), 10)  || (2 * 1024 * 1024);
+    var MAX_TOTAL = parseInt(form.getAttribute('data-max-total'), 10) || (8 * 1024 * 1024);
+
+    var totalOut = form.querySelector('[data-coa-doc-total]');
 
     function human(b) {
         return b < 1024 ? b + ' B'
              : b < 1048576 ? (b / 1024).toFixed(0) + ' KB'
              : (b / 1048576).toFixed(1) + ' MB';
+    }
+
+    /** Every file currently attached, across all ten slots. */
+    function attached() {
+        var out = [];
+        form.querySelectorAll('[data-coa-doc] input[type="file"]').forEach(function (i) {
+            if (i.files && i.files[0]) { out.push(i.files[0]); }
+        });
+        return out;
+    }
+
+    function totalBytes() {
+        return attached().reduce(function (n, f) { return n + f.size; }, 0);
+    }
+
+    /**
+     * Paint the running total, and flag it when the submission as a whole no
+     * longer fits. Returns the total so callers can act on it.
+     */
+    function paintTotal() {
+        var total = totalBytes();
+        var count = attached().length;
+        if (!totalOut) { return total; }
+        if (!count) {
+            totalOut.hidden = true;
+            totalOut.textContent = '';
+            return total;
+        }
+        totalOut.hidden = false;
+        totalOut.classList.toggle('is-over', total > MAX_TOTAL);
+        totalOut.textContent = count + (count === 1 ? ' document' : ' documents')
+            + ' attached \u00b7 ' + human(total) + ' of ' + human(MAX_TOTAL)
+            + (total > MAX_TOTAL ? ' \u2014 too large to send. Please remove or replace a document.' : '');
+        return total;
+    }
+
+    /* Re-encoding a photograph is what makes this form usable on a 2 MB server:
+       a 4 MB phone picture becomes a few hundred KB with no meaningful loss for
+       an identity document. Only real raster images can be re-encoded - a PDF
+       or a DOC has to be refused instead. */
+    var SHRINKABLE = ['jpg', 'jpeg', 'png', 'webp'];
+    var MAX_EDGE   = 1600;
+
+    function canShrink(ext) {
+        return SHRINKABLE.indexOf(ext) > -1
+            && typeof HTMLCanvasElement !== 'undefined'
+            && typeof DataTransfer !== 'undefined';
+    }
+
+    /**
+     * Decode a picked file into something drawable.
+     *
+     * createImageBitmap() is tried first and is the reason this works at all on
+     * the live site: it decodes a Blob directly, so no URL is ever created and
+     * the Content-Security-Policy is never consulted. The obvious approach —
+     * URL.createObjectURL() into an <img> — is silently blocked here, because
+     * the site's CSP allows img-src 'self' data: https: and a blob: URL matches
+     * none of those. The image simply fires onerror, every photograph looks
+     * un-shrinkable, and the applicant is told to find a smaller one.
+     *
+     * The <img> path is kept as a fallback for browsers without
+     * createImageBitmap; it needs blob: in img-src to work (see .htaccess).
+     */
+    function decodeImage(file, done) {
+        if (typeof createImageBitmap === 'function') {
+            createImageBitmap(file).then(function (bmp) {
+                done(bmp, bmp.width, bmp.height);
+            }).catch(function () {
+                decodeViaImg(file, done);
+            });
+            return;
+        }
+        decodeViaImg(file, done);
+    }
+
+    function decodeViaImg(file, done) {
+        var URLish = window.URL || window.webkitURL;
+        if (!URLish) { done(null); return; }
+
+        var url = URLish.createObjectURL(file);
+        var img = new Image();
+        img.onload = function () {
+            URLish.revokeObjectURL(url);
+            done(img, img.naturalWidth || img.width, img.naturalHeight || img.height);
+        };
+        img.onerror = function () {
+            URLish.revokeObjectURL(url);
+            done(null);
+        };
+        img.src = url;
+    }
+
+    /**
+     * Downscale an image to fit MAX_EDGE and re-encode it as JPEG, stepping the
+     * quality down until it fits the per-file budget. Calls back with the new
+     * File, or with null when it cannot be brought under the limit.
+     *
+     * The result is always named .jpg. The server checks that the real content
+     * type matches the extension, so handing it JPEG bytes inside a .png name
+     * would be rejected as a mismatch.
+     */
+    function shrinkImage(file, budget, done) {
+        decodeImage(file, function (source, w, h) {
+            if (!source || !w || !h) { done(null); return; }
+
+            var scale = Math.min(1, MAX_EDGE / Math.max(w, h));
+            var cv    = document.createElement('canvas');
+            cv.width  = Math.max(1, Math.round(w * scale));
+            cv.height = Math.max(1, Math.round(h * scale));
+
+            var ctx = cv.getContext('2d');
+            if (!ctx) { done(null); return; }
+            ctx.drawImage(source, 0, 0, cv.width, cv.height);
+            if (source.close) { source.close(); }      // release an ImageBitmap
+
+            var qualities = [0.82, 0.7, 0.6, 0.5, 0.4];
+            var i = 0;
+
+            (function attempt() {
+                if (i >= qualities.length) { done(null); return; }
+                cv.toBlob(function (blob) {
+                    if (!blob) { done(null); return; }
+                    if (blob.size > budget && i < qualities.length - 1) { i++; attempt(); return; }
+                    if (blob.size > budget) { done(null); return; }
+                    var base = (file.name.replace(/\.[^.]+$/, '') || 'document');
+                    done(new File([blob], base + '.jpg', {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    }));
+                }, 'image/jpeg', qualities[i]);
+            })();
+        });
+    }
+
+    /** Put a replacement File into a file input, keeping it a real upload. */
+    function setFile(input, file) {
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
     }
 
     form.querySelectorAll('[data-coa-doc]').forEach(function (row) {
@@ -204,28 +370,66 @@
 
         function clear(message) {
             input.value = '';
-            row.classList.remove('is-set');
+            row.classList.remove('is-set', 'is-busy');
             if (out) { out.textContent = hint; }
             if (err) { err.textContent = message || ''; }
             row.classList.toggle('has-error', !!message);
+            paintTotal();
+        }
+
+        /** Show an accepted file, noting when it had to be resized. */
+        function accept(file, note) {
+            row.classList.remove('has-error', 'is-busy');
+            if (err) { err.textContent = ''; }
+            if (out) { out.textContent = file.name + ' \u00b7 ' + human(file.size) + (note || ''); }
+            row.classList.add('is-set');
+
+            /* One file can be within its own limit and still not fit alongside
+               the others; say so on the slot that broke the budget. */
+            if (paintTotal() > MAX_TOTAL) {
+                row.classList.add('has-error');
+                if (err) {
+                    err.textContent = 'Together your documents are over the '
+                        + human(MAX_TOTAL) + ' limit for one submission.';
+                }
+            }
         }
 
         input.addEventListener('change', function () {
             var f = input.files && input.files[0];
             if (!f) { clear(''); return; }
+
             var ext = (f.name.split('.').pop() || '').toLowerCase();
             if (okExt.length && okExt.indexOf(ext) === -1) {
                 clear('Please attach a ' + okExt.join(', ').toUpperCase() + ' file.');
                 return;
             }
-            if (f.size > MAX_BYTES) {
-                clear('That file is ' + human(f.size) + ' — the limit is 5 MB.');
+
+            if (f.size <= MAX_FILE) { accept(f, ''); return; }
+
+            if (!canShrink(ext)) {
+                clear('That file is ' + human(f.size) + ' \u2014 the limit is ' + human(MAX_FILE)
+                    + '. Please attach a smaller file.');
                 return;
             }
-            row.classList.remove('has-error');
-            if (err) { err.textContent = ''; }
-            if (out) { out.textContent = f.name + ' · ' + human(f.size); }
-            row.classList.add('is-set');
+
+            row.classList.add('is-busy');
+            if (out) { out.textContent = 'Resizing ' + f.name + '\u2026'; }
+
+            shrinkImage(f, MAX_FILE, function (small) {
+                if (!small) {
+                    clear('That image is ' + human(f.size) + ' and could not be reduced below '
+                        + human(MAX_FILE) + '. Please attach a smaller photo.');
+                    return;
+                }
+                try {
+                    setFile(input, small);
+                } catch (e) {
+                    clear('That file is ' + human(f.size) + ' \u2014 the limit is ' + human(MAX_FILE) + '.');
+                    return;
+                }
+                accept(small, ' \u00b7 resized from ' + human(f.size));
+            });
         });
 
         if (kill) {

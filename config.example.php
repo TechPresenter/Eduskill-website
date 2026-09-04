@@ -98,7 +98,7 @@ define('ASSET_URI',     BASE_URI . '/assets');    // web path to assets
  | Asset cache-busting version. Bump this when you change CSS/JS so shared
  | hosting caches don't serve stale files (used as assets/main.js?v=ASSET_VERSION).
  | -------------------------------------------------------------------------- */
-define('ASSET_VERSION', '5.9.3');
+define('ASSET_VERSION', '5.9.4');
 
 /* -----------------------------------------------------------------------------
  | Uploads
