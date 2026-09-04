@@ -370,6 +370,41 @@ ErrorDocument 500 /500.php
 </IfModule>
 
 # -----------------------------------------------------------------------------
+# Upload limits (mod_php only)
+# -----------------------------------------------------------------------------
+# The companion to /.user.ini, which covers the PHP-FPM/CGI case. Exactly one of
+# the two applies on any given server and the other is ignored, so both are
+# needed to make the limits reliable wherever this is deployed:
+#
+#   Apache + mod_php  -> .htaccess php_value works, .user.ini is ignored
+#   PHP-FPM / CGI     -> .user.ini works, php_value here is ignored
+#
+# The IfModule guard matters. php_value outside it is a FATAL Apache error on a
+# server without mod_php ("Invalid command 'php_value'"), which takes the whole
+# site down with a 500 rather than merely failing to set the value.
+#
+# Why these numbers: the site was running the stock 2M/8M defaults while
+# /coordinator-apply invited ten documents of up to 5 MB, so ordinary phone
+# photographs were rejected and a few documents together pushed the request past
+# post_max_size — where PHP silently discards the entire body and the applicant
+# is told every field they filled in was empty. See includes/upload.php.
+#
+# Keep post_max_size at or below the reverse proxy's client_max_body_size, or
+# nginx rejects the request with its own 413 before PHP ever sees it.
+<IfModule mod_php.c>
+    php_value upload_max_filesize 8M
+    php_value post_max_size 48M
+    php_value max_file_uploads 30
+    php_value max_input_time 120
+</IfModule>
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 8M
+    php_value post_max_size 48M
+    php_value max_file_uploads 30
+    php_value max_input_time 120
+</IfModule>
+
+# -----------------------------------------------------------------------------
 # UTF-8 default
 # -----------------------------------------------------------------------------
 AddDefaultCharset UTF-8
