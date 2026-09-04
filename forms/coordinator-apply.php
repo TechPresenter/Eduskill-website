@@ -6,6 +6,7 @@
  *  Backs coordinator-apply.php. Multipart: up to ten checklist documents come
  *  with the text fields, so the order of work matters —
  *
+ *    0. the request-size guard, BEFORE the CSRF check and the throttle
  *    1. method + CSRF + honeypot + throttle
  *    2. every text/scalar rule, so a typo never costs an upload
  *    3. the files, tracking what landed on disk
@@ -20,6 +21,22 @@
 require_once __DIR__ . '/../includes/bootstrap.php';
 
 if (!is_post()) json_error('Method not allowed.', [], 405);
+
+/* Before ANYTHING else, including the CSRF check.
+
+   When the uploaded documents push the request over post_max_size, PHP throws
+   the entire body away and hands this script an empty $_POST and $_FILES. The
+   CSRF token is not lost with it — assets/js/forms.js also sends it as the
+   X-CSRF-Token header — so require_csrf() passes and the request runs on into
+   field validation, which then tells an applicant who filled in every field
+   and attached every document that their name, email and phone are missing.
+   That is how this form failed in production, and it is why nothing ever
+   reached the admin panel.
+
+   It also has to come before the throttle: a submission the server refused to
+   read must not cost the applicant one of their four attempts. */
+require_post_size();
+
 require_csrf();
 
 $DONE = 'Your application has been received. Our team reviews every application and will contact you shortly.';
@@ -242,7 +259,11 @@ $data = [
     'country_name'         => $pwfCountry['columns']['country_name'],
     'country_iso'          => $pwfCountry['columns']['country_iso'],
     'country_dial'         => $pwfCountry['columns']['country_dial'],
-    'whatsapp'             => $waCountry['phone'] ?: null,
+    /* In E.164, not as typed. WhatsApp has its own country selector, and only
+       the `phone` field has country_* columns to hold the choice — so a number
+       stored bare lost whichever country the applicant picked beside it, and
+       the office was left with ten digits and no way to dial them. */
+    'whatsapp'             => $waCountry['e164'] ?: null,
     'email'                => clean(post('email')),
     'id_proof_no'          => $idStored,
     'id_proof_last4'       => $idLast4,

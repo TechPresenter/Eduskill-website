@@ -3,6 +3,13 @@
 require_once __DIR__ . '/../includes/bootstrap.php';
 
 if (!is_post()) json_error('Method not allowed.', [], 405);
+/* PHP discards the whole request body when it exceeds post_max_size, leaving an
+   empty $_POST and $_FILES — and the CSRF token survives in the X-CSRF-Token
+   header, so the request would otherwise reach validation and blame the sender
+   for fields they did in fact fill in. Must precede require_csrf() and any
+   throttle; see require_post_size() in includes/upload.php. */
+require_post_size();
+
 require_csrf();
 
 /* Honeypot — a hidden field humans never fill. A filled one means a bot, so the

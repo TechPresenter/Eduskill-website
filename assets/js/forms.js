@@ -63,7 +63,25 @@
             let data;
             const text = await res.text();
             try { data = JSON.parse(text); }
-            catch (e) { throw new Error('Unexpected server response. Please try again.'); }
+            catch (e) {
+                /* A non-JSON body from an upload form is almost always a size
+                   rejection: the web server (not PHP) refused the request before
+                   it reached us, and answers with its own HTML error page.
+                   "Unexpected server response" told the sender nothing and left
+                   them retrying the same too-large files forever. */
+                if (res.status === 413) {
+                    throw new Error(
+                        'Your attachments are too large for the server to accept. '
+                        + 'Please attach smaller or fewer files and try again.'
+                    );
+                }
+                throw new Error(
+                    res.ok
+                        ? 'Unexpected server response. Please try again.'
+                        : 'The server refused this submission (error ' + res.status + '). '
+                          + 'If you attached documents, try smaller files.'
+                );
+            }
 
             if (data.success) {
                 notify('success', data.message || 'Thank you!');

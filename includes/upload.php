@@ -297,3 +297,168 @@ function upload_error_message(int $code): string
         default               => 'Unknown upload error.',
     };
 }
+
+/* =============================================================================
+ |  REQUEST-SIZE LIMITS
+ |------------------------------------------------------------------------------
+ |  A multipart form is bounded by THREE separate ceilings, and until now the
+ |  application knew about none of them:
+ |
+ |    upload_max_filesize   the biggest single file PHP will accept
+ |    post_max_size         the biggest request body PHP will accept AT ALL
+ |    UPLOAD_MAX_BYTES      this application's own per-file rule (config.php)
+ |
+ |  The middle one is the dangerous one. When a request body exceeds
+ |  post_max_size, PHP does not raise an error — it silently discards the whole
+ |  body and hands the script an EMPTY $_POST and $_FILES. Every handler then
+ |  reports each field as missing, so an applicant who filled in a long form and
+ |  attached their documents is told "Name is required. Email is required." and
+ |  nothing is ever saved. That is exactly how the coordinator form failed in
+ |  production: the server runs the stock defaults (upload_max_filesize = 2M,
+ |  post_max_size = 8M) while the form invited ten documents of up to 5 MB each.
+ |
+ |  These helpers exist so both ends of the application can work from the real
+ |  numbers instead of hardcoded hopes: the handler refuses honestly, and the
+ |  form advertises and enforces the true limits in the browser before a byte is
+ |  sent. See .user.ini for raising the ceilings where the host honours it.
+ |============================================================================*/
+
+/**
+ * Parse a PHP ini shorthand size ("8M", "512K", "1G", "0") into bytes.
+ * Returns 0 for an unset/unlimited value, which callers treat as "no ceiling".
+ */
+function ini_bytes(string $value): int
+{
+    $value = trim($value);
+    if ($value === '') {
+        return 0;
+    }
+    $unit = strtolower($value[strlen($value) - 1]);
+    $num  = (int) $value;
+    if ($num < 0) {
+        return 0;                     // -1 means unlimited
+    }
+    return match ($unit) {
+        'g'     => $num * 1024 * 1024 * 1024,
+        'm'     => $num * 1024 * 1024,
+        'k'     => $num * 1024,
+        default => $num,
+    };
+}
+
+/**
+ * The largest single file that can actually make it through, in bytes.
+ *
+ * The smallest of PHP's upload_max_filesize, this application's per-file rule
+ * and the Security Center override — because the smallest is the one that will
+ * reject the file, whatever the others say.
+ */
+function upload_limit_bytes(): int
+{
+    $php = ini_bytes((string) ini_get('upload_max_filesize'));
+
+    $settingMax = function_exists('get_setting') ? (int) get_setting('upload_max_mb', 0) : 0;
+    $app        = $settingMax > 0 ? $settingMax * 1024 * 1024 : UPLOAD_MAX_BYTES;
+
+    $limits = array_filter([$php, $app]);
+    return $limits ? (int) min($limits) : $app;
+}
+
+/**
+ * The largest request body PHP will accept, in bytes (post_max_size).
+ * 0 means "no limit configured", which callers should treat as unbounded.
+ */
+function post_limit_bytes(): int
+{
+    return ini_bytes((string) ini_get('post_max_size'));
+}
+
+/**
+ * The total attachment budget a form may advertise, in bytes.
+ *
+ * post_max_size covers the FILES PLUS every text field, the multipart
+ * boundaries and the headers, so the whole of it can never be offered to
+ * attachments. A fixed 512 KB is held back for the form body — comfortably
+ * more than even the longest application's text — and the result is floored at
+ * one file's worth so a badly configured server still advertises something
+ * coherent rather than a negative number.
+ */
+function post_attachment_budget(): int
+{
+    $post = post_limit_bytes();
+    if ($post <= 0) {
+        return 64 * 1024 * 1024;      // unlimited server; offer a sane cap
+    }
+    return max(upload_limit_bytes(), $post - (512 * 1024));
+}
+
+/**
+ * Did PHP throw this request's body away for exceeding post_max_size?
+ *
+ * The signature is unmistakable: the client announced a body via
+ * Content-Length, the method is POST, and yet both $_POST and $_FILES are
+ * empty — PHP parsed nothing. Without this check the request goes on to
+ * ordinary field validation, which blames the applicant for leaving every
+ * field blank when in fact they filled in all of them.
+ */
+function post_body_discarded(): bool
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        return false;
+    }
+    $declared = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+    if ($declared <= 0) {
+        return false;
+    }
+    if (!empty($_POST) || !empty($_FILES)) {
+        return false;
+    }
+    $limit = post_limit_bytes();
+    return $limit > 0 && $declared > $limit;
+}
+
+/**
+ * Guard the top of any handler that accepts file uploads.
+ *
+ * Call it BEFORE require_csrf() and before any throttle: the CSRF token
+ * survives in the X-CSRF-Token header even when the body is gone, so the
+ * request would otherwise sail past every check into validation — and a
+ * rejected oversized submission must not burn an attempt from the applicant's
+ * rate-limit budget either.
+ */
+function require_post_size(): void
+{
+    if (!post_body_discarded()) {
+        return;
+    }
+
+    $sent  = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+    $limit = post_limit_bytes();
+
+    /* PHP has already emitted its own "POST Content-Length ... exceeds the
+       limit" warning by the time this runs, and on a development box
+       display_errors puts that warning in the response body ahead of anything
+       we write. The caller is a fetch() expecting JSON, so a warning glued to
+       the front of it parses as nothing at all. Drop whatever is buffered so
+       the client gets a clean envelope it can actually read. */
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    error_log(sprintf(
+        '[post_max_size] %s discarded a %s body from %s (post_max_size=%s)',
+        basename($_SERVER['SCRIPT_NAME'] ?? 'handler'),
+        human_filesize($sent),
+        function_exists('client_ip') ? client_ip() : ($_SERVER['REMOTE_ADDR'] ?? '?'),
+        human_filesize($limit)
+    ));
+
+    json_error(
+        'Your attachments add up to ' . human_filesize($sent) . ', which is over this server\'s '
+        . human_filesize($limit) . ' limit for one submission. Nothing was saved. '
+        . 'Please attach smaller or fewer files and submit again — '
+        . 'each document may be up to ' . human_filesize(upload_limit_bytes()) . '.',
+        ['max_body' => $limit, 'max_file' => upload_limit_bytes()],
+        413
+    );
+}
