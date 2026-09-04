@@ -395,6 +395,55 @@ if ($action === 'view') {
                     <?php endif; ?>
                 </div>
             </div>
+
+            <!-- ------------------------------------ 11. APPLICANT DECLARATION -->
+            <?php /* Section 11 of the printed form. The handler stores the place,
+                     the date and the acceptance, and the notification email
+                     already rendered all three — but this page never did, so the
+                     one part of the application that carries legal weight was
+                     the one part the office could not see. */ ?>
+            <div class="panel">
+                <div class="panel-head"><h2 class="panel-title">Applicant Declaration</h2></div>
+                <div class="panel-body">
+                    <div class="table-wrap">
+                    <table class="admin-table">
+                        <tbody>
+                            <tr>
+                                <th class="ca-w-label">Declaration accepted</th>
+                                <td><?= (int) $row['consent'] === 1
+                                    ? '<span class="pill pill-green">' . lucide('check') . ' Yes</span>'
+                                    : '<span class="pill pill-red">No</span>' ?></td>
+                            </tr>
+                            <?php
+                            $line('Place', $row['declared_place']);
+                            $line('Dated', $row['declared_on']
+                                ? date('d M Y', strtotime($row['declared_on']))
+                                : null);
+                            ?>
+                            <tr>
+                                <th>Submitted from</th>
+                                <td><?php if (!empty($row['ip_address'])): ?>
+                                        <code><?= e($row['ip_address']) ?></code>
+                                    <?php else: ?>
+                                        <span class="text-muted">Not recorded</span>
+                                    <?php endif; ?></td>
+                            </tr>
+                            <?php if ($reviewer): ?>
+                                <tr><th>Last reviewed by</th><td>
+                                    <?= e($reviewer) ?>
+                                    <?php if (!empty($row['reviewed_at'])): ?>
+                                        <small class="text-muted">on <?= e(date('d M Y, g:i a', strtotime($row['reviewed_at']))) ?></small>
+                                    <?php endif; ?>
+                                </td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                    </div>
+                    <p class="form-hint" style="margin-top:.6rem;">
+                        Submitting the form electronically stands in place of a signature.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- ================================================= RIGHT COLUMN -->
